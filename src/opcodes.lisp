@@ -20,6 +20,7 @@
 ;; the opcodes themselves with instructions named after the mnemonics. The
 ;; remaining question is how to dispatch/call the method in the first place.
 ;; Current plan? (loop (let ((opcode (pc cpu)))
+;;                       (setf (pc cpu) (wrap-word (1+ (pc cpu))))
 ;;                       (funcall (function (aref opcodes opcode)) opcode)))
 ;; This is wasteful of space and some computation but simple/entertaining.
 ;; Allows argument handling to reside with the methods not the main loop.
@@ -41,7 +42,7 @@
                   (&key docs) &body body)
   "Define an EQL-Specialized method on OPCODE named NAME. When DOCS are provided
 they serve as its docstring. Execute BODY in a let that binds CPU to *CPU* for
-convenience. If ADDR-MODE is nil, implied addressing is assumed."
+convenience. If ADDR-MODE is nil, implied (imp) addressing is assumed."
   ;; TODO: Add ecase for addr-mode options as needed.
   ;; TODO: Use symbol-plist for byte-count and disassembly format str/metadata?
   (declare (ignore addr-mode)) ; for now
@@ -51,11 +52,18 @@ convenience. If ADDR-MODE is nil, implied addressing is assumed."
        ,@body)
      (incf (cc *cpu*) ,cycle-count)))
 
-(defins (brk #x00 7) ; Implied addressing, 1 byte
-  (:docs "Force Interrupt.")
-  (let ((pc (logand (1+ (pc cpu)) #xffff)))
+(defins (brk #x00 7)
+    (:docs "Force Interrupt, 1 byte.")
+  (let ((pc (wrap-word (1+ (pc cpu)))))
     (stack-push-word cpu pc)
-    (setf (status-bit 4) 1) ; set break flag
+    (setf (status-bit 4) 1)
     (stack-push cpu (sr cpu))
-    (setf (status-bit 2) 1) ; set interrupt flag
+    (setf (status-bit 2) 1)
     (setf (pc cpu) (get-word #xfffe))))
+
+(defins (ora #x01 6)
+    (:docs "Bitwise OR Accumulator, 2 bytes.")
+  (let ((result (setf (ar cpu) (logior (ar cpu) (indirect-x-address cpu)))))
+    (if (zerop result)
+        (setf (status-bit 1) 1)
+        (setf (status-bit 7) 1))))

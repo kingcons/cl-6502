@@ -8,6 +8,7 @@
   :depends-on (:alexandria :closer-mop)
   :serial t
   :components ((:file "packages")
+               (:file "conditions")
                (:file "cpu")
                (:file "opcodes"))
   :in-order-to ((test-op (load-op cl-6502-tests)))

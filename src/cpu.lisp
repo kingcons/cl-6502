@@ -34,8 +34,14 @@ counter, stack pointer, x, y, and accumulator registers and their contents."
 ;; CPU helpers
 
 (defun wrap-byte (val)
-  "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 8))."
+  "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 8)),
+i.e. a Stack Pointer or general purpose register."
   (logand val 255))
+
+(defun wrap-word (val)
+  "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 16)),
+i.e. a Program Counter address."
+  (logand val 65535))
 
 (defmethod wrap-stack ((cpu cpu))
   "Wrap the stack pointer."
@@ -68,10 +74,15 @@ counter, stack pointer, x, y, and accumulator registers and their contents."
 
 (defun (setf status-bit) (new-val n)
   "Set bit N in the status register to NEW-VAL."
-  (setf (ldb (byte 1 n) (sr *cpu*)) new-val))
+  (if (or (zerop new-val) (= 1 new-val))
+      (setf (ldb (byte 1 n) (sr *cpu*)) new-val)
+      (error 'status-bit-error :index n)))
 
 ;;; Addressing Modes
 
+(defmethod indirect-x-address ((cpu cpu))
+  ;; TODO: Too tired to do this right tonight. Fake for now.
+  (get-byte (wrap-byte (+ (get-byte (1+ (pc *cpu*))) (xr *cpu*)))))
 
 ;;; Tasty Globals
 
@@ -88,6 +99,17 @@ counter, stack pointer, x, y, and accumulator registers and their contents."
   "Get a byte from RAM at the given address."
   (aref *ram* address))
 
+(defun (setf get-byte) (new-val address)
+  "Set ADDRESS in *ram* to NEW-VAL."
+  (setf (aref *ram* address) new-val))
+
 (defun get-word (address)
   "Get a word from RAM starting at the given address."
   (+ (get-byte address) (ash (get-byte (1+ address)) 8)))
+
+;;; Machine helpers
+
+(defun reset ()
+  "Reset the virtual machine to an initial state."
+  (reinitialize-instance *cpu*)
+  (setf *ram* (make-array (expt 2 16) :element-type '(unsigned-byte 8))))
