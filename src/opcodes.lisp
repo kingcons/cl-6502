@@ -55,9 +55,9 @@ convenience. If ADDR-MODE is nil, implied (imp) addressing is assumed."
 (defins (brk #x00 7)
     (:docs "Force Interrupt, 1 byte.")
   (let ((pc (wrap-word (1+ (pc cpu)))))
-    (stack-push-word cpu pc)
+    (stack-push-word pc)
     (setf (status-bit 4) 1)
-    (stack-push cpu (sr cpu))
+    (stack-push (sr cpu))
     (setf (status-bit 2) 1)
     (setf (pc cpu) (get-word #xfffe))))
 

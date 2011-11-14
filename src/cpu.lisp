@@ -17,8 +17,8 @@
        :accessor xr :type (unsigned-byte 8))
    (yr :initarg :yr :initform 0 ;; y register
        :accessor yr :type (unsigned-byte 8))
-   (ac :initarg :ac :initform 0 ;; accumulator
-       :accessor ac :type (unsigned-byte 8))
+   (ar :initarg :ar :initform 0 ;; accumulator
+       :accessor ar :type (unsigned-byte 8))
    (cc :initarg :cc :initform 0 ;; cycle counter
        :accessor cc :type fixnum))
   (:documentation "A 6502 CPU with an additional non-register slot for tracking
@@ -28,8 +28,8 @@ the cycle count/clock ticks."))
   "A method to print CPU instances as #<(6502) ...> where ... are the program
 counter, stack pointer, x, y, and accumulator registers and their contents."
   (print-unreadable-object (object stream :type t)
-    (with-slots (pc sp xr yr ac) object
-      (format stream "(6502) PC=~x SP=~x X=~x Y=~x A=~x" pc sp xr yr ac))))
+    (with-slots (pc sp xr yr ar) object
+      (format stream "(6502) PC=~x SP=~x X=~x Y=~x A=~x" pc sp xr yr ar))))
 
 ;; CPU helpers
 
@@ -47,26 +47,26 @@ i.e. a Program Counter address."
   "Wrap the stack pointer."
   (setf (sp cpu) (wrap-byte (sp cpu))))
 
-(defmethod stack-push ((cpu cpu) value)
+(defun stack-push (value)
   "Push the given VALUE on the stack and decrement the SP."
-  (setf (aref *ram* (+ (sp cpu) 256)) (wrap-byte value))
-  (decf (sp cpu))
-  (wrap-stack cpu))
+  (setf (aref *ram* (+ (sp *cpu*) 256)) (wrap-byte value))
+  (decf (sp *cpu*))
+  (wrap-stack *cpu*))
 
-(defmethod stack-pop ((cpu cpu))
+(defun stack-pop ()
   "Pop the value pointed to by the SP and increment the SP."
-  (incf (sp cpu))
-  (wrap-stack)
-  (get-byte (+ (sp cpu) 256)))
+  (incf (sp *cpu*))
+  (wrap-stack *cpu*)
+  (get-byte (+ (sp *cpu*) 256)))
 
-(defmethod stack-push-word ((cpu cpu) value)
+(defun stack-push-word (value)
   "Push the 16-bit word VALUE onto the stack."
-  (stack-push cpu (wrap-byte (ash value -8)))
-  (stack-push cpu (wrap-byte value)))
+  (stack-push (wrap-byte (ash value -8)))
+  (stack-push (wrap-byte value)))
 
-(defmethod stack-pop-word ((cpu cpu))
+(defun stack-pop-word ()
   "Pop a 16-bit word off the stack."
-  (+ (stack-pop cpu) (ash (stack-pop cpu) 8)))
+  (+ (stack-pop) (ash (stack-pop) 8)))
 
 (defun status-bit (n)
   "Retrieve bit N from the status register."
