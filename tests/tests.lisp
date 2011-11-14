@@ -22,8 +22,15 @@ the old value when BODY finishes."
 (def-suite :opcodes)
 (in-suite :opcodes)
 
-(test brk-sets-b-flag
+(test brk-sets-flags
   (with-cpu
     (brk #x00)
-    (is (logbitp 4 (sr *cpu*)))))
+    (is (logbitp 4 (sr *cpu*)))
+    (is (logbitp 2 (sr *cpu*)))))
 
+(test brk-adds-24bits-to-stack
+  ;; Program Counter (16) + Stack Pointer (8) == 24 bits
+  ;; The stack is decremented from #xFF giving #xFC.
+  (with-cpu
+    (brk #x00)
+    (is (= (sp *cpu*) #xfc))))
