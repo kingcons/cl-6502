@@ -4,6 +4,8 @@
 
 (in-package :6502-tests)
 
+(reset) ; Initialize the CPU.
+
 ;; Thanks to Michael Weber for a rough blueprint of shallow instance copying.
 (defmacro with-cpu (&body body)
   "Store a copy of *CPU* and execute BODY in an unwind-protect which restores

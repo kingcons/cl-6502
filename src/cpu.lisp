@@ -86,11 +86,10 @@ i.e. a Program Counter address."
 
 ;;; Tasty Globals
 
-(defparameter *ram*
-  (make-array 65536 :element-type '(unsigned-byte 8))
+(defparameter *ram* nil
   "A lovely hunk of bytes.")
 
-(defparameter *cpu* (make-instance 'cpu)
+(defparameter *cpu* nil
   "The 6502 instance used by opcodes in the package.")
 
 ;;; RAM helpers
@@ -111,5 +110,5 @@ i.e. a Program Counter address."
 
 (defun reset ()
   "Reset the virtual machine to an initial state."
-  (reinitialize-instance *cpu*)
-  (setf *ram* (make-array (expt 2 16) :element-type '(unsigned-byte 8))))
+  (setf *cpu* (make-instance 'cpu)
+        *ram* (make-array (expt 2 16) :element-type '(unsigned-byte 8))))
