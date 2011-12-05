@@ -4,10 +4,10 @@ Addressing modes should have helper functions in cpu.lisp and a keyarg to defins
 Main loop after that, followed by disassembler+assembler?
 
 ;; OPCODES:
-;; Finish/correct indirect-x-addressing.
 ;; Write ORA tests.
-;; Write tests for CPU helpers, address modes!
+;; Write tests for address modes!
 ;; Implement zero-page addressing for ora #x05.
 ;; Also, extend defins to handle more than one version for different addr-modes?
 ;; -- maybe make it a separate macro called defopcode?
 ;; Implement... ALL THE OPCODES!
+;; Write tests for other CPU and RAM helpers. Objectify RAM?

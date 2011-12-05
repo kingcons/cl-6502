@@ -47,6 +47,13 @@ i.e. a Program Counter address."
   "Wrap the stack pointer."
   (setf (sp cpu) (wrap-byte (sp cpu))))
 
+(defun wrap-page (address)
+  ;; TODO: Give this an appropriate docstring. What problem does it solve?
+  ;; see py65 commit 44e4d9bc6cadcb679af7d516ee1aea9f436c03d8
+  ;; wrap-page differs from wrap-word when the last two bytes are #xff
+  (+ (logand address #xff00)
+     (logand (1+ address) #xff)))
+
 (defun stack-push (value)
   "Push the given VALUE on the stack and decrement the SP."
   (setf (aref *ram* (+ (sp *cpu*) 256)) (wrap-byte value))
@@ -80,9 +87,32 @@ i.e. a Program Counter address."
 
 ;;; Addressing Modes
 
+(defmethod zero-page-address ((cpu cpu))
+  (get-byte (pc *cpu*)))
+
+(defmethod zero-page-x-address ((cpu cpu))
+  (wrap-byte (+ (xr *cpu*) (get-byte (pc *cpu*)))))
+
+(defmethod zero-page-y-address ((cpu cpu))
+  (wrap-byte (+ (yr *cpu*) (get-byte (pc *cpu*)))))
+
 (defmethod indirect-x-address ((cpu cpu))
-  ;; TODO: Too tired to do this right tonight. Fake for now.
-  (get-byte (wrap-byte (+ (get-byte (1+ (pc *cpu*))) (xr *cpu*)))))
+  (get-word (wrap-byte (+ (get-byte (pc *cpu*)) (xr *cpu*))) t))
+
+(defmethod indirect-y-address ((cpu cpu))
+  'todo)
+
+(defmethod absolute-address ((cpu cpu))
+  (get-word (pc *cpu*)))
+
+(defmethod absolute-x-address ((cpu cpu))
+  'todo)
+
+(defmethod absolute-y-address ((cpu cpu))
+  'todo)
+
+(defmethod branch-relative-address ((cpu cpu))
+  'todo)
 
 ;;; Tasty Globals
 
@@ -102,13 +132,15 @@ i.e. a Program Counter address."
   "Set ADDRESS in *ram* to NEW-VAL."
   (setf (aref *ram* address) new-val))
 
-(defun get-word (address)
+(defun get-word (address &optional wrap-p)
   "Get a word from RAM starting at the given address."
-  (+ (get-byte address) (ash (get-byte (1+ address)) 8)))
+  (+ (get-byte address) (ash (get-byte (if wrap-p
+                                           (wrap-page address)
+                                           (1+ address))) 8)))
 
 ;;; Machine helpers
 
 (defun reset ()
   "Reset the virtual machine to an initial state."
-  (setf *cpu* (make-instance 'cpu)
-        *ram* (make-array (expt 2 16) :element-type '(unsigned-byte 8))))
+  (setf *ram* (make-array (expt 2 16) :element-type '(unsigned-byte 8))
+        *cpu* (make-instance 'cpu)))
