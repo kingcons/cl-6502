@@ -6,30 +6,16 @@
 ;; http://code.google.com/p/applepy/source/browse/trunk/processor.py
 ;; https://github.com/jaoswald/cl-comfy-6502/blob/master/6502-opcodes.lisp
 
-(defclass cpu ()
-  ((pc :initarg :pc :initform #xfffc ;; program counter
-       :accessor pc :type (unsigned-byte 16))
-   (sp :initarg :sp :initform #xff ;; stack pointer
-       :accessor sp :type (unsigned-byte 8))
-   (sr :initarg :sr :initform 0 ;; status register
-       :accessor sr :type (unsigned-byte 8))
-   (xr :initarg :xr :initform 0 ;; x register
-       :accessor xr :type (unsigned-byte 8))
-   (yr :initarg :yr :initform 0 ;; y register
-       :accessor yr :type (unsigned-byte 8))
-   (ar :initarg :ar :initform 0 ;; accumulator
-       :accessor ar :type (unsigned-byte 8))
-   (cc :initarg :cc :initform 0 ;; cycle counter
-       :accessor cc :type fixnum))
-  (:documentation "A 6502 CPU with an additional non-register slot for tracking
-the cycle count/clock ticks."))
+(defstruct cpu
+  "A 6502 CPU with an extra slot for tracking the cycle count/clock ticks."
+  (pc #xfffc :type (unsigned-byte 16)) ;; program counter
+  (sp #xff   :type (unsigned-byte 8))  ;; stack pointer
+  (sr 0      :type (unsigned-byte 8))  ;; status register
+  (xr 0      :type (unsigned-byte 8))  ;; x register
+  (yr 0      :type (unsigned-byte 8))  ;; y register
+  (ar 0      :type (unsigned-byte 8))  ;; accumulator
+  (cc 0      :type fixnum))            ;; cycle counter
 
-(defmethod print-object ((object cpu) stream)
-  "A method to print CPU instances as #<(6502) ...> where ... are the program
-counter, stack pointer, x, y, and accumulator registers and their contents."
-  (print-unreadable-object (object stream :type t)
-    (with-slots (pc sp xr yr ar) object
-      (format stream "(6502) PC=~x SP=~x X=~x Y=~x A=~x" pc sp xr yr ar))))
 
 ;; CPU helpers
 
@@ -45,7 +31,7 @@ i.e. a Program Counter address."
 
 (defmethod wrap-stack ((cpu cpu))
   "Wrap the stack pointer."
-  (setf (sp cpu) (wrap-byte (sp cpu))))
+  (setf (cpu-sp cpu) (wrap-byte (cpu-sp cpu))))
 
 (defun wrap-page (address)
   ;; TODO: Give this an appropriate docstring. What problem does it solve?
@@ -56,15 +42,15 @@ i.e. a Program Counter address."
 
 (defun stack-push (value)
   "Push the given VALUE on the stack and decrement the SP."
-  (setf (aref *ram* (+ (sp *cpu*) 256)) (wrap-byte value))
-  (decf (sp *cpu*))
+  (setf (aref *ram* (+ (cpu-sp *cpu*) 256)) (wrap-byte value))
+  (decf (cpu-sp *cpu*))
   (wrap-stack *cpu*))
 
 (defun stack-pop ()
   "Pop the value pointed to by the SP and increment the SP."
-  (incf (sp *cpu*))
+  (incf (cpu-sp *cpu*))
   (wrap-stack *cpu*)
-  (get-byte (+ (sp *cpu*) 256)))
+  (get-byte (+ (cpu-sp *cpu*) 256)))
 
 (defun stack-push-word (value)
   "Push the 16-bit word VALUE onto the stack."
@@ -77,33 +63,33 @@ i.e. a Program Counter address."
 
 (defun status-bit (n)
   "Retrieve bit N from the status register."
-  (ldb (byte 1 n) (sr *cpu*)))
+  (ldb (byte 1 n) (cpu-sr *cpu*)))
 
 (defun (setf status-bit) (new-val n)
   "Set bit N in the status register to NEW-VAL."
   (if (or (zerop new-val) (= 1 new-val))
-      (setf (ldb (byte 1 n) (sr *cpu*)) new-val)
+      (setf (ldb (byte 1 n) (cpu-sr *cpu*)) new-val)
       (error 'status-bit-error :index n)))
 
 ;;; Addressing Modes
 
 (defmethod zero-page-address ((cpu cpu))
-  (get-byte (pc *cpu*)))
+  (get-byte (cpu-pc *cpu*)))
 
 (defmethod zero-page-x-address ((cpu cpu))
-  (wrap-byte (+ (xr *cpu*) (get-byte (pc *cpu*)))))
+  (wrap-byte (+ (cpu-xr *cpu*) (get-byte (cpu-pc *cpu*)))))
 
 (defmethod zero-page-y-address ((cpu cpu))
-  (wrap-byte (+ (yr *cpu*) (get-byte (pc *cpu*)))))
+  (wrap-byte (+ (cpu-yr *cpu*) (get-byte (cpu-pc *cpu*)))))
 
 (defmethod indirect-x-address ((cpu cpu))
-  (get-word (wrap-byte (+ (get-byte (pc *cpu*)) (xr *cpu*))) t))
+  (get-word (wrap-byte (+ (get-byte (cpu-pc *cpu*)) (cpu-xr *cpu*))) t))
 
 (defmethod indirect-y-address ((cpu cpu))
   'todo)
 
 (defmethod absolute-address ((cpu cpu))
-  (get-word (pc *cpu*)))
+  (get-word (cpu-pc *cpu*)))
 
 (defmethod absolute-x-address ((cpu cpu))
   'todo)
@@ -134,13 +120,12 @@ i.e. a Program Counter address."
 
 (defun get-word (address &optional wrap-p)
   "Get a word from RAM starting at the given address."
-  (+ (get-byte address) (ash (get-byte (if wrap-p
-                                           (wrap-page address)
-                                           (1+ address))) 8)))
+  (+ (get-byte address)
+     (ash (get-byte (if wrap-p (wrap-page address) (1+ address))) 8)))
 
 ;;; Machine helpers
 
 (defun reset ()
   "Reset the virtual machine to an initial state."
   (setf *ram* (make-array (expt 2 16) :element-type '(unsigned-byte 8))
-        *cpu* (make-instance 'cpu)))
+        *cpu* (make-cpu)))

@@ -4,12 +4,14 @@
   (:export #:*ram*
            #:*cpu*
            #:cpu
-           #:pc
-           #:sp
-           #:xr
-           #:yr
-           #:ar
-           #:sr
-           #:cc
+           #:make-cpu
+           #:copy-cpu
+           #:cpu-pc
+           #:cpu-sp
+           #:cpu-xr
+           #:cpu-yr
+           #:cpu-ar
+           #:cpu-sr
+           #:cpu-cc
            #:brk
            #:reset))

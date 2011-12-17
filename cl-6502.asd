@@ -5,7 +5,7 @@
   :license "LLGPL"
   :author "Brit Butler <redline6561@gmail.com>"
   :pathname "src/"
-  :depends-on (:alexandria :closer-mop)
+  :depends-on (:alexandria)
   :serial t
   :components ((:file "packages")
                (:file "conditions")
