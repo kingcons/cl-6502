@@ -103,8 +103,8 @@ i.e. a Program Counter address."
   (let ((addr (zero-page cpu)))
     (if (zerop (status-bit 1))
         (wrap-word (if (zerop (logand addr 128))
-                       (- (cpu-pc cpu) (logxor addr 255))
-                       (+ (cpu-pc cpu) addr)))
+                       (+ (cpu-pc cpu) addr)
+                       (- (cpu-pc cpu) (logxor addr 255))))
         (wrap-word (1+ (cpu-pc cpu))))))
 
 ;;; Tasty Globals
