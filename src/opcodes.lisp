@@ -38,6 +38,8 @@
 ;; symbols, retrieve and funcall. Seems like just about everybody does 2).
 ;; Also, I should read more Sonya Keene, clearly.
 
+(defvar *opcodes* (make-array 256 :element-type 'symbol))
+
 (defmacro defins ((name opcode cycle-count &key addr-mode)
                   (&key docs) &body body)
   "Define an EQL-Specialized method on OPCODE named NAME. When DOCS are provided
@@ -46,11 +48,13 @@ convenience. If ADDR-MODE is nil, implied (imp) addressing is assumed."
   ;; TODO: Add ecase for addr-mode options as needed.
   ;; TODO: Use symbol-plist for byte-count and disassembly format str/metadata?
   (declare (ignore addr-mode)) ; for now
-  `(defmethod ,name ((opcode (eql ,opcode)))
-     ,@(when docs (list docs))
-     (let ((cpu *cpu*))
-       ,@body)
-     (incf (cpu-cc *cpu*) ,cycle-count)))
+  `(progn
+     (defmethod ,name ((opcode (eql ,opcode)))
+       ,@(when docs (list docs))
+       (let ((cpu *cpu*))
+         ,@body)
+       (incf (cpu-cc *cpu*) ,cycle-count))
+     (setf (aref *opcodes* ,opcode) ',name)))
 
 (defins (brk #x00 7)
     (:docs "Force Interrupt, 1 byte.")

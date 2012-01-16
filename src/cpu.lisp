@@ -16,8 +16,7 @@
   (ar 0      :type (unsigned-byte 8))  ;; accumulator
   (cc 0      :type fixnum))            ;; cycle counter
 
-
-;; CPU helpers
+;;; CPU helpers
 
 (defun wrap-byte (val)
   "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 8)),
@@ -42,7 +41,7 @@ i.e. a Program Counter address."
 
 (defun stack-push (value)
   "Push the given VALUE on the stack and decrement the SP."
-  (setf (aref *ram* (+ (cpu-sp *cpu*) 256)) (wrap-byte value))
+  (setf (get-byte (+ (cpu-sp *cpu*) 256)) (wrap-byte value))
   (decf (cpu-sp *cpu*))
   (wrap-stack *cpu*))
 
@@ -73,32 +72,40 @@ i.e. a Program Counter address."
 
 ;;; Addressing Modes
 
-(defmethod zero-page-address ((cpu cpu))
-  (get-byte (cpu-pc *cpu*)))
+;; Note: Implicit, Accumulator, Immediate and Indirect addressing modes can be
+;; implemented directly in the opcode and do not receive special support here.
 
-(defmethod zero-page-x-address ((cpu cpu))
-  (wrap-byte (+ (cpu-xr *cpu*) (get-byte (cpu-pc *cpu*)))))
+(defmethod zero-page ((cpu cpu))
+  (get-byte (cpu-pc cpu)))
 
-(defmethod zero-page-y-address ((cpu cpu))
-  (wrap-byte (+ (cpu-yr *cpu*) (get-byte (cpu-pc *cpu*)))))
+(defmethod zero-page-x ((cpu cpu))
+  (wrap-byte (+ (cpu-xr cpu) (zero-page cpu))))
 
-(defmethod indirect-x-address ((cpu cpu))
-  (get-word (wrap-byte (+ (get-byte (cpu-pc *cpu*)) (cpu-xr *cpu*))) t))
+(defmethod zero-page-y ((cpu cpu))
+  (wrap-byte (+ (cpu-yr cpu) (zero-page cpu))))
 
-(defmethod indirect-y-address ((cpu cpu))
-  'todo)
+(defmethod indirect-x ((cpu cpu))
+  (get-word (wrap-byte (+ (zero-page cpu) (cpu-xr cpu))) t))
 
-(defmethod absolute-address ((cpu cpu))
-  (get-word (cpu-pc *cpu*)))
+(defmethod indirect-y ((cpu cpu))
+  (wrap-word (+ (get-word (zero-page cpu) t) (cpu-yr cpu))))
 
-(defmethod absolute-x-address ((cpu cpu))
-  'todo)
+(defmethod absolute ((cpu cpu))
+  (get-word (cpu-pc cpu)))
 
-(defmethod absolute-y-address ((cpu cpu))
-  'todo)
+(defmethod absolute-x ((cpu cpu))
+  (wrap-word (+ (get-word (zero-page cpu)) (cpu-xr cpu))))
 
-(defmethod branch-relative-address ((cpu cpu))
-  'todo)
+(defmethod absolute-y ((cpu cpu))
+  (wrap-word (+ (get-word (zero-page cpu)) (cpu-yr cpu))))
+
+(defmethod branch-relative ((cpu cpu))
+  (let ((addr (zero-page cpu)))
+    (if (zerop (status-bit 1))
+        (wrap-word (if (zerop (logand addr 128))
+                       (- (cpu-pc cpu) (logxor addr 255))
+                       (+ (cpu-pc cpu) addr)))
+        (wrap-word (1+ (cpu-pc cpu))))))
 
 ;;; Tasty Globals
 
