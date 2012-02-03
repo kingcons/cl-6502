@@ -1,13 +1,3 @@
+MOAR UNIT TESTS! (opcodes+defopcode, addressing modes, helpers)
 Write the damn thing! Do the opcodes first.
-Addressing modes should have helper functions in cpu.lisp and a keyarg to defins.
--- Implied is the default (nil).
 Main loop after that, followed by disassembler+assembler?
-
-;; OPCODES:
-;; Write ORA tests.
-;; Write tests for address modes!
-;; Implement zero-page addressing for ora #x05.
-;; Also, extend defins to handle more than one version for different addr-modes?
-;; -- maybe make it a separate macro called defopcode?
-;; Implement... ALL THE OPCODES!
-;; Write tests for other CPU and RAM helpers. Objectify RAM?

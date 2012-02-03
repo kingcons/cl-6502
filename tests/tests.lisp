@@ -25,9 +25,14 @@ the old value when BODY finishes."
     (is (logbitp 4 (cpu-sr *cpu*)))
     (is (logbitp 2 (cpu-sr *cpu*)))))
 
-(test brk-adds-24bits-to-stack
-  ;; Program Counter (16) + Stack Pointer (8) == 24 bits
+(test brk-adds-3-bytes-to-stack
+  ;; Program Counter (2) + Stack Pointer (1) == 3 bytes
   ;; The stack is decremented from #xFF giving #xFC.
   (with-cpu
     (brk #x00)
     (is (= (cpu-sp *cpu*) #xfc))))
+
+(test ora-sets-flags
+  (with-cpu
+    (ora #x05)
+    (is (= (cpu-sr *cpu*) 2))))

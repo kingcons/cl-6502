@@ -70,6 +70,16 @@ i.e. a Program Counter address."
       (setf (ldb (byte 1 n) (cpu-sr *cpu*)) new-val)
       (error 'status-bit-error :index n)))
 
+(defun negative-p (value)
+  "Returns T if the two's complement representation of a number is negative.
+i.e. Has a 1 in the 7th bit position."
+  (= 1 (ldb (byte 1 7) value)))
+
+(defun update-flags (value)
+  "Set the zero and negative status bits based on VALUE."
+  (setf (status-bit 1) (if (zerop value) 1 0)
+        (status-bit 7) (if (negative-p value) 1 0)))
+
 ;;; Addressing Modes
 
 ;; Note: Implicit, Accumulator, Immediate and Indirect addressing modes can be

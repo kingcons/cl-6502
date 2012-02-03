@@ -3,6 +3,8 @@
   (:use :cl :alexandria)
   (:export #:*ram*
            #:*cpu*
+
+           ;; CPU Struct
            #:cpu
            #:make-cpu
            #:copy-cpu
@@ -13,5 +15,10 @@
            #:cpu-ar
            #:cpu-sr
            #:cpu-cc
+
+           ;; Opcodes
            #:brk
+           #:ora
+
+           ;; Helpers
            #:reset))
