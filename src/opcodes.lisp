@@ -58,11 +58,11 @@ convenience. If MODE is nil, implied (imp) addressing is assumed."
 (defmacro defopcode (name (&key docs) modes &body body)
   "Define instructions via DEFINS for each addressing mode listed in MODES
 supplying DOCS and BODY appropriately."
-  (map nil (lambda (mode)
-             `(defins (,name ,@mode)
-                  (:docs ,docs)
-                ,@body))
-       modes))
+  `(progn ,@(mapcar (lambda (mode)
+                      `(defins (,name ,@mode)
+                           (:docs ,docs)
+                         ,@body))
+                    modes)))
 
 (defins (brk #x00 7 1)
     (:docs "Force Interrupt.")
@@ -73,8 +73,10 @@ supplying DOCS and BODY appropriately."
     (setf (status-bit 2) 1)
     (setf (cpu-pc cpu) (get-word #xfffe))))
 
-(defins (asl #x06 5 2)
+(defopcode asl
     (:docs "Arithmetic Shift Left")
+    ((#x06 5 2 'zero-page)
+     (#x0a 2 1 '()))
   (let ((result (setf (cpu-ar cpu) (ash (cpu-ar cpu) 1))))
     (update-flags result)))
 
@@ -86,6 +88,7 @@ supplying DOCS and BODY appropriately."
     (:docs "Bitwise OR Accumulator")
   ((#x01 6 2 'indirect-x)
    (#x05 3 2 'zero-page)
-   (#x09 2 2 'zero-page))
+   (#x09 2 2 'zero-page)
+   (#x0d 4 3 'absolute))
   (let ((result (setf (cpu-ar cpu) (logior (cpu-ar cpu) (funcall mode cpu)))))
     (update-flags result)))

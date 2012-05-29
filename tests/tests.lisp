@@ -32,7 +32,7 @@ the old value when BODY finishes."
     (brk #x00)
     (is (= (cpu-sp *cpu*) #xfc))))
 
-(test ora-sets-flags
+(test ora-sets-zero-flag
   (with-cpu
     (ora #x05)
     (is (= (cpu-sr *cpu*) 2))))

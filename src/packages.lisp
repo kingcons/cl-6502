@@ -16,6 +16,17 @@
            #:cpu-sr
            #:cpu-cc
 
+           ;; Addressing Modes
+           #:zero-page
+           #:zero-page-x
+           #:zero-page-y
+           #:indirect-x
+           #:indirect-y
+           #:absolute
+           #:absolute-x
+           #:absolute-y
+           #:branch-relative
+
            ;; Opcodes
            #:brk
            #:ora

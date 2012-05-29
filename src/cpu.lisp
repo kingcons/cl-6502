@@ -70,10 +70,10 @@ i.e. a Program Counter address."
       (setf (ldb (byte 1 n) (cpu-sr *cpu*)) new-val)
       (error 'status-bit-error :index n)))
 
-(defun negative-p (value)
+(defun negative-p (value &optional (top-bit 7))
   "Returns T if the two's complement representation of a number is negative.
 i.e. Has a 1 in the 7th bit position."
-  (= 1 (ldb (byte 1 7) value)))
+  (= 1 (ldb (byte 1 top-bit) value)))
 
 (defun update-flags (value)
   "Set the zero and negative status bits based on VALUE."
