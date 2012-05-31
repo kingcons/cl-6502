@@ -18,7 +18,11 @@
 (defsystem #:cl-6502-tests
   :depends-on (cl-6502 fiveam)
   :pathname "tests/"
-  :components ((:file "tests")))
+  :serial t
+  :components ((:file "packages")
+               (:file "fixtures")
+               (:file "addressing")
+               (:file "opcodes")))
 
 (defmethod operation-done-p ((op test-op)
                              (c (eql (find-system :cl-6502))))

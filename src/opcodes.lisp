@@ -27,31 +27,19 @@
 ;; Allows the main loop to be pretty close to the above pseudocode.
 ;; Worth using sb-sprof sampling profiler to see just how much it hurts.
 
-;;;; IDEAS:
-;; 1) Store an array of methods, use ins as key, loop over instruction stream,
-;; get and run method which retrieves the arguments from the stream or stack,
-;; executes and then move on to the next thing.
-;; 2) Have a giant case statement that knows what arguments are needed and calls
-;; the appropriate opcode passing it the args.
-;; 1) is the option I'm leaning towards but we don't really want to store the
-;; method object returned by compute-applicable-methods. Instead, store the
-;; symbols, retrieve and funcall. Seems like just about everybody does 2).
-;; Also, I should read more Sonya Keene, clearly.
-
 (defvar *opcodes* (make-array 256 :element-type 'symbol))
 
 (defmacro defins ((name opcode cycle-count byte-count &optional mode)
                   (&key docs) &body body)
   "Define an EQL-Specialized method on OPCODE named NAME. When DOCS are provided
-they serve as its docstring. Execute BODY in a let that binds CPU to *CPU* for
-convenience. If MODE is nil, implied (imp) addressing is assumed."
+they serve as its docstring."
   ;; TODO: Use symbol-plist for byte-count and disassembly format str/metadata?
   (declare (ignore byte-count)) ; for now
   `(progn
-     (defmethod ,name ((opcode (eql ,opcode)) &key (mode ,mode))
+     (defmethod ,name ((opcode (eql ,opcode))
+                       &key (mode ,mode) (cpu *cpu*))
        ,@(when docs (list docs))
-       (let ((cpu *cpu*))
-         ,@body)
+       ,@body
        (incf (cpu-cc *cpu*) ,cycle-count))
      (setf (aref *opcodes* ,opcode) ',name)))
 
@@ -64,25 +52,22 @@ supplying DOCS and BODY appropriately."
                          ,@body))
                     modes)))
 
-(defins (brk #x00 7 1)
+(defopcode asl
+    (:docs "Arithmetic Shift Left")
+    ((#x06 5 2 'zero-page)
+     (#x0a 2 1 'implied))
+  (let ((result (setf (cpu-ar cpu) (ash (cpu-ar cpu) 1))))
+    (update-flags result)))
+
+(defopcode brk
     (:docs "Force Interrupt.")
+    ((#x00 7 1 'implied))
   (let ((pc (wrap-word (1+ (cpu-pc cpu)))))
     (stack-push-word pc)
     (setf (status-bit 4) 1)
     (stack-push (cpu-sr cpu))
     (setf (status-bit 2) 1)
     (setf (cpu-pc cpu) (get-word #xfffe))))
-
-(defopcode asl
-    (:docs "Arithmetic Shift Left")
-    ((#x06 5 2 'zero-page)
-     (#x0a 2 1 '()))
-  (let ((result (setf (cpu-ar cpu) (ash (cpu-ar cpu) 1))))
-    (update-flags result)))
-
-(defins (php #x08 3 1)
-    (:docs "Push Processor Status")
-  (stack-push (cpu-sr cpu)))
 
 (defopcode ora
     (:docs "Bitwise OR Accumulator")
@@ -92,3 +77,8 @@ supplying DOCS and BODY appropriately."
    (#x0d 4 3 'absolute))
   (let ((result (setf (cpu-ar cpu) (logior (cpu-ar cpu) (funcall mode cpu)))))
     (update-flags result)))
+
+(defopcode php
+    (:docs "Push Processor Status")
+    ((#x08 3 1 'implied))
+  (stack-push (cpu-sr cpu)))
