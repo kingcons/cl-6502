@@ -73,7 +73,7 @@ supplying DOCS and BODY appropriately."
     (:docs "Bitwise OR Accumulator")
   ((#x01 6 2 'indirect-x)
    (#x05 3 2 'zero-page)
-   (#x09 2 2 'zero-page)
+   (#x09 2 2 'immediate)
    (#x0d 4 3 'absolute))
   (let ((result (setf (cpu-ar cpu) (logior (cpu-ar cpu) (funcall mode cpu)))))
     (update-flags result)))

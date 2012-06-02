@@ -1,9 +1,11 @@
-(defpackage :6502
-  (:documentation "Homepage: <a href=\"http://github.com/redline6561/cl-6502\">Github</a>")
+(defpackage :6502-cpu
   (:use :cl :alexandria)
-  (:export #:*ram*
+  (:export ;; Conditions
+           #:6502-error
+           #:status-bit-error
+           ;; Globals
+           #:*ram*
            #:*cpu*
-
            ;; CPU Struct
            #:cpu
            #:make-cpu
@@ -15,8 +17,8 @@
            #:cpu-ar
            #:cpu-sr
            #:cpu-cc
-
            ;; Addressing Modes
+           #:immediate
            #:zero-page
            #:zero-page-x
            #:zero-page-y
@@ -26,10 +28,27 @@
            #:absolute-x
            #:absolute-y
            #:branch-relative
+           ;; Utils
+           #:reset
+           #:get-byte
+           #:get-word
+           #:wrap-byte
+           #:wrap-word
+           #:wrap-stack
+           #:wrap-page
+           #:stack-push
+           #:stack-push-word
+           #:stack-pop
+           #:stack-pop-word
+           #:status-bit
+           #:negative-p
+           #:update-flags))
 
-           ;; Opcodes
+(defpackage :6502
+  (:documentation "Homepage: <a href=\"http://github.com/redline6561/cl-6502\">Github</a>")
+  (:use :cl :alexandria :6502-cpu)
+  (:export ;; Opcodes
+           #:asl
            #:brk
            #:ora
-
-           ;; Helpers
-           #:reset))
+           #:php))

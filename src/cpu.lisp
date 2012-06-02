@@ -1,4 +1,4 @@
-(in-package :6502)
+(in-package :6502-cpu)
 
 ;; REFERENCES:
 ;; http://en.wikipedia.org/wiki/Emulator#Structure_of_an_emulator
@@ -16,7 +16,33 @@
   (ar 0      :type (unsigned-byte 8))  ;; accumulator
   (cc 0      :type fixnum))            ;; cycle counter
 
-;;; CPU helpers
+;;; Tasty Globals
+
+(defparameter *ram* nil
+  "A lovely hunk of bytes.")
+
+(defparameter *cpu* nil
+  "The 6502 instance used by opcodes in the package.")
+
+;;; Helpers
+
+(defun reset ()
+  "Reset the virtual machine to an initial state."
+  (setf *ram* (make-array (expt 2 16) :element-type '(unsigned-byte 8))
+        *cpu* (make-cpu)))
+
+(defun get-byte (address)
+  "Get a byte from RAM at the given address."
+  (aref *ram* address))
+
+(defun (setf get-byte) (new-val address)
+  "Set ADDRESS in *ram* to NEW-VAL."
+  (setf (aref *ram* address) new-val))
+
+(defun get-word (address &optional wrap-p)
+  "Get a word from RAM starting at the given address."
+  (+ (get-byte address)
+     (ash (get-byte (if wrap-p (wrap-page address) (1+ address))) 8)))
 
 (defun wrap-byte (val)
   "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 8)),
@@ -45,16 +71,16 @@ i.e. a Program Counter address."
   (decf (cpu-sp *cpu*))
   (wrap-stack *cpu*))
 
+(defun stack-push-word (value)
+  "Push the 16-bit word VALUE onto the stack."
+  (stack-push (wrap-byte (ash value -8)))
+  (stack-push (wrap-byte value)))
+
 (defun stack-pop ()
   "Pop the value pointed to by the SP and increment the SP."
   (incf (cpu-sp *cpu*))
   (wrap-stack *cpu*)
   (get-byte (+ (cpu-sp *cpu*) 256)))
-
-(defun stack-push-word (value)
-  "Push the 16-bit word VALUE onto the stack."
-  (stack-push (wrap-byte (ash value -8)))
-  (stack-push (wrap-byte value)))
 
 (defun stack-pop-word ()
   "Pop a 16-bit word off the stack."
@@ -81,9 +107,11 @@ i.e. Has a 1 in the 7th bit position."
         (status-bit 7) (if (negative-p value) 1 0)))
 
 ;;; Addressing Modes
+; Note: Implicit, Accumulator, and Indirect addressing modes can be
+; implemented directly in the opcode and do not receive special support here.
 
-;; Note: Implicit, Accumulator, Immediate and Indirect addressing modes can be
-;; implemented directly in the opcode and do not receive special support here.
+(defmethod immediate ((cpu cpu))
+  (zero-page cpu))
 
 (defmethod zero-page ((cpu cpu))
   (get-byte (cpu-pc cpu)))
@@ -116,33 +144,3 @@ i.e. Has a 1 in the 7th bit position."
                        (- (cpu-pc cpu) (logxor addr 255))
                        (+ (cpu-pc cpu) addr)))
         (wrap-word (1+ (cpu-pc cpu))))))
-
-;;; Tasty Globals
-
-(defparameter *ram* nil
-  "A lovely hunk of bytes.")
-
-(defparameter *cpu* nil
-  "The 6502 instance used by opcodes in the package.")
-
-;;; RAM helpers
-
-(defun get-byte (address)
-  "Get a byte from RAM at the given address."
-  (aref *ram* address))
-
-(defun (setf get-byte) (new-val address)
-  "Set ADDRESS in *ram* to NEW-VAL."
-  (setf (aref *ram* address) new-val))
-
-(defun get-word (address &optional wrap-p)
-  "Get a word from RAM starting at the given address."
-  (+ (get-byte address)
-     (ash (get-byte (if wrap-p (wrap-page address) (1+ address))) 8)))
-
-;;; Machine helpers
-
-(defun reset ()
-  "Reset the virtual machine to an initial state."
-  (setf *ram* (make-array (expt 2 16) :element-type '(unsigned-byte 8))
-        *cpu* (make-cpu)))
