@@ -10,7 +10,7 @@
   "A 6502 CPU with an extra slot for tracking the cycle count/clock ticks."
   (pc #xfffc :type (unsigned-byte 16)) ;; program counter
   (sp #xff   :type (unsigned-byte 8))  ;; stack pointer
-  (sr 0      :type (unsigned-byte 8))  ;; status register
+  (sr #x30   :type (unsigned-byte 8))  ;; status register
   (xr 0      :type (unsigned-byte 8))  ;; x register
   (yr 0      :type (unsigned-byte 8))  ;; y register
   (ar 0      :type (unsigned-byte 8))  ;; accumulator
@@ -44,6 +44,16 @@
   (+ (get-byte address)
      (ash (get-byte (if wrap-p (wrap-page address) (1+ address))) 8)))
 
+(defun get-range (start &optional end)
+  "Get a range of bytes from RAM, starting from START and stopping at END if
+provided."
+  (subseq *ram* start end))
+
+(defun (setf get-range) (bytevector start)
+  "Replace the contents of RAM, starting from START with BYTEVECTOR."
+  (let ((size (length bytevector)))
+    (setf (subseq *ram* start (+ start size)) bytevector)))
+
 (defun wrap-byte (val)
   "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 8)),
 i.e. a Stack Pointer or general purpose register."
@@ -59,9 +69,8 @@ i.e. a Program Counter address."
   (setf (cpu-sp cpu) (wrap-byte (cpu-sp cpu))))
 
 (defun wrap-page (address)
-  ;; TODO: Give this an appropriate docstring. What problem does it solve?
-  ;; see py65 commit 44e4d9bc6cadcb679af7d516ee1aea9f436c03d8
-  ;; wrap-page differs from wrap-word when the last two bytes are #xff
+  "Wrap the given ADDRESS, ensuring that we don't overflow. i.e. When the last
+two bytes of ADDRESS are #xff."
   (+ (logand address #xff00)
      (logand (1+ address) #xff)))
 

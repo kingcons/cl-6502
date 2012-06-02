@@ -32,6 +32,7 @@
            #:reset
            #:get-byte
            #:get-word
+           #:get-range
            #:wrap-byte
            #:wrap-word
            #:wrap-stack
