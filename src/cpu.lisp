@@ -57,12 +57,12 @@ provided."
 (defun wrap-byte (val)
   "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 8)),
 i.e. a Stack Pointer or general purpose register."
-  (logand val 255))
+  (logand val #xff))
 
 (defun wrap-word (val)
   "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 16)),
 i.e. a Program Counter address."
-  (logand val 65535))
+  (logand val #xffff))
 
 (defmethod wrap-stack ((cpu cpu))
   "Wrap the stack pointer."
@@ -76,7 +76,7 @@ two bytes of ADDRESS are #xff."
 
 (defun stack-push (value)
   "Push the given VALUE on the stack and decrement the SP."
-  (setf (get-byte (+ (cpu-sp *cpu*) 256)) (wrap-byte value))
+  (setf (get-byte (+ (cpu-sp *cpu*) #xff)) (wrap-byte value))
   (decf (cpu-sp *cpu*))
   (wrap-stack *cpu*))
 
@@ -89,7 +89,7 @@ two bytes of ADDRESS are #xff."
   "Pop the value pointed to by the SP and increment the SP."
   (incf (cpu-sp *cpu*))
   (wrap-stack *cpu*)
-  (get-byte (+ (cpu-sp *cpu*) 256)))
+  (get-byte (+ (cpu-sp *cpu*) #xff)))
 
 (defun stack-pop-word ()
   "Pop a 16-bit word off the stack."
@@ -115,9 +115,10 @@ i.e. Has a 1 in the 7th bit position."
   (setf (status-bit 1) (if (zerop value) 1 0)
         (status-bit 7) (if (negative-p value) 1 0)))
 
-(defun maybe-update-cycle-count (cpu address)
-  "If ADDRESS crosses a page boundary, add an extra cycle to CPU's count."
-  (when (not (= (logand (absolute cpu) #xff00)
+(defun maybe-update-cycle-count (cpu address &optional start)
+  "If ADDRESS crosses a page boundary, add an extra cycle to CPU's count. If
+START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
+  (when (not (= (logand (or start (absolute cpu)) #xff00)
                 (logand address #xff00)))
     (incf (cpu-cc cpu))))
 
@@ -157,9 +158,12 @@ i.e. Has a 1 in the 7th bit position."
     result))
 
 (defmethod branch-relative ((cpu cpu))
-  (let ((addr (zero-page cpu)))
-    (if (zerop (status-bit 1))
-        (wrap-word (if (zerop (logand addr 128))
-                       (- (cpu-pc cpu) (logxor addr 255))
-                       (+ (cpu-pc cpu) addr)))
-        (wrap-word (1+ (cpu-pc cpu))))))
+  (let ((addr (zero-page cpu))
+        (result nil))
+    (incf (cpu-cc cpu))
+    (incf (cpu-pc cpu))
+    (if (not (zerop (logand addr #x80)))
+        (setf result (wrap-word (- (cpu-pc cpu) (logxor addr #xff) 1)))
+        (setf result (wrap-word (+ (cpu-pc cpu) addr))))
+    (maybe-update-cycle-count cpu result (cpu-pc cpu))
+    result))
