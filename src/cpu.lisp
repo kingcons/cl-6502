@@ -115,7 +115,14 @@ i.e. Has a 1 in the 7th bit position."
   (setf (status-bit 1) (if (zerop value) 1 0)
         (status-bit 7) (if (negative-p value) 1 0)))
 
-;;; Addressing Modes
+(defun maybe-update-cycle-count (cpu offset)
+  "If the OFFSET will cause a page boundary to be crossed, add an extra cycle."
+  (let ((index (absolute cpu)))
+    (when (not (= (logand index #xff00)
+                  (logand (+ index offset) #xff00)))
+      (incf (cpu-cc cpu)))))
+
+;;; Addressing
 ; Note: Implicit, Accumulator, and Indirect addressing modes can be
 ; implemented directly in the opcode and do not receive special support here.
 
@@ -141,10 +148,14 @@ i.e. Has a 1 in the 7th bit position."
   (get-word (cpu-pc cpu)))
 
 (defmethod absolute-x ((cpu cpu))
-  (wrap-word (+ (get-word (zero-page cpu)) (cpu-xr cpu))))
+  (let ((result (wrap-word (+ (get-word (zero-page cpu)) (cpu-xr cpu)))))
+    (maybe-update-cycle-count cpu (cpu-xr cpu))
+    result))
 
 (defmethod absolute-y ((cpu cpu))
-  (wrap-word (+ (get-word (zero-page cpu)) (cpu-yr cpu))))
+  (let ((result (wrap-word (+ (get-word (zero-page cpu)) (cpu-yr cpu)))))
+    (maybe-update-cycle-count cpu (cpu-yr cpu)))
+    result))
 
 (defmethod branch-relative ((cpu cpu))
   (let ((addr (zero-page cpu)))
