@@ -56,12 +56,12 @@ provided."
 
 (defun wrap-byte (val)
   "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 8)),
-i.e. a Stack Pointer or general purpose register."
+e.g. a Stack Pointer or general purpose register."
   (logand val #xff))
 
 (defun wrap-word (val)
   "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 16)),
-i.e. a Program Counter address."
+e.g. a Program Counter address."
   (logand val #xffff))
 
 (defmethod wrap-stack ((cpu cpu))
@@ -69,8 +69,8 @@ i.e. a Program Counter address."
   (setf (cpu-sp cpu) (wrap-byte (cpu-sp cpu))))
 
 (defun wrap-page (address)
-  "Wrap the given ADDRESS, ensuring that we don't overflow. i.e. When the last
-two bytes of ADDRESS are #xff."
+  "Wrap the given ADDRESS, ensuring that we don't cross a page boundary.
+e.g. When the last two bytes of ADDRESS are #xff."
   (+ (logand address #xff00)
      (logand (1+ address) #xff)))
 
@@ -133,16 +133,19 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
   (get-byte (cpu-pc cpu)))
 
 (defmethod zero-page-x ((cpu cpu))
-  (wrap-byte (+ (cpu-xr cpu) (zero-page cpu))))
+  (wrap-byte (+ (zero-page cpu) (cpu-xr cpu))))
 
 (defmethod zero-page-y ((cpu cpu))
-  (wrap-byte (+ (cpu-yr cpu) (zero-page cpu))))
+  (wrap-byte (+ (zero-page cpu) (cpu-yr cpu))))
 
-(defmethod indirect-x ((cpu cpu))
+(defmethod indirect-x ((cpu cpu)) ;; aka Post-indexed Indirect
   (get-word (wrap-byte (+ (zero-page cpu) (cpu-xr cpu))) t))
 
-(defmethod indirect-y ((cpu cpu))
-  (wrap-word (+ (get-word (zero-page cpu) t) (cpu-yr cpu))))
+(defmethod indirect-y ((cpu cpu)) ;; aka Pre-indexed Indirect
+  (let* ((addr (get-word (zero-page-cpu) t))
+         (result (wrap-word (+ addr (cpu-yr cpu)))))
+    (maybe-update-cycle-count cpu result addr)
+    result))
 
 (defmethod absolute ((cpu cpu))
   (get-word (cpu-pc cpu)))

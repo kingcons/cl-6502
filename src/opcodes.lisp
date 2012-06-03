@@ -52,6 +52,10 @@ supplying DOCS and BODY appropriately."
                          ,@body))
                     modes)))
 
+;; TODO: What do we do about problematic opcodes like AND and BIT?
+;; Insane to shadow. Suffix with something?
+;; ANDA, BITA -- since they're assembly and work on the accumulator?
+
 (defopcode asl
     (:docs "Arithmetic Shift Left")
     ((#x06 5 2 'zero-page)
@@ -60,7 +64,7 @@ supplying DOCS and BODY appropriately."
     (update-flags result)))
 
 (defopcode brk
-    (:docs "Force Interrupt.")
+    (:docs "Force Break")
     ((#x00 7 1 'implied))
   (let ((pc (wrap-word (1+ (cpu-pc cpu)))))
     (stack-push-word pc)
@@ -70,7 +74,7 @@ supplying DOCS and BODY appropriately."
     (setf (cpu-pc cpu) (get-word #xfffe))))
 
 (defopcode ora
-    (:docs "Bitwise OR Accumulator")
+    (:docs "Bitwise OR with Accumulator")
   ((#x01 6 2 'indirect-x)
    (#x05 3 2 'zero-page)
    (#x09 2 2 'immediate)
