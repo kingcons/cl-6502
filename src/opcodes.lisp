@@ -47,14 +47,14 @@
 
 (defopcode ora
     (:docs "Bitwise OR with Accumulator")
-  ((#x01 6 2 :indirect-x)
-   (#x05 3 2 :zero-page)
-   (#x09 2 2 :immediate)
-   (#x0d 4 3 :absolute)
-   (#x10 4 3 :absolute-x)
-   (#x11 5 2 :indirect-y)
-   (#x15 4 2 :zero-page-x)
-   (#x19 4 3 :absolute-y))
+    ((#x01 6 2 :indirect-x)
+     (#x05 3 2 :zero-page)
+     (#x09 2 2 :immediate)
+     (#x0d 4 3 :absolute)
+     (#x10 4 3 :absolute-x)
+     (#x11 5 2 :indirect-y)
+     (#x15 4 2 :zero-page-x)
+     (#x19 4 3 :absolute-y))
   (let ((result (setf (cpu-ar cpu) (logior (cpu-ar cpu) (funcall mode cpu)))))
     (update-flags result)))
 
