@@ -19,10 +19,10 @@
 
 ;;; Tasty Globals
 
-(defparameter *ram* nil
+(defparameter *ram* (make-array (expt 2 16) :element-type '(unsigned-byte 8))
   "A lovely hunk of bytes.")
 
-(defparameter *cpu* nil
+(defparameter *cpu* (make-cpu)
   "The 6502 instance used by opcodes in the package.")
 
 ;;; Helpers
@@ -32,13 +32,13 @@
   (setf *ram* (make-array (expt 2 16) :element-type '(unsigned-byte 8))
         *cpu* (make-cpu)))
 
-(defmethod get-instruction ((opcode fixnum) (cpu cpu))
+(defun get-instruction (opcode)
   "Get the mnemonic for OPCODE. Returns a symbol to be funcalled."
-  (aref (cpu-opcodes cpu) opcode))
+  (aref (cpu-opcodes *cpu*) opcode))
 
 (defun (setf get-instruction) (sym opcode)
   "Set the mnemonic for OPCODE to SYM. SYM should be a funcallable symbol."
-  (setf (aref (cpu-opcodes cpu) opcode) sym))
+  (setf (aref (cpu-opcodes *cpu*) opcode) sym))
 
 (defun get-byte (address)
   "Get a byte from RAM at the given address."
@@ -200,12 +200,14 @@ funcalled and get-byte is called on the subsequent address."
                             (get-byte (,(intern (princ-to-string mode)) cpu))))
                 (symbol mode))))
     `(progn
-       (defmethod ,name ((opcode (eql ,opcode))
-                         &key (mode ,addr) (cpu *cpu*))
+       ;; KLUDGE: Why do I have to intern these symbols so they are created
+       ;; in the correct package, i.e. the calling package rather than 6502-cpu?
+       (defmethod ,name ((,(intern "OPCODE") (eql ,opcode))
+                         &key (,(intern "MODE") ,addr) (cpu *cpu*))
          ,@(when docs (list docs))
          ,@body
-         (incf (cpu-cc *cpu*) ,cycle-count))
-       (setf (get-instruction opcode cpu) ',name))))
+         (incf (cpu-cc cpu) ,cycle-count))
+       (setf (get-instruction ,opcode) ',name))))
 
 (defmacro defopcode (name (&key docs) modes &body body)
   "Define instructions via DEFINS for each addressing mode listed in MODES
