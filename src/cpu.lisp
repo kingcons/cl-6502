@@ -123,14 +123,19 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
     (incf (cpu-cc cpu))))
 
 ;;; Addressing
-; Note: Implicit, Accumulator, and Indirect addressing modes can be
-; implemented directly in the opcode and do not receive special support here.
+;; Notes:
+; The common case is that we want the byte pointed to by an address,
+; not the address itself. Unfortunately, stores require the actual address
+; as we can't setf a value. Thus, we'll have these methods return addresses
+; and defins will generate the get-byte calls. Implicit, Accumulator, and
+; Indirect addressing modes can be implemented directly in the opcode and
+; do not receive special support here.
 
 (defmethod immediate ((cpu cpu))
-  (zero-page cpu))
+  (cpu-pc cpu))
 
 (defmethod zero-page ((cpu cpu))
-  (get-byte (cpu-pc cpu)))
+  (get-byte (immediate cpu)))
 
 (defmethod zero-page-x ((cpu cpu))
   (wrap-byte (+ (zero-page cpu) (cpu-xr cpu))))

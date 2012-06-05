@@ -29,19 +29,25 @@
 
 (defvar *opcodes* (make-array 256 :element-type 'symbol))
 
-(defmacro defins ((name opcode cycle-count byte-count &optional mode)
+(defmacro defins ((name opcode cycle-count byte-count mode)
                   (&key docs) &body body)
   "Define an EQL-Specialized method on OPCODE named NAME. When DOCS are provided
-they serve as its docstring."
+they serve as its docstring. MODE must be a symbol or keyword. If MODE is a
+symbol, it is funcalled to retrieve an address. If MODE is a keyword, it is
+funcalled and get-byte is called on the subsequent address."
   ;; TODO: Use symbol-plist for byte-count and disassembly format str/metadata?
   (declare (ignore byte-count)) ; for now
-  `(progn
-     (defmethod ,name ((opcode (eql ,opcode))
-                       &key (mode ,mode) (cpu *cpu*))
-       ,@(when docs (list docs))
-       ,@body
-       (incf (cpu-cc *cpu*) ,cycle-count))
-     (setf (aref *opcodes* ,opcode) ',name)))
+  (let ((addr (etypecase mode
+                (keyword `(lambda (cpu)
+                            (get-byte (,(intern (princ-to-string mode)) cpu))))
+                (symbol mode))))
+    `(progn
+       (defmethod ,name ((opcode (eql ,opcode))
+                         &key (mode ,addr) (cpu *cpu*))
+         ,@(when docs (list docs))
+         ,@body
+         (incf (cpu-cc *cpu*) ,cycle-count))
+       (setf (aref *opcodes* ,opcode) ',name))))
 
 (defmacro defopcode (name (&key docs) modes &body body)
   "Define instructions via DEFINS for each addressing mode listed in MODES
@@ -58,14 +64,14 @@ supplying DOCS and BODY appropriately."
 
 (defopcode asl
     (:docs "Arithmetic Shift Left")
-    ((#x06 5 2 'zero-page)
-     (#x0a 2 1 'implied))
+    ((#x06 5 2 :zero-page)
+     (#x0a 2 1 :implied))
   (let ((result (setf (cpu-ar cpu) (ash (cpu-ar cpu) 1))))
     (update-flags result)))
 
 (defopcode brk
     (:docs "Force Break")
-    ((#x00 7 1 'implied))
+    ((#x00 7 1 :implied))
   (let ((pc (wrap-word (1+ (cpu-pc cpu)))))
     (stack-push-word pc)
     (setf (status-bit 4) 1)
@@ -75,18 +81,18 @@ supplying DOCS and BODY appropriately."
 
 (defopcode ora
     (:docs "Bitwise OR with Accumulator")
-  ((#x01 6 2 'indirect-x)
-   (#x05 3 2 'zero-page)
-   (#x09 2 2 'immediate)
-   (#x0d 4 3 'absolute)
-   (#x10 4 3 'absolute-x)
-   (#x11 5 2 'indirect-y)
-   (#x15 4 2 'zero-page-x)
-   (#x19 4 3 'absolute-y))
+  ((#x01 6 2 :indirect-x)
+   (#x05 3 2 :zero-page)
+   (#x09 2 2 :immediate)
+   (#x0d 4 3 :absolute)
+   (#x10 4 3 :absolute-x)
+   (#x11 5 2 :indirect-y)
+   (#x15 4 2 :zero-page-x)
+   (#x19 4 3 :absolute-y))
   (let ((result (setf (cpu-ar cpu) (logior (cpu-ar cpu) (funcall mode cpu)))))
     (update-flags result)))
 
 (defopcode php
     (:docs "Push Processor Status")
-    ((#x08 3 1 'implied))
+    ((#x08 3 1 :implied))
   (stack-push (cpu-sr cpu)))
