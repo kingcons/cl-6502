@@ -1,6 +1,6 @@
 (in-package :6502-cpu)
 
-;; REFERENCES:
+;;;; REFERENCES:
 ;; http://en.wikipedia.org/wiki/Emulator#Structure_of_an_emulator
 ;; http://www.obelisk.demon.co.uk/6502/registers.html
 ;; http://code.google.com/p/applepy/source/browse/trunk/processor.py
@@ -8,13 +8,14 @@
 
 (defstruct cpu
   "A 6502 CPU with an extra slot for tracking the cycle count/clock ticks."
-  (pc #xfffc :type (unsigned-byte 16)) ;; program counter
-  (sp #xff   :type (unsigned-byte 8))  ;; stack pointer
-  (sr #x30   :type (unsigned-byte 8))  ;; status register
-  (xr 0      :type (unsigned-byte 8))  ;; x register
-  (yr 0      :type (unsigned-byte 8))  ;; y register
-  (ar 0      :type (unsigned-byte 8))  ;; accumulator
-  (cc 0      :type fixnum))            ;; cycle counter
+  (opcodes (make-array 256 :element-type 'symbol)) ;; opcode->symbol map
+  (pc #xfffc :type (unsigned-byte 16))             ;; program counter
+  (sp #xff   :type (unsigned-byte 8))              ;; stack pointer
+  (sr #x30   :type (unsigned-byte 8))              ;; status register
+  (xr 0      :type (unsigned-byte 8))              ;; x register
+  (yr 0      :type (unsigned-byte 8))              ;; y register
+  (ar 0      :type (unsigned-byte 8))              ;; accumulator
+  (cc 0      :type fixnum))                        ;; cycle counter
 
 ;;; Tasty Globals
 
@@ -30,6 +31,14 @@
   "Reset the virtual machine to an initial state."
   (setf *ram* (make-array (expt 2 16) :element-type '(unsigned-byte 8))
         *cpu* (make-cpu)))
+
+(defmethod get-instruction ((opcode fixnum) (cpu cpu))
+  "Get the mnemonic for OPCODE. Returns a symbol to be funcalled."
+  (aref (cpu-opcodes cpu) opcode))
+
+(defun (setf get-instruction) (sym opcode)
+  "Set the mnemonic for OPCODE to SYM. SYM should be a funcallable symbol."
+  (setf (aref (cpu-opcodes cpu) opcode) sym))
 
 (defun get-byte (address)
   "Get a byte from RAM at the given address."
@@ -175,3 +184,34 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
         (setf result (wrap-word (+ (cpu-pc cpu) addr))))
     (maybe-update-cycle-count cpu result (cpu-pc cpu))
     result))
+
+;;; Opcode Macrology
+
+(defmacro defins ((name opcode cycle-count byte-count mode)
+                  (&key docs) &body body)
+  "Define an EQL-Specialized method on OPCODE named NAME. When DOCS are provided
+they serve as its docstring. MODE must be a symbol or keyword. If MODE is a
+symbol, it is funcalled to retrieve an address. If MODE is a keyword, it is
+funcalled and get-byte is called on the subsequent address."
+  ;; TODO: Use symbol-plist for byte-count and disassembly format str/metadata?
+  (declare (ignore byte-count)) ; for now
+  (let ((addr (etypecase mode
+                (keyword `(lambda (cpu)
+                            (get-byte (,(intern (princ-to-string mode)) cpu))))
+                (symbol mode))))
+    `(progn
+       (defmethod ,name ((opcode (eql ,opcode))
+                         &key (mode ,addr) (cpu *cpu*))
+         ,@(when docs (list docs))
+         ,@body
+         (incf (cpu-cc *cpu*) ,cycle-count))
+       (setf (get-instruction opcode cpu) ',name))))
+
+(defmacro defopcode (name (&key docs) modes &body body)
+  "Define instructions via DEFINS for each addressing mode listed in MODES
+supplying DOCS and BODY appropriately."
+  `(progn ,@(mapcar (lambda (mode)
+                      `(defins (,name ,@mode)
+                           (:docs ,docs)
+                         ,@body))
+                    modes)))

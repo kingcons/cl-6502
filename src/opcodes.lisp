@@ -1,6 +1,6 @@
 (in-package :6502)
 
-;; REFERENCES:
+;;;; REFERENCES:
 ;; http://www.obelisk.demon.co.uk/6502/reference.html
 ;; http://www.obelisk.demon.co.uk/6502/addressing.html
 ;; http://www.6502.org/tutorials/6502opcodes.html
@@ -27,45 +27,11 @@
 ;; Allows the main loop to be pretty close to the above pseudocode.
 ;; Worth using sb-sprof sampling profiler to see just how much it hurts.
 
-(defvar *opcodes* (make-array 256 :element-type 'symbol))
-
-(defmacro defins ((name opcode cycle-count byte-count mode)
-                  (&key docs) &body body)
-  "Define an EQL-Specialized method on OPCODE named NAME. When DOCS are provided
-they serve as its docstring. MODE must be a symbol or keyword. If MODE is a
-symbol, it is funcalled to retrieve an address. If MODE is a keyword, it is
-funcalled and get-byte is called on the subsequent address."
-  ;; TODO: Use symbol-plist for byte-count and disassembly format str/metadata?
-  (declare (ignore byte-count)) ; for now
-  (let ((addr (etypecase mode
-                (keyword `(lambda (cpu)
-                            (get-byte (,(intern (princ-to-string mode)) cpu))))
-                (symbol mode))))
-    `(progn
-       (defmethod ,name ((opcode (eql ,opcode))
-                         &key (mode ,addr) (cpu *cpu*))
-         ,@(when docs (list docs))
-         ,@body
-         (incf (cpu-cc *cpu*) ,cycle-count))
-       (setf (aref *opcodes* ,opcode) ',name))))
-
-(defmacro defopcode (name (&key docs) modes &body body)
-  "Define instructions via DEFINS for each addressing mode listed in MODES
-supplying DOCS and BODY appropriately."
-  `(progn ,@(mapcar (lambda (mode)
-                      `(defins (,name ,@mode)
-                           (:docs ,docs)
-                         ,@body))
-                    modes)))
-
-;; TODO: What do we do about problematic opcodes like AND and BIT?
-;; Insane to shadow. Suffix with something?
-;; ANDA, BITA -- since they're assembly and work on the accumulator?
-
 (defopcode asl
     (:docs "Arithmetic Shift Left")
     ((#x06 5 2 :zero-page)
      (#x0a 2 1 :implied))
+  ;; TODO: Implement carry handling.
   (let ((result (setf (cpu-ar cpu) (ash (cpu-ar cpu) 1))))
     (update-flags result)))
 

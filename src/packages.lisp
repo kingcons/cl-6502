@@ -30,6 +30,7 @@
            #:branch-relative
            ;; Utils
            #:reset
+           #:get-instruction
            #:get-byte
            #:get-word
            #:get-range
@@ -43,7 +44,10 @@
            #:stack-pop-word
            #:status-bit
            #:negative-p
-           #:update-flags))
+           #:update-flags
+           ;; Opcode Macrology
+           #:defins
+           #:defopcode))
 
 (defpackage :6502
   (:documentation "Homepage: <a href=\"http://github.com/redline6561/cl-6502\">Github</a>")
@@ -52,4 +56,7 @@
            #:asl
            #:brk
            #:ora
-           #:php))
+           #:php)
+  ;; Note: BE NOT AFRAID, DEVELOPERS! (But also, don't :use this package.)
+  (:shadow #:bit
+           #:and))
