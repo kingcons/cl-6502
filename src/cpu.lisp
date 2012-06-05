@@ -1,8 +1,8 @@
 (in-package :6502-cpu)
 
 ;;;; REFERENCES:
-;; http://en.wikipedia.org/wiki/Emulator#Structure_of_an_emulator
 ;; http://www.obelisk.demon.co.uk/6502/registers.html
+;; http://www.obelisk.demon.co.uk/6502/addressing.html
 ;; http://code.google.com/p/applepy/source/browse/trunk/processor.py
 ;; https://github.com/jaoswald/cl-comfy-6502/blob/master/6502-opcodes.lisp
 
@@ -44,6 +44,12 @@
   "A mapping of opcodes to instruction mnemonics.")
 
 ;;; Helpers
+
+(defmethod step ((cpu cpu))
+  "Step the CPU through the next instruction."
+  (let ((opcode (immediate cpu)))
+    (setf (cpu-pc cpu) (wrap-word (1+ (cpu-pc cpu))))
+    (funcall (get-instruction opcode) opcode)))
 
 (defun reset ()
   "Reset the virtual machine to an initial state."

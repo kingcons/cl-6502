@@ -2,7 +2,6 @@
 
 ;;;; REFERENCES:
 ;; http://www.obelisk.demon.co.uk/6502/reference.html
-;; http://www.obelisk.demon.co.uk/6502/addressing.html
 ;; http://www.6502.org/tutorials/6502opcodes.html
 ;; http://nesdev.parodius.com/6502.txt
 ;; https://github.com/mnaberez/py65/blob/master/src/py65/devices/mpu6502.py
@@ -13,19 +12,7 @@
 ;; Plus who wants one big case statement for a CPU? Ugh. Abstract!
 ;; Performance is less interesting than cool features and crazy hacks.
 ;; Optimize later! See Frodo redpill + ICU64 for an example of what's possible.
-
-;;;; NOTES:
-;; I originally was thinking opcodes would specialize on the cpu instance and
-;; dispatch addressing mode internally. Changed my mind. Eql specializers on
-;; the opcodes themselves with instructions named after the mnemonics. The
-;; remaining question is how to dispatch/call the method in the first place.
-;; Current plan? (loop (let ((opcode (cpu-pc cpu)))
-;;                       (setf (cpu-pc cpu) (wrap-word (1+ (cpu-pc cpu))))
-;;                       (funcall (get-instruction opcode) opcode)))
-;; This is wasteful of space and some computation but simple/entertaining.
-;; Allows argument handling to reside with the methods not the main loop.
-;; Allows the main loop to be pretty close to the above pseudocode.
-;; Worth using sb-sprof sampling profiler to see just how much it hurts.
+;; Worth using sb-sprof sampling profiler to find low hanging fruit.
 
 (defopcode asl
     (:docs "Arithmetic Shift Left")
