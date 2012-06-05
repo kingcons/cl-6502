@@ -8,7 +8,6 @@
 
 (defstruct cpu
   "A 6502 CPU with an extra slot for tracking the cycle count/clock ticks."
-  (opcodes (make-array 256 :element-type 'symbol)) ;; opcode->symbol map
   (pc #xfffc :type (unsigned-byte 16))             ;; program counter
   (sp #xff   :type (unsigned-byte 8))              ;; stack pointer
   (sr #x30   :type (unsigned-byte 8))              ;; status register
@@ -25,6 +24,25 @@
 (defparameter *cpu* (make-cpu)
   "The 6502 instance used by opcodes in the package.")
 
+(defparameter *opcodes*
+  #(brk ora nil nil nil ora asl nil php ora asl nil nil ora asl
+    bpl ora nil nil nil ora asl nil clc ora nil nil nil ora asl
+    jsr and nil nil bit and rol nil plp and rol nil bit and rol
+    bmi and nil nil nil and rol nil sec and nil nil nil and rol
+    rti eor nil nil nil eor lsr nil pha eor lsr nil jmp eor lsr
+    bvc eor nil nil nil eor lsr nil cli eor nil nil nil eor lsr
+    rts adc nil nil nil adc ror nil pla adc ror nil jmp adc ror
+    bvs adc nil nil nil adc ror nil sei adc nil nil nil adc ror
+    nil sta nil nil sty sta stx nil dey nil txa nil sty sta stx
+    bcc sta nil nil sty sta stx nil tya sta txs nil nil sta nil
+    ldy lda ldx nil ldy lda ldx nil tay lda tax nil ldy lda ldx
+    bcs lda nil nil ldy lda ldx nil clv lda tsx nil ldy lda ldx
+    cpy cmp nil nil cpy cmp dec nil iny cmp dex nil cpy cmp dec
+    bne cmp nil nil nil cmp dec nil cld cmp nil nil nil cmp dec
+    cpx sbc nil nil cpx sbc inc nil inx sbc nop nil cpx sbc inc
+    beq sbc nil nil nil sbc inc nil sed sbc nil nil nil sbc inc)
+  "A mapping of opcodes to instruction mnemonics.")
+
 ;;; Helpers
 
 (defun reset ()
@@ -34,11 +52,11 @@
 
 (defun get-instruction (opcode)
   "Get the mnemonic for OPCODE. Returns a symbol to be funcalled."
-  (aref (cpu-opcodes *cpu*) opcode))
+  (aref *opcodes* opcode))
 
 (defun (setf get-instruction) (sym opcode)
   "Set the mnemonic for OPCODE to SYM. SYM should be a funcallable symbol."
-  (setf (aref (cpu-opcodes *cpu*) opcode) sym))
+  (setf (aref *opcodes* opcode) sym))
 
 (defun get-byte (address)
   "Get a byte from RAM at the given address."
@@ -199,15 +217,13 @@ funcalled and get-byte is called on the subsequent address."
                 (keyword `(lambda (cpu)
                             (get-byte (,(intern (princ-to-string mode)) cpu))))
                 (symbol mode))))
-    `(progn
-       ;; KLUDGE: Why do I have to intern these symbols so they are created
-       ;; in the correct package, i.e. the calling package rather than 6502-cpu?
-       (defmethod ,name ((,(intern "OPCODE") (eql ,opcode))
-                         &key (,(intern "MODE") ,addr) (cpu *cpu*))
-         ,@(when docs (list docs))
-         ,@body
-         (incf (cpu-cc cpu) ,cycle-count))
-       (setf (get-instruction ,opcode) ',name))))
+    ;; KLUDGE: Why do I have to intern these symbols so they are created
+    ;; in the correct package, i.e. the calling package rather than 6502-cpu?
+    `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode))
+                       &key (,(intern "MODE") ,addr) (cpu *cpu*))
+       ,@(when docs (list docs))
+       ,@body
+       (incf (cpu-cc cpu) ,cycle-count))))
 
 (defmacro defopcode (name (&key docs) modes &body body)
   "Define instructions via DEFINS for each addressing mode listed in MODES

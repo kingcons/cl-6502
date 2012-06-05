@@ -19,9 +19,9 @@
 ;; dispatch addressing mode internally. Changed my mind. Eql specializers on
 ;; the opcodes themselves with instructions named after the mnemonics. The
 ;; remaining question is how to dispatch/call the method in the first place.
-;; Current plan? (loop (let ((opcode (pc cpu)))
-;;                       (setf (pc cpu) (wrap-word (1+ (pc cpu))))
-;;                       (funcall (function (aref opcodes opcode)) opcode)))
+;; Current plan? (loop (let ((opcode (cpu-pc cpu)))
+;;                       (setf (cpu-pc cpu) (wrap-word (1+ (cpu-pc cpu))))
+;;                       (funcall (get-instruction opcode) opcode)))
 ;; This is wasteful of space and some computation but simple/entertaining.
 ;; Allows argument handling to reside with the methods not the main loop.
 ;; Allows the main loop to be pretty close to the above pseudocode.
