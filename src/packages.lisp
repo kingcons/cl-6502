@@ -2,6 +2,8 @@
   (:use :cl :alexandria)
   (:export ;; Conditions
            #:6502-error
+           #:not-implemented-yet
+           #:illegal-opcode
            #:status-bit-error
            ;; Globals
            #:*ram*
@@ -29,6 +31,7 @@
            #:absolute-y
            #:branch-relative
            ;; Utils
+           #:next
            #:reset
            #:get-instruction
            #:get-byte

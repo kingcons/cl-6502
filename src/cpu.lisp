@@ -45,11 +45,18 @@
 
 ;;; Helpers
 
-(defmethod step ((cpu cpu))
+(defmethod next ((cpu cpu)) ;; Rename and shadow STEP?
   "Step the CPU through the next instruction."
   (let ((opcode (immediate cpu)))
     (setf (cpu-pc cpu) (wrap-word (1+ (cpu-pc cpu))))
-    (funcall (get-instruction opcode) opcode)))
+    (handler-case (funcall (get-instruction opcode) opcode)
+      (undefined-function ()
+        (error 'illegal-opcode :opcode opcode))
+      ;; KLUDGE: Catch simple-error for now as there isn't a
+      ;; no-applicable-method condition. A suggestion from pjb:
+      ;; (defmethod no-applicable-method ((fun t) &rest args) (error ...))
+      (simple-error ()
+        (error 'not-yet-implemented :opcode opcode)))))
 
 (defun reset ()
   "Reset the virtual machine to an initial state."
@@ -180,7 +187,7 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
   (get-word (wrap-byte (+ (zero-page cpu) (cpu-xr cpu))) t))
 
 (defmethod indirect-y ((cpu cpu)) ;; aka Pre-indexed Indirect
-  (let* ((addr (get-word (zero-page-cpu) t))
+  (let* ((addr (get-word (zero-page cpu) t))
          (result (wrap-word (+ addr (cpu-yr cpu)))))
     (maybe-update-cycle-count cpu result addr)
     result))

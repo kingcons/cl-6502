@@ -1,3 +1,9 @@
+WRITE THE OPCODES!!!
 MOAR UNIT TESTS! (opcodes+defopcode, addressing modes, helpers)
-Write the damn thing! Do the opcodes first.
-Main loop after that, followed by disassembler+assembler?
+Begin work on the disassembler.
+
+Ideas:
+Define restarts for step?
+-- Define the instruction.
+-- Hand over a lambda to funcall/form to eval.
+Special case :implied in defins so it doesn't style warn?
