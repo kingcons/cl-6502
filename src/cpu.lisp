@@ -263,21 +263,17 @@ a value to set the place designated by MODE to that value."
 supplying DOCS and BODY appropriately. If RAW is non-nil, in all instructions
 defined by defopcode, MODE will be symbol to funcall to get an address rather
 than a byte and SETF-FORM will be a form you can funcall to set that address."
-  (labels ((get-mode (modelist)
-             (intern (princ-to-string (alexandria:lastcar modelist))))
-           (make-setfn (modelist)
-             (let ((mode (get-mode modelist)))
-               (if (eql 'accumulator mode)
-                   '(lambda (x) (setf (cpu-ar cpu) x))
-                   `(lambda (x) (setf (get-byte (,mode cpu)) x))))))
+  (flet ((make-setfn (modelist)
+           (let ((mode (alexandria:lastcar modelist)))
+             (if (eql 'accumulator mode)
+                 '(lambda (x) (setf (cpu-ar cpu) x))
+                 `(lambda (x) (setf (get-byte (,mode cpu)) x))))))
     `(progn
        ,@(mapcar
           (lambda (mode)
-            (if raw
-                (setf (alexandria:lastcar mode) (get-mode mode))
-                (setf (alexandria:lastcar mode)
-                      `(lambda (cpu)
-                         (get-byte (,(get-mode mode) cpu)))))
+            (unless raw
+              (setf (alexandria:lastcar mode)
+                    `(lambda (cpu) (get-byte (,(alexandria:lastcar mode) cpu)))))
             `(defins (,name ,@mode)
                  (:docs ,docs
                   ,@(when raw
