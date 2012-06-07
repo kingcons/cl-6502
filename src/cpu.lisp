@@ -135,15 +135,29 @@ e.g. When the last two bytes of ADDRESS are #xff."
   "Pop a 16-bit word off the stack."
   (+ (stack-pop) (ash (stack-pop) 8)))
 
+(defun %status-bit (n)
+  (let ((status-register '((:carry     . 0)
+                           (:zero      . 1)
+                           (:interrupt . 2)
+                           (:decimal   . 3)
+                           (:break     . 4)
+                           (:unused    . 5)
+                           (:overflow  . 6)
+                           (:negative  . 7))))
+    (etypecase n
+      (fixnum n)
+      (keyword (rest (assoc n status-register))))))
+
 (defun status-bit (n)
-  "Retrieve bit N from the status register."
-  (ldb (byte 1 n) (cpu-sr *cpu*)))
+  "Retrieve bit N from the status register. N may be a keyword naming the status
+or an integer between 0 and 7."
+  (ldb (byte 1 (%status-bit n)) (cpu-sr *cpu*)))
 
 (defun (setf status-bit) (new-val n)
-  "Set bit N in the status register to NEW-VAL."
+  "Set bit N in the status register to NEW-VAL. N may be a keyword or integer."
   (if (or (zerop new-val) (= 1 new-val))
-      (setf (ldb (byte 1 n) (cpu-sr *cpu*)) new-val)
-      (error 'status-bit-error :index n)))
+      (setf (ldb (byte 1 (%status-bit n)) (cpu-sr *cpu*)) new-val)
+      (error 'status-bit-error :index (%status-bit n))))
 
 (defun negative-p (value &optional (top-bit 7))
   "Returns T if the two's complement representation of a number is negative.
@@ -161,6 +175,12 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
   (when (not (= (logand (or start (absolute cpu)) #xff00)
                 (logand address #xff00)))
     (incf (cpu-cc cpu))))
+
+(defun branch-if (predicate)
+  "Take a Relative branch if PREDICATE is true, otherwise increment the PC."
+  (if (funcall predicate)
+      (setf (cpu-pc cpu) (relative cpu))
+      (incf (cpu-pc cpu))))
 
 ;;; Addressing
 ;; Notes:
@@ -205,7 +225,7 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
     (maybe-update-cycle-count cpu result)
     result))
 
-(defmethod branch-relative ((cpu cpu))
+(defmethod relative ((cpu cpu))
   (let ((addr (zero-page cpu))
         (result nil))
     (incf (cpu-cc cpu))

@@ -14,23 +14,42 @@
 ;; Optimize later! See Frodo redpill + ICU64 for an example of what's possible.
 ;; Worth using sb-sprof sampling profiler to find low hanging fruit.
 
+;; TODO: Fix ASL.
+;; Right now proper flags aren't set.
+;; More importantly, sometimes we need to set a location in memory.
+;; This is based on addressing mode. It would be nice if we could be smart
+;; and know whether to hand over an address or bytes based on the mode but
+;; the code would be messier. It is probably smarter to just have every mode
+;; return an address. Perhaps this should be a property of the opcode, &key arg?
 (defopcode asl
     (:docs "Arithmetic Shift Left")
     ((#x06 5 2 :zero-page)
-     (#x0a 2 1 :implied))
-  ;; TODO: Implement carry handling.
+     (#x0a 2 1 :implied)
+     (#x0e 6 3 :absolute)
+     (#x16 6 2 :zero-page-x)
+     (#x1e 7 3 :absolute-x))
   (let ((result (setf (cpu-ar cpu) (ash (cpu-ar cpu) 1))))
     (update-flags result)))
+
+(defopcode bpl
+    (:docs "Branch on Positive Result")
+    ((#x10 2 2 :relative))
+  (branch-if (lambda () (zerop (status-bit :negative)))))
 
 (defopcode brk
     (:docs "Force Break")
     ((#x00 7 1 :implied))
   (let ((pc (wrap-word (1+ (cpu-pc cpu)))))
     (stack-push-word pc)
-    (setf (status-bit 4) 1)
+    (setf (status-bit :break) 1)
     (stack-push (cpu-sr cpu))
-    (setf (status-bit 2) 1)
+    (setf (status-bit :interrupt) 1)
     (setf (cpu-pc cpu) (get-word #xfffe))))
+
+(defopcode clc
+    (:docs "Clear Carry Flag")
+    ((#x18 2 1 :implied))
+  (setf (status-bit :carry) 0))
 
 (defopcode ora
     (:docs "Bitwise OR with Accumulator")
