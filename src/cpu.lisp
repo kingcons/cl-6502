@@ -159,15 +159,16 @@ or an integer between 0 and 7."
       (setf (ldb (byte 1 (%status-bit n)) (cpu-sr *cpu*)) new-val)
       (error 'status-bit-error :index (%status-bit n))))
 
-(defun negative-p (value &optional (top-bit 7))
-  "Returns T if the two's complement representation of a number is negative.
-i.e. Has a 1 in the 7th bit position."
-  (= 1 (ldb (byte 1 top-bit) value)))
-
-(defun update-flags (value)
-  "Set the zero and negative status bits based on VALUE."
-  (setf (status-bit 1) (if (zerop value) 1 0)
-        (status-bit 7) (if (negative-p value) 1 0)))
+(defun update-flags (value &optional (flags '(:zero :negative)))
+  "Loop over FLAGS which should be a list of keywords and set flags in the
+status register based on VALUE. FLAGS is '(:zero :negative) by default."
+  (loop for flag in flags do
+    (setf (status-bit flag)
+          (ecase flag
+            (:zero (if (zerop value) 1 0))
+            (:carry (if (logbitp 7 value) 1 0))
+            (:negative (if (logbitp 7 value) 1 0))
+            (:overflow (if (logbitp 6 value) 1 0))))))
 
 (defun maybe-update-cycle-count (cpu address &optional start)
   "If ADDRESS crosses a page boundary, add an extra cycle to CPU's count. If

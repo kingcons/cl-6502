@@ -58,6 +58,7 @@
   (:export ;; Opcodes
            #:and
            #:asl
+           #:bit
            #:bpl
            #:brk
            #:clc

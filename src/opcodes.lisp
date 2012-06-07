@@ -46,6 +46,12 @@
         (setf result (setf (funcall mode cpu) (ash (cpu-ar cpu) 1))))
     (update-flags result)))
 
+(defopcode bit
+    (:docs "Test Bits in Memory with Accumulator")
+    ((#x24 3 2 :zero-page)
+     (#x2c 4 3 :absolute))
+  (update-flags (funcall mode cpu) '(:zero :negative :overflow)))
+
 (defopcode bpl
     (:docs "Branch on Positive Result")
     ((#x10 2 2 :relative))
