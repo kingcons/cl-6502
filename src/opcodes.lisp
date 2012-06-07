@@ -30,18 +30,20 @@
 ;; TODO: Fix ASL.
 ;; Right now proper flags aren't set.
 ;; More importantly, sometimes we need to set a location in memory.
-;; This is based on addressing mode. It would be nice if we could be smart
-;; and know whether to hand over an address or bytes based on the mode but
-;; the code would be messier. It is probably smarter to just have every mode
-;; return an address. Perhaps this should be a property of the opcode, &key arg?
 (defopcode asl
-    (:docs "Arithmetic Shift Left")
+    (:docs "Arithmetic Shift Left" :raw t)
     ((#x06 5 2 :zero-page)
      (#x0a 2 1 :implied)
      (#x0e 6 3 :absolute)
      (#x16 6 2 :zero-page-x)
      (#x1e 7 3 :absolute-x))
-  (let ((result (setf (cpu-ar cpu) (ash (cpu-ar cpu) 1))))
+  (let ((result nil))
+    ;; KLUDGE: This breaks the "addressing mode oblivious" nature of the code.
+    ;; It's unacceptable. Perhaps there should be dedicated addressing modes
+    ;; for implied stuff? e.g. Accumulator
+    (if (member 'implied mode)
+        (setf result (setf (cpu-ar cpu) (ash (cpu-ar cpu) 1)))
+        (setf result (setf (funcall mode cpu) (ash (cpu-ar cpu) 1))))
     (update-flags result)))
 
 (defopcode bpl
@@ -65,8 +67,8 @@
   (setf (status-bit :carry) 0))
 
 (defopcode jsr
-    (:docs "Jump, Saving Return Address")
-    ((#x20 6 3 'absolute))
+    (:docs "Jump, Saving Return Address" :raw t)
+    ((#x20 6 3 :absolute))
   (stack-push-word (wrap-word (1+ (cpu-pc cpu))))
   (setf (cpu-pc cpu) (get-word (funcall mode cpu))))
 

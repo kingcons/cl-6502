@@ -241,27 +241,27 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
 (defmacro defins ((name opcode cycle-count byte-count mode)
                   (&key docs) &body body)
   "Define an EQL-Specialized method on OPCODE named NAME. When DOCS are provided
-they serve as its docstring. MODE must be a symbol or keyword. If MODE is a
-symbol, it is funcalled to retrieve an address. If MODE is a keyword, it is
-funcalled and get-byte is called on the subsequent address."
+they serve as its docstring. MODE is a lambda which can be funcalled to generate
+an address or the byte/word at a given address."
   ;; TODO: Use symbol-plist for byte-count and disassembly format str/metadata?
   (declare (ignore byte-count)) ; for now
-  (let ((addr (etypecase mode
-                (keyword `(lambda (cpu)
-                            (get-byte (,(intern (princ-to-string mode)) cpu))))
-                (symbol mode))))
-    ;; KLUDGE: Why do I have to intern these symbols so they are created
-    ;; in the correct package, i.e. the calling package rather than 6502-cpu?
-    `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode))
-                       &key (,(intern "MODE") ,addr) (cpu *cpu*))
-       ,@(when docs (list docs))
-       ,@body
-       (incf (cpu-cc cpu) ,cycle-count))))
+  ;; KLUDGE: Why do I have to intern these symbols so they are created
+  ;; in the correct package, i.e. the calling package rather than 6502-cpu?
+  `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode))
+                     &key (,(intern "MODE") ,mode) (cpu *cpu*))
+     ,@(when docs (list docs))
+     ,@body
+     (incf (cpu-cc cpu) ,cycle-count)))
 
-; TODO: Add an &key arg to make all modes return addresses instead of bytes.
-(defmacro defopcode (name (&key docs) modes &body body)
+(defmacro defopcode (name (&key docs raw) modes &body body)
   "Define instructions via DEFINS for each addressing mode listed in MODES
-supplying DOCS and BODY appropriately."
+supplying DOCS and BODY appropriately. If RAW is non-nil, all instructions
+defined by defopcode will return addresses to fetch from instead of bytes."
+  (loop for mode in modes do
+    (let ((addr `(,(intern (princ-to-string (alexandria:lastcar mode))) cpu)))
+      (if raw
+          (setf (alexandria:lastcar mode) `(lambda (cpu) ,addr))
+          (setf (alexandria:lastcar mode) `(lambda (cpu) (get-byte ,addr))))))
   `(progn ,@(mapcar (lambda (mode)
                       `(defins (,name ,@mode)
                            (:docs ,docs)
