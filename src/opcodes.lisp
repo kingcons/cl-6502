@@ -14,6 +14,19 @@
 ;; Optimize later! See Frodo redpill + ICU64 for an example of what's possible.
 ;; Worth using sb-sprof sampling profiler to find low hanging fruit.
 
+(defopcode and
+    (:docs "And with Accumulator")
+    ((#x21 6 2 :indirect-x)
+     (#x25 3 2 :zero-page)
+     (#x29 2 2 :immediate)
+     (#x2d 4 3 :absolute)
+     (#x31 5 2 :indirect-y)
+     (#x35 4 2 :zero-page-x)
+     (#x39 4 3 :absolute-y)
+     (#x3d 4 3 :absolute-x))
+  (let ((result (setf (cpu-ar cpu) (logand (cpu-ar cpu) (funcall mode cpu)))))
+    (update-flags result)))
+
 ;; TODO: Fix ASL.
 ;; Right now proper flags aren't set.
 ;; More importantly, sometimes we need to set a location in memory.
@@ -50,6 +63,12 @@
     (:docs "Clear Carry Flag")
     ((#x18 2 1 :implied))
   (setf (status-bit :carry) 0))
+
+(defopcode jsr
+    (:docs "Jump, Saving Return Address")
+    ((#x20 6 3 'absolute))
+  (stack-push-word (wrap-word (1+ (cpu-pc cpu))))
+  (setf (cpu-pc cpu) (get-word (funcall mode cpu))))
 
 (defopcode ora
     (:docs "Bitwise OR with Accumulator")

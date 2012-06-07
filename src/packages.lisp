@@ -56,8 +56,12 @@
   (:documentation "Homepage: <a href=\"http://github.com/redline6561/cl-6502\">Github</a>")
   (:use :cl :alexandria :6502-cpu)
   (:export ;; Opcodes
+           #:and
            #:asl
+           #:bpl
            #:brk
+           #:clc
+           #:jsr
            #:ora
            #:php)
   ;; Note: BE NOT AFRAID, DEVELOPERS! (But also, don't :use this package.)

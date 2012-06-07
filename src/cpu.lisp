@@ -258,6 +258,7 @@ funcalled and get-byte is called on the subsequent address."
        ,@body
        (incf (cpu-cc cpu) ,cycle-count))))
 
+; TODO: Add an &key arg to make all modes return addresses instead of bytes.
 (defmacro defopcode (name (&key docs) modes &body body)
   "Define instructions via DEFINS for each addressing mode listed in MODES
 supplying DOCS and BODY appropriately."
