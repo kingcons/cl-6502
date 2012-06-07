@@ -64,7 +64,8 @@
            #:clc
            #:jsr
            #:ora
-           #:php)
+           #:php
+           #:plp)
   ;; Note: BE NOT AFRAID, DEVELOPERS! (But also, don't :use this package.)
   (:shadow #:bit
            #:and))

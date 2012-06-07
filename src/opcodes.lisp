@@ -95,3 +95,8 @@
     (:docs "Push Processor Status")
     ((#x08 3 1 :implied))
   (stack-push (cpu-sr cpu)))
+
+(defopcode plp
+    (:docs "Pull Processor Status from Stack")
+    ((#26 4 1 :implied))
+  (setf (cpu-sr cpu) (stack-pop)))
