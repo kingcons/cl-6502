@@ -20,6 +20,7 @@
            #:cpu-sr
            #:cpu-cc
            ;; Addressing Modes
+           #:accumulator
            #:immediate
            #:zero-page
            #:zero-page-x

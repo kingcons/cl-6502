@@ -33,18 +33,14 @@
 (defopcode asl
     (:docs "Arithmetic Shift Left" :raw t)
     ((#x06 5 2 :zero-page)
-     (#x0a 2 1 :implied)
+     (#x0a 2 1 :accumulator)
      (#x0e 6 3 :absolute)
      (#x16 6 2 :zero-page-x)
      (#x1e 7 3 :absolute-x))
-  (let ((result nil))
-    ;; KLUDGE: This breaks the "addressing mode oblivious" nature of the code.
-    ;; It's unacceptable. Perhaps there should be dedicated addressing modes
-    ;; for implied stuff? e.g. Accumulator
-    (if (member 'implied mode)
-        (setf result (setf (cpu-ar cpu) (ash (cpu-ar cpu) 1)))
-        (setf result (setf (funcall mode cpu) (ash (cpu-ar cpu) 1))))
-    (update-flags result)))
+  (update-flags (funcall mode cpu) '(:carry))
+  (let ((result (wrap-byte (ash (funcall mode cpu) 1))))
+    (update-flags result '(:negative :zero))
+    (funcall 'setf-form result)))
 
 (defopcode bit
     (:docs "Test Bits in Memory with Accumulator")
@@ -98,5 +94,5 @@
 
 (defopcode plp
     (:docs "Pull Processor Status from Stack")
-    ((#26 4 1 :implied))
+    ((#x26 4 1 :implied))
   (setf (cpu-sr cpu) (stack-pop)))
