@@ -144,17 +144,14 @@ e.g. When the last two bytes of ADDRESS are #xff."
                            (:unused    . 5)
                            (:overflow  . 6)
                            (:negative  . 7))))
-    (etypecase n
-      (fixnum n)
-      (keyword (rest (assoc n status-register))))))
+    (rest (assoc n status-register))))
 
 (defun status-bit (n)
-  "Retrieve bit N from the status register. N may be a keyword naming the status
-or an integer between 0 and 7."
+  "Retrieve bit N from the status register. N should be a keyword naming the status."
   (ldb (byte 1 (%status-bit n)) (cpu-sr *cpu*)))
 
 (defun (setf status-bit) (new-val n)
-  "Set bit N in the status register to NEW-VAL. N may be a keyword or integer."
+  "Set bit N in the status register to NEW-VAL. N should be a keyword."
   (if (or (zerop new-val) (= 1 new-val))
       (setf (ldb (byte 1 (%status-bit n)) (cpu-sr *cpu*)) new-val)
       (error 'status-bit-error :index (%status-bit n))))
@@ -191,6 +188,10 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
 ; and defins will generate the get-byte calls. Implicit, Accumulator, and
 ; Indirect addressing modes can be implemented directly in the opcode and
 ; do not receive special support here.
+
+; KLUDGE: Shuts up some style warnings and avoids special casing in defopcode.
+(defmethod implied ((cpu cpu))
+  nil)
 
 (defmethod accumulator ((cpu cpu))
   (cpu-ar cpu))

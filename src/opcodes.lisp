@@ -45,6 +45,11 @@
      (#x2c 4 3 absolute))
   (update-flags (funcall mode cpu) '(:zero :negative :overflow)))
 
+(defopcode bmi
+    (:docs "Branch on Negative Result")
+    ((#x30 2 2 relative))
+  (branch-if (lambda () (plusp (status-bit :negative)))))
+
 (defopcode bpl
     (:docs "Branch on Positive Result")
     ((#x10 2 2 relative))

@@ -20,6 +20,7 @@
            #:cpu-sr
            #:cpu-cc
            ;; Addressing Modes
+           #:implied
            #:accumulator
            #:immediate
            #:zero-page
@@ -49,6 +50,7 @@
            #:status-bit
            #:negative-p
            #:update-flags
+           #:branch-if
            ;; Opcode Macrology
            #:defins
            #:defopcode))
