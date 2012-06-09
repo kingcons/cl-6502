@@ -31,7 +31,7 @@
            #:absolute
            #:absolute-x
            #:absolute-y
-           #:branch-relative
+           #:relative
            ;; Utils
            #:next
            #:reset
@@ -62,13 +62,20 @@
            #:and
            #:asl
            #:bit
+           #:bmi
            #:bpl
            #:brk
            #:clc
+           #:eor
+           #:jmp
            #:jsr
+           #:lsr
            #:ora
+           #:pha
            #:php
-           #:plp)
+           #:plp
+           #:rti
+           #:sec)
   ;; Note: BE NOT AFRAID, DEVELOPERS! (But also, don't :use this package.)
   (:shadow #:bit
            #:and))

@@ -189,7 +189,6 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
 ; Indirect addressing modes can be implemented directly in the opcode and
 ; do not receive special support here.
 
-; KLUDGE: Shuts up some style warnings and avoids special casing in defopcode.
 (defmethod implied ((cpu cpu))
   nil)
 
@@ -208,15 +207,6 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
 (defmethod zero-page-y ((cpu cpu))
   (wrap-byte (+ (zero-page cpu) (cpu-yr cpu))))
 
-(defmethod indirect-x ((cpu cpu)) ;; aka Post-indexed Indirect
-  (get-word (wrap-byte (+ (zero-page cpu) (cpu-xr cpu))) t))
-
-(defmethod indirect-y ((cpu cpu)) ;; aka Pre-indexed Indirect
-  (let* ((addr (get-word (zero-page cpu) t))
-         (result (wrap-word (+ addr (cpu-yr cpu)))))
-    (maybe-update-cycle-count cpu result addr)
-    result))
-
 (defmethod absolute ((cpu cpu))
   (get-word (cpu-pc cpu)))
 
@@ -228,6 +218,18 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
 (defmethod absolute-y ((cpu cpu))
   (let ((result (wrap-word (+ (absolute cpu) (cpu-yr cpu)))))
     (maybe-update-cycle-count cpu result)
+    result))
+
+(defmethod indirect ((cpu cpu))
+  (get-word (absolute cpu)))
+
+(defmethod indirect-x ((cpu cpu)) ;; aka Post-indexed Indirect
+  (get-word (wrap-byte (+ (zero-page cpu) (cpu-xr cpu))) t))
+
+(defmethod indirect-y ((cpu cpu)) ;; aka Pre-indexed Indirect
+  (let* ((addr (get-word (zero-page cpu) t))
+         (result (wrap-word (+ addr (cpu-yr cpu)))))
+    (maybe-update-cycle-count cpu result addr)
     result))
 
 (defmethod relative ((cpu cpu))
