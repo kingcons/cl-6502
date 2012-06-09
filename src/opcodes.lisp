@@ -36,7 +36,7 @@
      (#x1e 7 3 absolute-x))
   (update-flags (funcall mode cpu) '(:carry))
   (let ((result (wrap-byte (ash (funcall mode cpu) 1))))
-    (update-flags result '(:negative :zero))
+    (update-flags result)
     (funcall 'setf-form result)))
 
 (defopcode bit
@@ -65,10 +65,20 @@
     (setf (status-bit :interrupt) 1)
     (setf (cpu-pc cpu) (get-word #xfffe))))
 
+(defopcode bvc
+    (:docs "Branch on Overflow Clear")
+    ((#x50 2 2 relative))
+  (branch-if (lambda () (zerop (status-bit :overflow)))))
+
 (defopcode clc
     (:docs "Clear Carry Flag")
     ((#x18 2 1 implied))
   (setf (status-bit :carry) 0))
+
+(defopcode cli
+    (:docs "Clear Interrupt Flag")
+    ((#x59 2 1 implied))
+  (setf (status-bit :interrupt) 0))
 
 (defopcode eor
     (:docs "Exclusive OR with Accumulator")
@@ -139,6 +149,11 @@
     ((#x40 6 1 implied))
   (setf (cpu-sr cpu) (stack-pop))
   (setf (cpu-pc cpu) (stack-pop-word)))
+
+(defopcode rts
+    (:docs "Return from Subroutine")
+    ((#x60 6 1 implied))
+  (setf (cpu-pc cpu) (1+ (stack-pop-word))))
 
 (defopcode sec
     (:docs "Set Carry Flag")

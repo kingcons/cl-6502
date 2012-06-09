@@ -65,7 +65,9 @@
            #:bmi
            #:bpl
            #:brk
+           #:bvc
            #:clc
+           #:cli
            #:eor
            #:jmp
            #:jsr
@@ -75,6 +77,7 @@
            #:php
            #:plp
            #:rti
+           #:rts
            #:sec)
   ;; Note: BE NOT AFRAID, DEVELOPERS! (But also, don't :use this package.)
   (:shadow #:bit
