@@ -30,6 +30,7 @@
            #:absolute-y
            #:relative
            ;; Utils
+           #:disasm
            #:next
            #:reset
            #:get-instruction

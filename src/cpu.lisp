@@ -24,8 +24,7 @@
 (defparameter *cpu* (make-cpu)
   "The 6502 instance used by opcodes in the package.")
 
-(defparameter *opcodes*
-  (make-array (expt 2 8) :element-type '(cons symbol (unsigned-byte 8)))
+(defparameter *opcodes* (make-array (expt 2 8) :element-type 'cons)
   "A mapping of opcodes to instruction mnemonic/byte-count pairs.")
 
 ;;; Helpers
@@ -258,12 +257,10 @@ address. If CPU-REG is non-nil, BODY will be wrapped in a get-byte for setf."
   "Define an EQL-Specialized method on OPCODE named NAME. MODE must return an
 address or byte at an address if funcalled with a cpu. SETF-FORM is a lambda
 that may be funcalled with a value to set the address computed by MODE."
-  (setf (aref *opcodes* opcode) `(,name ,byte-count))
   ;; KLUDGE: Why do I have to intern these symbols so they are created
   ;; in the correct package, i.e. the calling package rather than 6502-cpu?
   `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) &key (cpu *cpu*)
                      (,(intern "MODE") ,mode) (,(intern "SETF-FORM") ,setf-form))
-     (declare (ignore mode setf-form))
      ,@body
      (incf (cpu-cc cpu) ,cycle-count)))
 
@@ -277,6 +274,8 @@ address. Otherwise, funcalling MODE will return the computed address itself."
        (:documentation ,docs))
      ,@(mapcar (lambda (mode)
                  (let ((mode-name (second (alexandria:lastcar mode))))
+                   (setf (aref *opcodes* (first mode))
+                         `(,name ,@(subseq (butlast mode) 1) ,mode-name))
                    (unless raw
                      (setf (alexandria:lastcar mode)
                            `(lambda (cpu) (get-byte (,mode-name cpu)))))
