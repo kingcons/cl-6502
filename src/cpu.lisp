@@ -116,7 +116,7 @@ e.g. When the last two bytes of ADDRESS are #xff."
 
 (defun stack-push (value)
   "Push the given VALUE on the stack and decrement the SP."
-  (setf (get-byte (+ (cpu-sp *cpu*) #xff)) (wrap-byte value))
+  (setf (get-byte (+ (cpu-sp *cpu*) #x100)) (wrap-byte value))
   (decf (cpu-sp *cpu*))
   (wrap-stack *cpu*))
 
@@ -129,7 +129,7 @@ e.g. When the last two bytes of ADDRESS are #xff."
   "Pop the value pointed to by the SP and increment the SP."
   (incf (cpu-sp *cpu*))
   (wrap-stack *cpu*)
-  (get-byte (+ (cpu-sp *cpu*) #xff)))
+  (get-byte (+ (cpu-sp *cpu*) #x100)))
 
 (defun stack-pop-word ()
   "Pop a 16-bit word off the stack."
