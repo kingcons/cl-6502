@@ -269,33 +269,32 @@ address. If CPU-REG is non-nil, BODY will be wrapped in a get-byte for setf."
 ;;; Opcode Macrology
 
 (defmacro defins ((name opcode cycle-count byte-count mode)
-                  (&key docs setf-form raw) &body body)
-  "Define an EQL-Specialized method on OPCODE named NAME. When DOCS are provided
-they serve as its docstring. MODE can be funcalled to generate an address or
-the byte/word at a given address. SETF-FORM is a lambda that may be funcalled
-with a value to set the address computed by MODE. If RAW is nil, mode will be a
-lambda that takes a cpu and returns the byte at the address mode specified."
+                  (&key setf-form raw) &body body)
+  "Define an EQL-Specialized method on OPCODE named NAME. MODE can be funcalled to
+retrieve the byte at the specified address mode. SETF-FORM is a lambda that may be
+funcalled with a value to set the address computed by MODE. If RAW is nil, mode will
+be a lambda that takes a cpu and returns the byte at the address mode specified."
   ;; TODO: Use symbol-plist for byte-count and disassembly format str/metadata?
   (declare (ignore byte-count)) ; for now
-  (unless raw
-    (setf mode `(lambda (cpu) (get-byte (,(second mode) cpu)))))
-  ;; KLUDGE: Why do I have to intern these symbols so they are created
-  ;; in the correct package, i.e. the calling package rather than 6502-cpu?
-  `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) &key (cpu *cpu*)
-                     (,(intern "MODE") ,mode) (,(intern "SETF-FORM") ,setf-form))
-     ,@(when docs (list docs))
-     ,@body
-     (incf (cpu-cc cpu) ,cycle-count)))
+  (let ((mode `(lambda (cpu) (get-byte (,(second mode) cpu)))))
+    ;; KLUDGE: Why do I have to intern these symbols so they are created
+    ;; in the correct package, i.e. the calling package rather than 6502-cpu?
+    `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) &key (cpu *cpu*)
+                       (,(intern "MODE") ,mode) (,(intern "SETF-FORM") ,setf-form))
+       ,@body
+       (incf (cpu-cc cpu) ,cycle-count))))
 
 (defmacro defopcode (name (&key docs raw) modes &body body)
-  "Define instructions via DEFINS for each addressing mode listed in MODES
-supplying DOCS and BODY appropriately. If RAW is non-nil, in all instructions
-defined by defopcode, MODE will be symbol to funcall to get an address rather
-than a byte and SETF-FORM will be a form you can funcall to set that address."
-  `(progn ,@(mapcar (lambda (mode)
-                      (let ((mode-name (second (alexandria:lastcar mode))))
-                        `(defins (,name ,@mode)
-                             (:docs ,docs :raw ,raw
-                              :setf-form (lambda (x) (setf (,mode-name cpu) x)))
-                           ,@body)))
-                    modes)))
+  "Define a Generic Function NAME with DOCS if provided and instructions,
+i.e. methods, via DEFINS for each addressing mode listed in MODES. If RAW is
+non-nil, MODE will be a symbol to funcall to get an address rather than a byte."
+  `(progn
+     (defgeneric ,name (opcode &key cpu mode setf-form)
+       (:documentation ,docs))
+     ,@(mapcar (lambda (mode)
+                 (let ((mode-name (second (alexandria:lastcar mode))))
+                   `(defins (,name ,@mode)
+                        (:raw ,raw
+                         :setf-form (lambda (x) (setf (,mode-name cpu) x)))
+                      ,@body)))
+               modes)))
