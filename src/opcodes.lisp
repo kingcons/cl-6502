@@ -144,7 +144,9 @@
      (#xce 6 3 'absolute)
      (#xd6 6 2 'zero-page-x)
      (#xde 7 3 'absolute-x))
-  (error 'not-implemented-yet))
+  (let ((result (wrap-byte (1- (funcall mode cpu)))))
+    (funcall setf-form result)
+    (update-flags result)))
 
 (defopcode dex (:docs "Decrement X register")
     ((#xca 2 1 'implied))
@@ -173,7 +175,9 @@
      (#xee 6 3 'absolute)
      (#xf6 6 2 'zero-page-x)
      (#xfe 7 3 'absolute-x))
-  (error 'not-implemented-yet))
+  (let ((result (wrap-byte (1+ (funcall mode cpu)))))
+    (funcall setf-form result)
+    (update-flags result)))
 
 (defopcode inx (:docs "Increment X register")
     ((#xe8 2 1 'implied))
@@ -302,7 +306,10 @@
      (#xf5 4 2 'zero-page-x)
      (#xf9 4 3 'absolute-y)
      (#xfd 4 3 'absolute-x))
-  (error 'not-implemented-yet))
+  ; TODO: This is a naive implementation. Have a look at py6502's opSBC.
+  (let ((result (- (cpu-ar cpu) (funcall mode cpu) (status-bit :carry))))
+    (setf (cpu-ar cpu) result)
+    (update-flags result '(:carry :overflow :negative :zero))))
 
 (defopcode sec (:docs "Set Carry Flag")
     ((#x38 2 1 'implied))
