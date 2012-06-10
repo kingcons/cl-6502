@@ -180,70 +180,20 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
       (setf (cpu-pc cpu) (relative cpu))
       (incf (cpu-pc cpu))))
 
-;;; Addressing
-;; Notes:
-; The common case is that we want the byte pointed to by an address,
-; not the address itself. Unfortunately, stores require the actual address
-; as we can't setf a value. Thus, we'll have these methods return addresses
-; and defins will generate the get-byte calls. Implicit, Accumulator, and
-; Indirect addressing modes can be implemented directly in the opcode and
-; do not receive special support here.
-
-(defmethod implied ((cpu cpu))
-  nil)
-
-(defmethod accumulator ((cpu cpu))
-  (cpu-ar cpu))
-
-(defmethod immediate ((cpu cpu))
-  (cpu-pc cpu))
-
-(defmethod zero-page ((cpu cpu))
-  (get-byte (immediate cpu)))
-
-(defmethod zero-page-x ((cpu cpu))
-  (wrap-byte (+ (zero-page cpu) (cpu-xr cpu))))
-
-(defmethod zero-page-y ((cpu cpu))
-  (wrap-byte (+ (zero-page cpu) (cpu-yr cpu))))
-
-(defmethod absolute ((cpu cpu))
-  (get-word (cpu-pc cpu)))
-
-(defmethod absolute-x ((cpu cpu))
-  (let ((result (wrap-word (+ (absolute cpu) (cpu-xr cpu)))))
-    (maybe-update-cycle-count cpu result)
-    result))
-
-(defmethod absolute-y ((cpu cpu))
-  (let ((result (wrap-word (+ (absolute cpu) (cpu-yr cpu)))))
-    (maybe-update-cycle-count cpu result)
-    result))
-
-(defmethod indirect ((cpu cpu))
-  (get-word (absolute cpu)))
-
-(defmethod indirect-x ((cpu cpu)) ;; aka Post-indexed Indirect
-  (get-word (wrap-byte (+ (zero-page cpu) (cpu-xr cpu))) t))
-
-(defmethod indirect-y ((cpu cpu)) ;; aka Pre-indexed Indirect
-  (let* ((addr (get-word (zero-page cpu) t))
-         (result (wrap-word (+ addr (cpu-yr cpu)))))
-    (maybe-update-cycle-count cpu result addr)
-    result))
-
-(defmethod relative ((cpu cpu))
-  (let ((addr (zero-page cpu))
-        (result nil))
-    (incf (cpu-cc cpu))
-    (incf (cpu-pc cpu))
-    (if (not (zerop (logand addr #x80)))
-        (setf result (wrap-word (- (cpu-pc cpu) (logxor addr #xff) 1)))
-        (setf result (wrap-word (+ (cpu-pc cpu) addr))))
-    (maybe-update-cycle-count cpu result (cpu-pc cpu))
-    result))
-
 ;;; Opcode Macrology
+
+; The common case is that we want the byte pointed to by an address, not the address.
+(defmacro defaddress (name (&key cpu-reg setf-body) &body body)
+  "Define an Addressing Mode in the form of a method specialized on CPU returning an
+address and a setf function to store to that address."
+  (let* ((setf-form (if setf-body `(,setf-body) body))
+         (setf-body (if cpu-reg setf-form `(get-byte ,setf-form))))
+    `(progn
+       (defmethod ,name ((cpu cpu))
+         ,@body)
+       (defun (setf ,name) (new-value cpu)
+         (declare (ignore cpu)) ; we just need the body
+         (setf ,@setf-body new-value)))))
 
 (defmacro defins ((name opcode cycle-count byte-count mode)
                   (&key docs setf-form) &body body)
@@ -266,20 +216,73 @@ a value to set the place designated by MODE to that value."
 supplying DOCS and BODY appropriately. If RAW is non-nil, in all instructions
 defined by defopcode, MODE will be symbol to funcall to get an address rather
 than a byte and SETF-FORM will be a form you can funcall to set that address."
-  (flet ((make-setfn (modelist)
-           (let ((mode (alexandria:lastcar modelist)))
-             (if (eql 'accumulator mode)
-                 '(lambda (x) (setf (cpu-ar cpu) x))
-                 `(lambda (x) (setf (get-byte (,mode cpu)) x))))))
-    `(progn
-       ,@(mapcar
-          (lambda (mode)
-            (unless raw
-              (setf (alexandria:lastcar mode)
-                    `(lambda (cpu) (get-byte (,(alexandria:lastcar mode) cpu)))))
-            `(defins (,name ,@mode)
-                 (:docs ,docs
-                  ,@(when raw
-                      `(:setf-form ,(make-setfn mode))))
-               ,@body))
-          modes))))
+  `(progn ,@(mapcar (lambda (mode)
+                      (unless raw
+                        (setf (alexandria:lastcar mode)
+                              `(lambda (cpu)
+                                 (get-byte (,(alexandria:lastcar mode) cpu)))))
+                      `(defins (,name ,@mode)
+                           (:docs ,docs)
+                         ,@body))
+                    modes)))
+
+;;; Addressing
+
+(defmethod implied ((cpu cpu))
+  nil)
+
+;; TODO:
+; Verify that these work as expected.
+; Deprecate setf-form from all defopcodes!
+(defaddress accumulator (:cpu-reg t)
+  (cpu-ar cpu))
+
+(defaddress immediate (:cpu-reg t)
+  (cpu-pc cpu))
+
+(defaddress zero-page ()
+  (get-byte (immediate cpu)))
+
+(defaddress zero-page-x ()
+  (wrap-byte (+ (zero-page cpu) (cpu-xr cpu))))
+
+(defaddress zero-page-y ()
+  (wrap-byte (+ (zero-page cpu) (cpu-yr cpu))))
+
+(defaddress absolute ()
+  (get-word (cpu-pc cpu)))
+
+(defaddress absolute-x
+    (:setf-body (wrap-word (+ (absolute cpu) (cpu-xr cpu))))
+  (let ((result (wrap-word (+ (absolute cpu) (cpu-xr cpu)))))
+    (maybe-update-cycle-count cpu result)
+    result))
+
+(defaddress absolute-y
+    (:setf-body (wrap-word (+ (absolute cpu) (cpu-yr cpu))))
+  (let ((result (wrap-word (+ (absolute cpu) (cpu-yr cpu)))))
+    (maybe-update-cycle-count cpu result)
+    result))
+
+(defaddress indirect ()
+  (get-word (absolute cpu)))
+
+(defaddress indirect-x () ;; aka Post-indexed indirect
+  (get-word (wrap-byte (+ (zero-page cpu) (cpu-xr cpu))) t))
+
+(defaddress indirect-y () ;; aka Pre-indexed Indirect
+  (let* ((addr (get-word (zero-page cpu) t))
+         (result (wrap-word (+ addr (cpu-yr cpu)))))
+    (maybe-update-cycle-count cpu result addr)
+    result))
+
+(defaddress relative ()
+  (let ((addr (zero-page cpu))
+        (result nil))
+    (incf (cpu-cc cpu))
+    (incf (cpu-pc cpu))
+    (if (not (zerop (logand addr #x80)))
+        (setf result (wrap-word (- (cpu-pc cpu) (logxor addr #xff) 1)))
+        (setf result (wrap-word (+ (cpu-pc cpu) addr))))
+    (maybe-update-cycle-count cpu result (cpu-pc cpu))
+    result))
