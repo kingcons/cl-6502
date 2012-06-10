@@ -25,23 +25,8 @@
   "The 6502 instance used by opcodes in the package.")
 
 (defparameter *opcodes*
-  #(brk ora nil nil nil ora asl nil php ora asl nil nil ora asl
-    bpl ora nil nil nil ora asl nil clc ora nil nil nil ora asl
-    jsr and nil nil bit and rol nil plp and rol nil bit and rol
-    bmi and nil nil nil and rol nil sec and nil nil nil and rol
-    rti eor nil nil nil eor lsr nil pha eor lsr nil jmp eor lsr
-    bvc eor nil nil nil eor lsr nil cli eor nil nil nil eor lsr
-    rts adc nil nil nil adc ror nil pla adc ror nil jmp adc ror
-    bvs adc nil nil nil adc ror nil sei adc nil nil nil adc ror
-    nil sta nil nil sty sta stx nil dey nil txa nil sty sta stx
-    bcc sta nil nil sty sta stx nil tya sta txs nil nil sta nil
-    ldy lda ldx nil ldy lda ldx nil tay lda tax nil ldy lda ldx
-    bcs lda nil nil ldy lda ldx nil clv lda tsx nil ldy lda ldx
-    cpy cmp nil nil cpy cmp dec nil iny cmp dex nil cpy cmp dec
-    bne cmp nil nil nil cmp dec nil cld cmp nil nil nil cmp dec
-    cpx sbc nil nil cpx sbc inc nil inx sbc nop nil cpx sbc inc
-    beq sbc nil nil nil sbc inc nil sed sbc nil nil nil sbc inc)
-  "A mapping of opcodes to instruction mnemonics.")
+  (make-array (expt 2 8) :element-type '(cons symbol (unsigned-byte 8)))
+  "A mapping of opcodes to instruction mnemonic/byte-count pairs.")
 
 ;;; Helpers
 
@@ -213,8 +198,7 @@ address. If CPU-REG is non-nil, BODY will be wrapped in a get-byte for setf."
             `(let ((address (,name cpu)))
                (setf (get-byte address) new-value))))))
 
-(defmethod implied ((cpu cpu))
-  nil)
+(defaddress implied () nil)
 
 (defaddress accumulator (:cpu-reg t)
   (cpu-ar cpu))
@@ -274,12 +258,12 @@ address. If CPU-REG is non-nil, BODY will be wrapped in a get-byte for setf."
   "Define an EQL-Specialized method on OPCODE named NAME. MODE must return an
 address or byte at an address if funcalled with a cpu. SETF-FORM is a lambda
 that may be funcalled with a value to set the address computed by MODE."
-  ;; TODO: Use symbol-plist for byte-count and disassembly format str/metadata?
-  (declare (ignore byte-count)) ; for now
+  (setf (aref *opcodes* opcode) `(,name ,byte-count))
   ;; KLUDGE: Why do I have to intern these symbols so they are created
   ;; in the correct package, i.e. the calling package rather than 6502-cpu?
   `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) &key (cpu *cpu*)
                      (,(intern "MODE") ,mode) (,(intern "SETF-FORM") ,setf-form))
+     (declare (ignore mode setf-form))
      ,@body
      (incf (cpu-cc cpu) ,cycle-count)))
 
