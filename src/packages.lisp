@@ -7,8 +7,6 @@
            #:status-bit-error
            ;; CPU Struct
            #:cpu
-           #:make-cpu
-           #:copy-cpu
            #:cpu-pc
            #:cpu-sp
            #:cpu-xr

@@ -2,7 +2,7 @@
 
 (def-fixture cpu ()
   (let ((*ram* (make-array (expt 2 16) :element-type '(unsigned-byte 8)))
-        (*cpu* (make-cpu)))
+        (*cpu* (6502-cpu::make-cpu)))
     (&body)))
 
 (defmacro deftest (name docstring &body body)
