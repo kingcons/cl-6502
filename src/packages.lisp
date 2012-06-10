@@ -71,9 +71,14 @@
            #:cld
            #:cli
            #:clv
+           #:cmp
+           #:cpx
+           #:cpy
+           #:dec
            #:dex
            #:dey
            #:eor
+           #:inc
            #:inx
            #:iny
            #:jmp
@@ -92,6 +97,7 @@
            #:ror
            #:rti
            #:rts
+           #:sbc
            #:sec
            #:sed
            #:sei
