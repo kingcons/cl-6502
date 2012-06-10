@@ -147,7 +147,7 @@ e.g. When the last two bytes of ADDRESS are #xff."
     (rest (assoc n status-register))))
 
 (defun status-bit (n)
-  "Retrieve bit N from the status register. N should be a keyword naming the status."
+  "Retrieve bit N from the status register. N should be a keyword."
   (ldb (byte 1 (%status-bit n)) (cpu-sr *cpu*)))
 
 (defun (setf status-bit) (new-val n)
@@ -177,62 +177,69 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
 (defun branch-if (predicate)
   "Take a Relative branch if PREDICATE is true, otherwise increment the PC."
   (if (funcall predicate)
-      (setf (cpu-pc cpu) (relative cpu))
-      (incf (cpu-pc cpu))))
+      (setf (cpu-pc *cpu*) (relative *cpu*))
+      (incf (cpu-pc *cpu*))))
 
 ;;; Addressing
-;; Notes:
-; The common case is that we want the byte pointed to by an address,
-; not the address itself. Unfortunately, stores require the actual address
-; as we can't setf a value. Thus, we'll have these methods return addresses
-; and defins will generate the get-byte calls. Implicit, Accumulator, and
-; Indirect addressing modes can be implemented directly in the opcode and
-; do not receive special support here.
+
+; Usually we want the byte pointed to by an address, not the address.
+(defmacro defaddress (name (&key cpu-reg) &body body)
+  "Define an Addressing Mode in the form of a method called NAME specialized on
+CPU returning an address according to BODY and a setf function to store to that
+address. If CPU-REG is non-nil, BODY will be wrapped in a get-byte for setf."
+  `(progn
+     (defmethod ,name ((cpu cpu))
+       ,@body)
+     (defun (setf ,name) (new-value cpu)
+       ,(if cpu-reg
+            `(setf ,@body new-value)
+            `(let ((address (,name cpu)))
+               (setf (get-byte address) new-value))))))
 
 (defmethod implied ((cpu cpu))
   nil)
 
-(defmethod accumulator ((cpu cpu))
+(defaddress accumulator (:cpu-reg t)
   (cpu-ar cpu))
 
-(defmethod immediate ((cpu cpu))
+(defaddress immediate (:cpu-reg t)
   (cpu-pc cpu))
 
-(defmethod zero-page ((cpu cpu))
+(defaddress zero-page ()
   (get-byte (immediate cpu)))
 
-(defmethod zero-page-x ((cpu cpu))
+(defaddress zero-page-x ()
   (wrap-byte (+ (zero-page cpu) (cpu-xr cpu))))
 
-(defmethod zero-page-y ((cpu cpu))
+(defaddress zero-page-y ()
   (wrap-byte (+ (zero-page cpu) (cpu-yr cpu))))
 
-(defmethod absolute ((cpu cpu))
+(defaddress absolute ()
   (get-word (cpu-pc cpu)))
 
-(defmethod absolute-x ((cpu cpu))
+(defaddress absolute-x ()
   (let ((result (wrap-word (+ (absolute cpu) (cpu-xr cpu)))))
     (maybe-update-cycle-count cpu result)
     result))
 
-(defmethod absolute-y ((cpu cpu))
+(defaddress absolute-y ()
   (let ((result (wrap-word (+ (absolute cpu) (cpu-yr cpu)))))
     (maybe-update-cycle-count cpu result)
     result))
 
-(defmethod indirect ((cpu cpu))
+(defaddress indirect ()
   (get-word (absolute cpu)))
 
-(defmethod indirect-x ((cpu cpu)) ;; aka Post-indexed Indirect
+(defaddress indirect-x ()
   (get-word (wrap-byte (+ (zero-page cpu) (cpu-xr cpu))) t))
 
-(defmethod indirect-y ((cpu cpu)) ;; aka Pre-indexed Indirect
+(defaddress indirect-y ()
   (let* ((addr (get-word (zero-page cpu) t))
          (result (wrap-word (+ addr (cpu-yr cpu)))))
     (maybe-update-cycle-count cpu result addr)
     result))
 
-(defmethod relative ((cpu cpu))
+(defaddress relative ()
   (let ((addr (zero-page cpu))
         (result nil))
     (incf (cpu-cc cpu))
@@ -246,13 +253,16 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
 ;;; Opcode Macrology
 
 (defmacro defins ((name opcode cycle-count byte-count mode)
-                  (&key docs setf-form) &body body)
+                  (&key docs setf-form raw) &body body)
   "Define an EQL-Specialized method on OPCODE named NAME. When DOCS are provided
 they serve as its docstring. MODE can be funcalled to generate an address or
-the byte/word at a given address. SETF-FORM, if present, can be funcalled with
-a value to set the place designated by MODE to that value."
+the byte/word at a given address. SETF-FORM is a lambda that may be funcalled
+with a value to set the address computed by MODE. If raw is T, mode will be a
+lambda that takes a cpu and returns the byte at the address mode specified."
   ;; TODO: Use symbol-plist for byte-count and disassembly format str/metadata?
   (declare (ignore byte-count)) ; for now
+  (unless raw
+    (setf mode `(lambda (cpu) (get-byte (,(second mode) cpu)))))
   ;; KLUDGE: Why do I have to intern these symbols so they are created
   ;; in the correct package, i.e. the calling package rather than 6502-cpu?
   `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) &key (cpu *cpu*)
@@ -266,20 +276,10 @@ a value to set the place designated by MODE to that value."
 supplying DOCS and BODY appropriately. If RAW is non-nil, in all instructions
 defined by defopcode, MODE will be symbol to funcall to get an address rather
 than a byte and SETF-FORM will be a form you can funcall to set that address."
-  (flet ((make-setfn (modelist)
-           (let ((mode (alexandria:lastcar modelist)))
-             (if (eql 'accumulator mode)
-                 '(lambda (x) (setf (cpu-ar cpu) x))
-                 `(lambda (x) (setf (get-byte (,mode cpu)) x))))))
-    `(progn
-       ,@(mapcar
-          (lambda (mode)
-            (unless raw
-              (setf (alexandria:lastcar mode)
-                    `(lambda (cpu) (get-byte (,(alexandria:lastcar mode) cpu)))))
-            `(defins (,name ,@mode)
-                 (:docs ,docs
-                  ,@(when raw
-                      `(:setf-form ,(make-setfn mode))))
-               ,@body))
-          modes))))
+  `(progn ,@(mapcar (lambda (mode)
+                      (let ((mode-name (second (alexandria:lastcar mode))))
+                        `(defins (,name ,@mode)
+                             (:docs ,docs :raw ,raw
+                              :setf-form (lambda (x) (setf (,mode-name cpu) x)))
+                           ,@body)))
+                    modes)))
