@@ -116,8 +116,6 @@
     ((#xb8 2 1 'implied))
   (setf (status-bit :overflow 0)))
 
-;; TODO: Check that CMP, CPX, CPY work correctly. Probably can't
-;; get away with just computing result and a single update-flags call.
 (defopcode cmp (:docs "Compare Memory with Accumulator")
     ((#xc1 6 2 'indirect-x)
      (#xc5 3 2 'zero-page)

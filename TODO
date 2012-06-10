@@ -1,9 +1,9 @@
-WRITE THE OPCODES!!!
+Investigate handling of negative numbers.
+Write disassembler.
+Find test programs.
 MOAR UNIT TESTS! (opcodes+defopcode, addressing modes, helpers)
-Begin work on the disassembler.
 
 Ideas:
 Define restarts for step?
 -- Define the instruction.
 -- Hand over a lambda to funcall/form to eval.
-Special case :implied in defins so it doesn't style warn?

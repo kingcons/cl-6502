@@ -161,7 +161,7 @@ e.g. When the last two bytes of ADDRESS are #xff."
 status register based on VALUE. FLAGS is '(:zero :negative) by default."
   (loop for flag in flags do
     (setf (status-bit flag)
-          (ecase flag
+          (ecase flag ; TODO: Do carry and negative always work as expected?
             (:zero (if (zerop value) 1 0))
             (:carry (if (logbitp 7 value) 1 0))
             (:negative (if (logbitp 7 value) 1 0))
