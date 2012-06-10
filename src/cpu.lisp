@@ -272,32 +272,33 @@ If WORD is non-nil, BODY will be wrapped in a get-word in lieu of get-byte."
 ;;; Opcode Macrology
 
 (defmacro defins ((name opcode cycle-count byte-count mode)
-                  (&key setf-form raw) &body body)
-  "Define an EQL-Specialized method on OPCODE named NAME. MODE can be funcalled to
-retrieve the byte at the specified address mode. SETF-FORM is a lambda that may be
-funcalled with a value to set the address computed by MODE. If RAW is nil, mode will
-be a lambda that takes a cpu and returns the byte at the address mode specified."
+                  (&key setf-form) &body body)
+  "Define an EQL-Specialized method on OPCODE named NAME. MODE must return an
+address or byte at an address if funcalled with a cpu. SETF-FORM is a lambda
+that may be funcalled with a value to set the address computed by MODE."
   ;; TODO: Use symbol-plist for byte-count and disassembly format str/metadata?
   (declare (ignore byte-count)) ; for now
-  (let ((mode `(lambda (cpu) (get-byte (,(second mode) cpu)))))
-    ;; KLUDGE: Why do I have to intern these symbols so they are created
-    ;; in the correct package, i.e. the calling package rather than 6502-cpu?
-    `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) &key (cpu *cpu*)
-                       (,(intern "MODE") ,mode) (,(intern "SETF-FORM") ,setf-form))
-       ,@body
-       (incf (cpu-cc cpu) ,cycle-count))))
+  ;; KLUDGE: Why do I have to intern these symbols so they are created
+  ;; in the correct package, i.e. the calling package rather than 6502-cpu?
+  `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) &key (cpu *cpu*)
+                     (,(intern "MODE") ,mode) (,(intern "SETF-FORM") ,setf-form))
+     ,@body
+     (incf (cpu-cc cpu) ,cycle-count)))
 
 (defmacro defopcode (name (&key docs raw) modes &body body)
   "Define a Generic Function NAME with DOCS if provided and instructions,
 i.e. methods, via DEFINS for each addressing mode listed in MODES. If RAW is
-non-nil, MODE will be a symbol to funcall to get an address rather than a byte."
+non-nil, MODE can be funcalled with a cpu in BODY to retrieve the byte at MODE's
+address. Otherwise, funcalling MODE will return the computed address itself."
   `(progn
      (defgeneric ,name (opcode &key cpu mode setf-form)
        (:documentation ,docs))
      ,@(mapcar (lambda (mode)
                  (let ((mode-name (second (alexandria:lastcar mode))))
+                   (unless raw
+                     (setf (alexandria:lastcar mode)
+                           `(lambda (cpu) (get-byte (,(second mode-name) cpu)))))
                    `(defins (,name ,@mode)
-                        (:raw ,raw
-                         :setf-form (lambda (x) (setf (,mode-name cpu) x)))
+                        (:setf-form (lambda (x) (setf (,mode-name cpu) x)))
                       ,@body)))
                modes)))
