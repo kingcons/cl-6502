@@ -283,7 +283,7 @@
      (#x3e 7 3 'absolute-x))
   (let ((result (wrap-byte (rotate-byte (funcall mode cpu) 1))))
     (funcall setf-form result)
-    (update-flags result '(:carry))))
+    (update-flags result '(:carry :negative :zero))))
 
 (defopcode ror (:docs "Rotate Right")
     ((#x66 5 2 'zero-page)
@@ -293,7 +293,7 @@
      (#x7e 7 3 'absolute-x))
   (let ((result (rotate-byte (funcall mode cpu) -1)))
     (funcall setf-form result)
-    (update-flags result '(:carry))))
+    (update-flags result '(:carry :negative :zero))))
 
 (defopcode rti (:docs "Return from Interrupt")
     ((#x40 6 1 'implied))
