@@ -67,10 +67,6 @@
   "Get the mnemonic for OPCODE. Returns a symbol to be funcalled."
   (aref *opcodes* opcode))
 
-(defun (setf get-instruction) (sym opcode)
-  "Set the mnemonic for OPCODE to SYM. SYM should be a funcallable symbol."
-  (setf (aref *opcodes* opcode) sym))
-
 (defun get-byte (address)
   "Get a byte from RAM at the given address."
   (aref *ram* address))
