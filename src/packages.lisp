@@ -47,6 +47,7 @@
            #:update-flags
            #:maybe-update-cycle-count
            #:branch-if
+           #:rotate-byte
            ;; Opcode Macrology
            #:defopcode))
 

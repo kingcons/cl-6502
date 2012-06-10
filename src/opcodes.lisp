@@ -281,7 +281,9 @@
      (#x2e 6 3 'absolute)
      (#x36 6 2 'zero-page-x)
      (#x3e 7 3 'absolute-x))
-  (error 'not-implemented-yet))
+  (let ((result (wrap-byte (rotate-byte (funcall mode cpu) 1))))
+    (funcall setf-form result)
+    (update-flags result '(:carry))))
 
 (defopcode ror (:docs "Rotate Right")
     ((#x66 5 2 'zero-page)
@@ -289,7 +291,9 @@
      (#x6e 6 3 'absolute)
      (#x76 6 2 'zero-page-x)
      (#x7e 7 3 'absolute-x))
-  (error 'not-implemented-yet))
+  (let ((result (rotate-byte (funcall mode cpu) -1)))
+    (funcall setf-form result)
+    (update-flags result '(:carry))))
 
 (defopcode rti (:docs "Return from Interrupt")
     ((#x40 6 1 'implied))

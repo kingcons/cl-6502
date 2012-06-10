@@ -1,3 +1,4 @@
+Audit opcodes for potential removal of RAW. SETF-FORM should solve this.
 Investigate handling of negative numbers.
 Write disassembler.
 Find test programs.
