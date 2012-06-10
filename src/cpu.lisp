@@ -200,20 +200,18 @@ instead of left. SIZE specifies the bitlength of the integer being rotated."
 ;;; Addressing
 
 ; Usually we want the byte pointed to by an address, not the address.
-(defmacro defaddress (name (&key cpu-reg word) &body body)
+(defmacro defaddress (name (&key cpu-reg) &body body)
   "Define an Addressing Mode in the form of a method called NAME specialized on
 CPU returning an address according to BODY and a setf function to store to that
-address. If CPU-REG is non-nil, BODY will be wrapped in a get-byte for setf.
-If WORD is non-nil, BODY will be wrapped in a get-word in lieu of get-byte."
-  (let ((wrapper (if word 'get-word 'get-byte)))
-    `(progn
-       (defmethod ,name ((cpu cpu))
-         ,@body)
-       (defun (setf ,name) (new-value cpu)
-         ,(if cpu-reg
-              `(setf ,@body new-value)
-              `(let ((address (,name cpu)))
-                 (setf (,wrapper address) new-value)))))))
+address. If CPU-REG is non-nil, BODY will be wrapped in a get-byte for setf."
+  `(progn
+     (defmethod ,name ((cpu cpu))
+       ,@body)
+     (defun (setf ,name) (new-value cpu)
+       ,(if cpu-reg
+            `(setf ,@body new-value)
+            `(let ((address (,name cpu)))
+               (setf (get-byte address) new-value))))))
 
 (defmethod implied ((cpu cpu))
   nil)
@@ -233,26 +231,26 @@ If WORD is non-nil, BODY will be wrapped in a get-word in lieu of get-byte."
 (defaddress zero-page-y ()
   (wrap-byte (+ (zero-page cpu) (cpu-yr cpu))))
 
-(defaddress absolute (:word t)
+(defaddress absolute ()
   (get-word (cpu-pc cpu)))
 
-(defaddress absolute-x (:word t)
+(defaddress absolute-x ()
   (let ((result (wrap-word (+ (absolute cpu) (cpu-xr cpu)))))
     (maybe-update-cycle-count cpu result)
     result))
 
-(defaddress absolute-y (:word t)
+(defaddress absolute-y ()
   (let ((result (wrap-word (+ (absolute cpu) (cpu-yr cpu)))))
     (maybe-update-cycle-count cpu result)
     result))
 
-(defaddress indirect (:word t)
+(defaddress indirect ()
   (get-word (absolute cpu)))
 
-(defaddress indirect-x (:word t)
+(defaddress indirect-x ()
   (get-word (wrap-byte (+ (zero-page cpu) (cpu-xr cpu))) t))
 
-(defaddress indirect-y (:word t)
+(defaddress indirect-y ()
   (let* ((addr (get-word (zero-page cpu) t))
          (result (wrap-word (+ addr (cpu-yr cpu)))))
     (maybe-update-cycle-count cpu result addr)
