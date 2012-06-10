@@ -186,3 +186,33 @@
     (:docs "Set Carry Flag")
     ((#x38 2 1 implied))
   (setf (status-bit :carry) 1))
+
+(defopcode sei
+    (:docs "Set Interrupt Flag")
+    ((#x78 2 1 implied))
+  (setf (status-bit :interrupt) 1))
+
+(defopcode sta
+    (:docs "Store Accumulator" :raw t)
+    ((#x80 4 3 absolute)
+     (#x81 6 2 indirect-x)
+     (#x85 3 2 zero-page)
+     (#x90 5 3 absolute-x)
+     (#x91 6 2 indirect-y)
+     (#x95 4 2 zero-page-x)
+     (#x99 5 3 absolute-y))
+  (funcall setf-form (cpu-ar cpu)))
+
+(defopcode stx
+    (:docs "Store X Register")
+    ((#x86 3 2 zero-page)
+     (#x8e 4 3 absolute)
+     (#x96 4 2 zero-page-y))
+  (funcall setf-form (cpu-xr cpu)))
+
+(defopcode sty
+    (:docs "Store Y Register")
+    ((#x84 3 2 zero-page)
+     (#x8c 4 3 absolute)
+     (#x94 4 2 zero-page-x))
+  (funcall setf-form (cpu-yr cpu)))

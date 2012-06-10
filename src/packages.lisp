@@ -81,7 +81,11 @@
            #:plp
            #:rti
            #:rts
-           #:sec)
+           #:sec
+           #:sei
+           #:sta
+           #:stx
+           #:sty)
   ;; Note: BE NOT AFRAID, DEVELOPERS! (But also, don't :use this package.)
   (:shadow #:bit
            #:and))
