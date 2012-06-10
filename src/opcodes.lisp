@@ -14,6 +14,21 @@
 ;; Optimize later! See Frodo redpill + ICU64 for an example of what's possible.
 ;; Worth using sb-sprof sampling profiler to find low hanging fruit.
 
+(defopcode adc
+    (:docs "Add to Accumulator with Carry")
+    ((#x60 4 3 absolute)
+     (#x61 6 2 indirect-x)
+     (#x65 3 2 zero-page)
+     (#x69 2 2 immediate)
+     (#x70 4 3 absolute-x)
+     (#x71 5 2 indirect-y)
+     (#x75 4 2 zero-page-x)
+     (#x79 4 3 absolute-y))
+  ; TODO: This is a naive implementation. Have a look at py6502's opADC. Improve it.
+  (let ((result (+ (cpu-ar cpu) (funcall mode cpu) (status-bit :carry))))
+    (setf (cpu-ar cpu) result)
+    (update-flags result '(:carry :overflow :negative :zero))))
+
 (defopcode and
     (:docs "And with Accumulator")
     ((#x21 6 2 indirect-x)
@@ -70,6 +85,11 @@
     ((#x50 2 2 relative))
   (branch-if (lambda () (zerop (status-bit :overflow)))))
 
+(defopcode bvs
+    (:docs "Branch on Overflow Set")
+    ((#x70 2 2 relative))
+  (branch-if (lambda () (plusp (status-bit :overflow)))))
+
 (defopcode clc
     (:docs "Clear Carry Flag")
     ((#x18 2 1 implied))
@@ -101,6 +121,7 @@
 
 (defopcode jsr
     (:docs "Jump, Saving Return Address" :raw t)
+    ;; Or Jump to SubRoutine perhaps? After all, we do "pop" back out...
     ((#x20 6 3 absolute))
   (stack-push-word (wrap-word (1+ (cpu-pc cpu))))
   (setf (cpu-pc cpu) (get-word (funcall mode cpu))))
@@ -138,6 +159,12 @@
     (:docs "Push Processor Status")
     ((#x08 3 1 implied))
   (stack-push (cpu-sr cpu)))
+
+(defopcode pla
+    (:docs "Pull Accumulator from Stack")
+    ((#x68 4 1 implied))
+  (let ((result (setf (cpu-ar cpu) (stack-pop))))
+    (update-flags result)))
 
 (defopcode plp
     (:docs "Pull Processor Status from Stack")

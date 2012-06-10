@@ -59,6 +59,7 @@
   (:documentation "Homepage: <a href=\"http://github.com/redline6561/cl-6502\">Github</a>")
   (:use :cl :alexandria :6502-cpu)
   (:export ;; Opcodes
+           #:adc
            #:and
            #:asl
            #:bit
@@ -66,6 +67,7 @@
            #:bpl
            #:brk
            #:bvc
+           #:bvs
            #:clc
            #:cli
            #:eor
@@ -75,6 +77,7 @@
            #:ora
            #:pha
            #:php
+           #:pla
            #:plp
            #:rti
            #:rts
