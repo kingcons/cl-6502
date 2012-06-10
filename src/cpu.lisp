@@ -182,8 +182,8 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
 
 ; Stolen and slightly hacked up from Cliki. Thanks cliki!
 (defun rotate-byte (integer &optional (count 1) (size 8))
-  "Rotate the bits of INTEGER by COUNT. If COUNT is negative, rotate right instead
-of left. SIZE specifies the bitlength of the integer being rotated."
+  "Rotate the bits of INTEGER by COUNT. If COUNT is negative, rotate right
+instead of left. SIZE specifies the bitlength of the integer being rotated."
   (let* ((count (mod count size))
          (bytespec (byte size 0)))
     (labels ((rotate-byte-from-0 (count integer)

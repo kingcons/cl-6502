@@ -8,3 +8,9 @@ Ideas:
 Define restarts for step?
 -- Define the instruction.
 -- Hand over a lambda to funcall/form to eval.
+Have defopcode define a GF for opcode and THEN a bunch of methods with defins.
+-- Better style.
+-- Docs are "in the right place" as opposed to being duplicated in generated code.
+-- This lets us do (documentation 'gf-name 'function) as opposed to:
+--- (documentation (find-method ...) 'method) in the disassembler. MUCH nicer.
+
