@@ -116,6 +116,8 @@
     ((#xb8 2 1 'implied))
   (setf (status-bit :overflow 0)))
 
+;; TODO: Check that CMP, CPX, CPY work correctly. Probably can't
+;; get away with just computing result and a single update-flags call.
 (defopcode cmp (:docs "Compare Memory with Accumulator")
     ((#xc1 6 2 'indirect-x)
      (#xc5 3 2 'zero-page)
@@ -125,19 +127,22 @@
      (#xd5 4 2 'zero-page-x)
      (#xd9 4 3 'absolute-y)
      (#xdd 4 3 'absolute-x))
-  (error 'not-implemented-yet))
+  (let ((result (- (cpu-ar cpu) (funcall mode cpu))))
+    (update-flags result '(:negative :carry :zero))))
 
 (defopcode cpx (:docs "Compare Memory with X register")
     ((#xe0 2 2 'immediate)
      (#xe4 3 2 'zero-page)
      (#xec 4 3 'absolute))
-  (error 'not-implemented-yet))
+  (let ((result (- (cpu-xr cpu) (funcall mode cpu))))
+    (update-flags result '(:negative :carry :zero))))
 
 (defopcode cpy (:docs "Compare Memory with Y register")
     ((#xc0 2 2 'immediate)
      (#xc4 3 2 'zero-page)
      (#xcc 4 3 'absolute))
-  (error 'not-implemented-yet))
+  (let ((result (- (cpu-yr cpu) (funcall mode cpu))))
+    (update-flags result '(:negative :carry :zero))))
 
 (defopcode dec (:docs "Decrement Memory")
     ((#xc6 5 2 'zero-page)
