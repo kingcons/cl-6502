@@ -114,7 +114,7 @@
 
 (defopcode clv (:docs "Clear Overflow Flag")
     ((#xb8 2 1 'implied))
-  (setf (status-bit :overflow 0)))
+  (setf (status-bit :overflow) 0))
 
 (defopcode cmp (:docs "Compare Memory with Accumulator")
     ((#xc1 6 2 'indirect-x)
