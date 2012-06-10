@@ -5,9 +5,6 @@
            #:not-implemented-yet
            #:illegal-opcode
            #:status-bit-error
-           ;; Globals
-           #:*ram*
-           #:*cpu*
            ;; CPU Struct
            #:cpu
            #:make-cpu
@@ -26,6 +23,7 @@
            #:zero-page
            #:zero-page-x
            #:zero-page-y
+           #:indirect
            #:indirect-x
            #:indirect-y
            #:absolute
@@ -50,9 +48,9 @@
            #:status-bit
            #:negative-p
            #:update-flags
+           #:maybe-update-cycle-count
            #:branch-if
            ;; Opcode Macrology
-           #:defins
            #:defopcode))
 
 (defpackage :6502
