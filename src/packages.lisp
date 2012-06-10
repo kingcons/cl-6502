@@ -88,6 +88,8 @@
            #:php
            #:pla
            #:plp
+           #:rol
+           #:ror
            #:rti
            #:rts
            #:sec
