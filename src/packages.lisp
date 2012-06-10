@@ -4,6 +4,8 @@
            #:not-implemented-yet
            #:illegal-opcode
            #:status-bit-error
+           ;; Globals
+           #:*cpu*
            ;; CPU Struct
            #:cpu
            #:cpu-pc

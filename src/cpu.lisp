@@ -50,7 +50,7 @@
 
 (defun get-instruction (opcode)
   "Get the mnemonic for OPCODE. Returns a symbol to be funcalled."
-  (aref *opcodes* opcode))
+  (first (aref *opcodes* opcode)))
 
 (defun get-byte (address)
   "Get a byte from RAM at the given address."
