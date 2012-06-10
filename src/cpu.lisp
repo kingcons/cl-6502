@@ -83,7 +83,7 @@
 (defun (setf get-word) (new-val address)
   "Set ADDRESS and (1+ ADDRESS) in *ram* to NEW-VAL, little endian ordering."
   (setf (get-byte address) (wrap-byte (ash new-val -8))
-        (get-byte (1+ address) (wrap-byte new-val))))
+        (get-byte (1+ address)) (wrap-byte new-val)))
 
 (defun get-range (start &optional end)
   "Get a range of bytes from RAM, starting from START and stopping at END if
@@ -295,7 +295,7 @@ address. Otherwise, funcalling MODE will return the computed address itself."
                  (let ((mode-name (second (alexandria:lastcar mode))))
                    (unless raw
                      (setf (alexandria:lastcar mode)
-                           `(lambda (cpu) (get-byte (,(second mode-name) cpu)))))
+                           `(lambda (cpu) (get-byte (,mode-name cpu)))))
                    `(defins (,name ,@mode)
                         (:setf-form (lambda (x) (setf (,mode-name cpu) x)))
                       ,@body)))
