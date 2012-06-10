@@ -59,6 +59,11 @@
     ((#x90 2 2 'relative))
   (branch-if (lambda () (zerop (status-bit :carry)))))
 
+(defopcode bcs
+    (:docs "Branch on Carry Set")
+    ((#xb0 2 2 'relative))
+  (branch-if (lambda () (plusp (status-bit :carry)))))
+
 (defopcode bit
     (:docs "Test Bits in Memory with Accumulator")
     ((#x24 3 2 'zero-page)
@@ -107,6 +112,11 @@
     (:docs "Clear Interrupt Flag")
     ((#x59 2 1 'implied))
   (setf (status-bit :interrupt) 0))
+
+(defopcode clv
+    (:docs "Clear Overflow Flag")
+    ((#xb8 2 1 'implied))
+  (setf (status-bit :overflow 0)))
 
 (defopcode dey
     (:docs "Decrement Y register")
@@ -264,6 +274,24 @@
      (#x8c 4 3 'absolute)
      (#x94 4 2 'zero-page-x))
   (funcall setf-form (cpu-yr cpu)))
+
+(defopcode tax
+    (:docs "Transfer Accumulator to X register")
+    ((#xaa 2 1 'implied))
+  (let ((result (setf (cpu-xr cpu) (cpu-ar cpu))))
+    (update-flags result)))
+
+(defopcode tay
+    (:docs "Transfer Accumulator to Y register")
+    ((#xa8 2 1 'implied))
+  (let ((result (setf (cpu-yr cpu) (cpu-ar cpu))))
+    (update-flags result)))
+
+(defopcode tsx
+    (:docs "Transfer Stack Pointer to X register")
+    ((#xba 2 1 'implied))
+  (let ((result (setf (cpu-xr cpu) (cpu-sp cpu))))
+    (update-flags result)))
 
 (defopcode txa
     (:docs "Transfer X register to Accumulator")

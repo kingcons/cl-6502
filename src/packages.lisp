@@ -61,6 +61,7 @@
            #:and
            #:asl
            #:bcc
+           #:bcs
            #:bit
            #:bmi
            #:bpl
@@ -69,6 +70,7 @@
            #:bvs
            #:clc
            #:cli
+           #:clv
            #:dey
            #:eor
            #:jmp
@@ -89,6 +91,9 @@
            #:sta
            #:stx
            #:sty
+           #:tax
+           #:tay
+           #:tsx
            #:txa
            #:txs
            #:tya)
