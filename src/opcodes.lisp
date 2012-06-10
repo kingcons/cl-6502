@@ -64,6 +64,11 @@
     ((#xb0 2 2 'relative))
   (branch-if (lambda () (plusp (status-bit :carry)))))
 
+(defopcode beq
+    (:docs "Branch if Equal")
+    ((#xf0 2 2 'relative))
+  (branch-if (lambda () (plusp (status-bit :zero)))))
+
 (defopcode bit
     (:docs "Test Bits in Memory with Accumulator")
     ((#x24 3 2 'zero-page)
@@ -77,6 +82,11 @@
     (:docs "Branch on Negative Result")
     ((#x30 2 2 'relative))
   (branch-if (lambda () (plusp (status-bit :negative)))))
+
+(defopcode bne
+    (:docs "Branch if Not Equal")
+    ((#xd0 2 2 'relative))
+  (branch-if (lambda () (zerop (status-bit :zero)))))
 
 (defopcode bpl
     (:docs "Branch on Positive Result")
@@ -108,6 +118,11 @@
     ((#x18 2 1 'implied))
   (setf (status-bit :carry) 0))
 
+(defopcode cld
+    (:docs "Clear Decimal Flag")
+    ((#xd8 2 1 'implied))
+  (setf (status-bit :decimal) 0))
+
 (defopcode cli
     (:docs "Clear Interrupt Flag")
     ((#x59 2 1 'implied))
@@ -118,11 +133,16 @@
     ((#xb8 2 1 'implied))
   (setf (status-bit :overflow 0)))
 
+(defopcode dex
+    (:docs "Decrement X register")
+    ((#xca 2 1 'implied))
+  (let ((result (setf (cpu-xr cpu) (wrap-byte (1- (cpu-xr cpu))))))
+    (update-flags result)))
+
 (defopcode dey
     (:docs "Decrement Y register")
     ((#x88 2 1 'implied))
-  (let ((result (wrap-byte (1- (cpu-yr cpu)))))
-    (setf (cpu-yr cpu) result)
+  (let ((result (setf (cpu-yr cpu) (wrap-byte (1- (cpu-yr cpu))))))
     (update-flags result)))
 
 (defopcode eor
@@ -136,6 +156,18 @@
      (#x55 4 2 'zero-page-x)
      (#x59 4 3 'absolute-y))
   (let ((result (setf (cpu-ar cpu) (logxor (funcall mode cpu) (cpu-ar cpu)))))
+    (update-flags result)))
+
+(defopcode inx
+    (:docs "Increment X register")
+    ((#xe8 2 1 'implied))
+  (let ((result (setf (cpu-xr cpu) (wrap-byte (1+ (cpu-xr cpu))))))
+    (update-flags result)))
+
+(defopcode iny
+    (:docs "Increment Y register")
+    ((#xc8 2 1 'implied))
+  (let ((result (setf (cpu-yr cpu) (wrap-byte (1+ (cpu-yr cpu))))))
     (update-flags result)))
 
 (defopcode jmp
@@ -195,6 +227,11 @@
     (update-flags result '(:zero))
     (funcall setf-form result)))
 
+(defopcode nop
+    (:docs "No Operation")
+    ((#xea 2 1 'implied))
+  nil)
+
 (defopcode ora
     (:docs "Bitwise OR with Accumulator")
     ((#x01 6 2 'indirect-x)
@@ -244,6 +281,11 @@
     (:docs "Set Carry Flag")
     ((#x38 2 1 'implied))
   (setf (status-bit :carry) 1))
+
+(defopcode sed
+    (:docs "Set Decimal Flag")
+    ((#xf8 2 1 'implied))
+  (setf (status-bit :decimal) 1))
 
 (defopcode sei
     (:docs "Set Interrupt Flag")

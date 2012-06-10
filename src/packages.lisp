@@ -1,7 +1,6 @@
 (defpackage :6502-cpu
   (:use :cl :alexandria)
   (:export ;; Conditions
-           #:6502-error
            #:not-implemented-yet
            #:illegal-opcode
            #:status-bit-error
@@ -60,23 +59,30 @@
            #:asl
            #:bcc
            #:bcs
+           #:beq
            #:bit
            #:bmi
+           #:bne
            #:bpl
            #:brk
            #:bvc
            #:bvs
            #:clc
+           #:cld
            #:cli
            #:clv
+           #:dex
            #:dey
            #:eor
+           #:inx
+           #:iny
            #:jmp
            #:jsr
            #:lda
            #:ldx
            #:ldy
            #:lsr
+           #:nop
            #:ora
            #:pha
            #:php
@@ -85,6 +91,7 @@
            #:rti
            #:rts
            #:sec
+           #:sed
            #:sei
            #:sta
            #:stx
