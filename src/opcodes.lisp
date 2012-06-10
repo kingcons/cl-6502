@@ -54,6 +54,11 @@
     (update-flags result)
     (funcall setf-form result)))
 
+(defopcode bcc
+    (:docs "Branch on Carry Clear")
+    ((#x90 2 2 'relative))
+  (branch-if (lambda () (zerop (status-bit :carry)))))
+
 (defopcode bit
     (:docs "Test Bits in Memory with Accumulator")
     ((#x24 3 2 'zero-page)
@@ -103,6 +108,13 @@
     ((#x59 2 1 'implied))
   (setf (status-bit :interrupt) 0))
 
+(defopcode dey
+    (:docs "Decrement Y register")
+    ((#x88 2 1 'implied))
+  (let ((result (wrap-byte (1- (cpu-yr cpu)))))
+    (setf (cpu-yr cpu) result)
+    (update-flags result)))
+
 (defopcode eor
     (:docs "Exclusive OR with Accumulator")
     ((#x40 4 3 'absolute)
@@ -128,6 +140,39 @@
     ((#x20 6 3 'absolute))
   (stack-push-word (wrap-word (1+ (cpu-pc cpu))))
   (setf (cpu-pc cpu) (get-word (funcall mode cpu))))
+
+(defopcode lda
+    (:docs "Load Accumulator from Memory")
+    ((#xa1 6 2 'indirect-x)
+     (#xa5 3 2 'zero-page)
+     (#xa9 2 2 'immediate)
+     (#xad 4 3 'absolute)
+     (#xb1 5 2 'indirect-y)
+     (#xb5 4 2 'zero-page-x)
+     (#xb9 4 3 'absolute-y)
+     (#xbd 4 3 'absolute-x))
+  (let ((result (setf (cpu-ar cpu) (funcall mode cpu))))
+    (update-flags result)))
+
+(defopcode ldx
+    (:docs "Load X register from Memory")
+    ((#xa2 2 2 'immediate)
+     (#xa6 3 2 'zero-page)
+     (#xae 4 3 'absolute)
+     (#xb6 4 2 'zero-page-y)
+     (#xbe 4 3 'absolute-y))
+  (let ((result (setf (cpu-xr cpu) (funcall mode cpu))))
+    (update-flags result)))
+
+(defopcode ldy
+    (:docs "Load Y register from Memory")
+    ((#xa0 2 2 'immediate)
+     (#xa4 3 2 'zero-page)
+     (#xac 4 3 'absolute)
+     (#xbc 4 3 'absolute-x)
+     (#xb4 4 2 'zero-page-x))
+  (let ((result (setf (cpu-yr cpu) (funcall mode cpu))))
+    (update-flags result)))
 
 (defopcode lsr
     (:docs "Logical Shift Right" :raw t)
@@ -207,15 +252,32 @@
   (funcall setf-form (cpu-ar cpu)))
 
 (defopcode stx
-    (:docs "Store X Register" :raw t)
+    (:docs "Store X register" :raw t)
     ((#x86 3 2 'zero-page)
      (#x8e 4 3 'absolute)
      (#x96 4 2 'zero-page-y))
   (funcall setf-form (cpu-xr cpu)))
 
 (defopcode sty
-    (:docs "Store Y Register" :raw t)
+    (:docs "Store Y register" :raw t)
     ((#x84 3 2 'zero-page)
      (#x8c 4 3 'absolute)
      (#x94 4 2 'zero-page-x))
   (funcall setf-form (cpu-yr cpu)))
+
+(defopcode txa
+    (:docs "Transfer X register to Accumulator")
+    ((#x8a 2 1 'implied))
+  (let ((result (setf (cpu-ar cpu) (cpu-xr cpu))))
+    (update-flags result)))
+
+(defopcode txs
+    (:docs "Transfer X register to Stack Pointer")
+    ((#x9a 2 1 ' implied))
+  (setf (cpu-sp cpu) (cpu-xr cpu)))
+
+(defopcode tya
+    (:docs "Transfer Y register to Accumulator")
+    ((#x98 2 1 'implied))
+  (let ((result (setf (cpu-ar cpu) (cpu-yr cpu))))
+    (update-flags result)))

@@ -60,6 +60,7 @@
            #:adc
            #:and
            #:asl
+           #:bcc
            #:bit
            #:bmi
            #:bpl
@@ -68,9 +69,13 @@
            #:bvs
            #:clc
            #:cli
+           #:dey
            #:eor
            #:jmp
            #:jsr
+           #:lda
+           #:ldx
+           #:ldy
            #:lsr
            #:ora
            #:pha
@@ -83,7 +88,10 @@
            #:sei
            #:sta
            #:stx
-           #:sty)
+           #:sty
+           #:txa
+           #:txs
+           #:tya)
   ;; Note: BE NOT AFRAID, DEVELOPERS! (But also, don't :use this package.)
   (:shadow #:bit
            #:and))
