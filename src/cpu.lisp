@@ -29,18 +29,34 @@
 
 ;;; Helpers
 
-(defmethod next ((cpu cpu)) ;; Rename and shadow STEP?
+(defmethod execute ((cpu cpu) &optional start)
+  "Step the CPU until the interrupt flag is set and BRK is fetched.
+If START is provided, the PC is set so execution begins at that address."
+  (when start
+    (setf (cpu-pc cpu) start))
+  (loop for op = (zero-page cpu)
+        until (plusp (status-bit :interrupt cpu))
+        do (6502-step cpu op))
+  (print :done)
+  cpu)
+
+(defun next (&optional start (cpu *cpu*))
+  "A simple wrapper for 6502-step. START behaves as in execute."
+  (when start
+    (setf (cpu-pc cpu) start))
+  (6502-step cpu (zero-page cpu)))
+
+(defmethod 6502-step ((cpu cpu) opcode)
   "Step the CPU through the next instruction."
-  (let ((opcode (immediate cpu)))
-    (setf (cpu-pc cpu) (wrap-word (1+ (cpu-pc cpu))))
-    (handler-case (funcall (get-instruction opcode) opcode)
-      (undefined-function ()
-        (error 'illegal-opcode :opcode opcode))
-      ;; KLUDGE: Catch simple-error for now as there isn't a
-      ;; no-applicable-method condition. A suggestion from pjb:
-      ;; (defmethod no-applicable-method ((fun t) &rest args) (error ...))
-      (simple-error ()
-        (error 'not-yet-implemented :opcode opcode)))))
+  (setf (cpu-pc cpu) (wrap-word (1+ (cpu-pc cpu))))
+  (handler-case (funcall (get-instruction opcode) opcode)
+    (undefined-function ()
+      (error 'illegal-opcode :opcode opcode))
+    ;; KLUDGE: Catch simple-error for now as there isn't a
+    ;; no-applicable-method condition. A suggestion from pjb:
+    ;; (defmethod no-applicable-method ((fun t) &rest args) (error ...))
+    (simple-error ()
+      (error 'not-yet-implemented :opcode opcode))))
 
 (defun reset ()
   "Reset the virtual machine to an initial state."
@@ -99,26 +115,26 @@ e.g. When the last two bytes of ADDRESS are #xff."
   (+ (logand address #xff00)
      (logand (1+ address) #xff)))
 
-(defun stack-push (value)
+(defun stack-push (value cpu)
   "Push the given VALUE on the stack and decrement the SP."
-  (setf (get-byte (+ (cpu-sp *cpu*) #x100)) (wrap-byte value))
-  (decf (cpu-sp *cpu*))
-  (wrap-stack *cpu*))
+  (setf (get-byte (+ (cpu-sp cpu) #x100)) (wrap-byte value))
+  (decf (cpu-sp cpu))
+  (wrap-stack cpu))
 
-(defun stack-push-word (value)
+(defun stack-push-word (value cpu)
   "Push the 16-bit word VALUE onto the stack."
-  (stack-push (wrap-byte (ash value -8)))
-  (stack-push (wrap-byte value)))
+  (stack-push (wrap-byte (ash value -8)) cpu)
+  (stack-push (wrap-byte value) cpu))
 
-(defun stack-pop ()
+(defun stack-pop (cpu)
   "Pop the value pointed to by the SP and increment the SP."
-  (incf (cpu-sp *cpu*))
-  (wrap-stack *cpu*)
-  (get-byte (+ (cpu-sp *cpu*) #x100)))
+  (incf (cpu-sp cpu))
+  (wrap-stack cpu)
+  (get-byte (+ (cpu-sp cpu) #x100)))
 
-(defun stack-pop-word ()
+(defun stack-pop-word (cpu)
   "Pop a 16-bit word off the stack."
-  (+ (stack-pop) (ash (stack-pop) 8)))
+  (+ (stack-pop cpu) (ash (stack-pop cpu) 8)))
 
 (defun %status-bit (n)
   (let ((status-register '((:carry     . 0)
@@ -131,21 +147,21 @@ e.g. When the last two bytes of ADDRESS are #xff."
                            (:negative  . 7))))
     (rest (assoc n status-register))))
 
-(defun status-bit (n)
+(defun status-bit (n &optional (cpu *cpu*))
   "Retrieve bit N from the status register. N should be a keyword."
-  (ldb (byte 1 (%status-bit n)) (cpu-sr *cpu*)))
+  (ldb (byte 1 (%status-bit n)) (cpu-sr cpu)))
 
-(defun (setf status-bit) (new-val n)
+(defun (setf status-bit) (new-val n &optional (cpu *cpu*))
   "Set bit N in the status register to NEW-VAL. N should be a keyword."
   (if (or (zerop new-val) (= 1 new-val))
-      (setf (ldb (byte 1 (%status-bit n)) (cpu-sr *cpu*)) new-val)
+      (setf (ldb (byte 1 (%status-bit n)) (cpu-sr cpu)) new-val)
       (error 'status-bit-error :index (%status-bit n))))
 
-(defun update-flags (value &optional (flags '(:zero :negative)))
+(defun update-flags (value &optional (flags '(:zero :negative)) (cpu *cpu*))
   "Loop over FLAGS which should be a list of keywords and set flags in the
 status register based on VALUE. FLAGS is '(:zero :negative) by default."
   (loop for flag in flags do
-    (setf (status-bit flag)
+    (setf (status-bit flag cpu)
           (ecase flag ; TODO: Do carry and negative always work as expected?
             (:zero (if (zerop value) 1 0))
             (:carry (if (logbitp 7 value) 1 0))
@@ -159,11 +175,11 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
                 (logand address #xff00)))
     (incf (cpu-cc cpu))))
 
-(defun branch-if (predicate)
+(defun branch-if (cpu predicate)
   "Take a Relative branch if PREDICATE is true, otherwise increment the PC."
   (if (funcall predicate)
-      (setf (cpu-pc *cpu*) (relative *cpu*))
-      (incf (cpu-pc *cpu*))))
+      (setf (cpu-pc cpu) (relative cpu))
+      (incf (cpu-pc cpu))))
 
 ; Stolen and slightly hacked up from Cliki. Thanks cliki!
 (defun rotate-byte (integer &optional (count 1) (size 8))

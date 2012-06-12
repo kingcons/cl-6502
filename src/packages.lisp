@@ -31,7 +31,9 @@
            #:relative
            ;; Utils
            #:disasm
+           #:execute
            #:next
+           #:6502-step
            #:reset
            #:get-instruction
            #:get-byte

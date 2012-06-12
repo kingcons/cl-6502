@@ -24,7 +24,7 @@
      (#x75 4 2 'zero-page-x)
      (#x79 4 3 'absolute-y))
   ; TODO: This is a naive implementation. Have a look at py6502's opADC.
-  (let ((result (+ (cpu-ar cpu) (funcall mode cpu) (status-bit :carry))))
+  (let ((result (+ (cpu-ar cpu) (funcall mode cpu) (status-bit :carry cpu))))
     (setf (cpu-ar cpu) result)
     (update-flags result '(:carry :overflow :negative :zero))))
 
@@ -53,68 +53,68 @@
 
 (defopcode bcc (:docs "Branch on Carry Clear")
     ((#x90 2 2 'relative))
-  (branch-if (lambda () (zerop (status-bit :carry)))))
+  (branch-if cpu (lambda () (zerop (status-bit :carry cpu)))))
 
 (defopcode bcs (:docs "Branch on Carry Set")
     ((#xb0 2 2 'relative))
-  (branch-if (lambda () (plusp (status-bit :carry)))))
+  (branch-if cpu (lambda () (plusp (status-bit :carry cpu)))))
 
 (defopcode beq (:docs "Branch if Equal")
     ((#xf0 2 2 'relative))
-  (branch-if (lambda () (plusp (status-bit :zero)))))
+  (branch-if cpu (lambda () (plusp (status-bit :zero cpu)))))
 
 (defopcode bit (:docs "Test Bits in Memory with Accumulator")
     ((#x24 3 2 'zero-page)
      (#x2c 4 3 'absolute))
   (let ((result (funcall mode cpu)))
     (when (zerop (logand (cpu-ar cpu) result))
-      (setf (status-bit :zero) 1))
+      (setf (status-bit :zero cpu) 1))
     (update-flags result '(:negative :overflow))))
 
 (defopcode bmi (:docs "Branch on Negative Result")
     ((#x30 2 2 'relative))
-  (branch-if (lambda () (plusp (status-bit :negative)))))
+  (branch-if cpu (lambda () (plusp (status-bit :negative cpu)))))
 
 (defopcode bne (:docs "Branch if Not Equal")
     ((#xd0 2 2 'relative))
-  (branch-if (lambda () (zerop (status-bit :zero)))))
+  (branch-if cpu (lambda () (zerop (status-bit :zero cpu)))))
 
 (defopcode bpl (:docs "Branch on Positive Result")
     ((#x10 2 2 'relative))
-  (branch-if (lambda () (zerop (status-bit :negative)))))
+  (branch-if cpu (lambda () (zerop (status-bit :negative cpu)))))
 
 (defopcode brk (:docs "Force Break")
     ((#x00 7 1 'implied))
   (let ((pc (wrap-word (1+ (cpu-pc cpu)))))
-    (stack-push-word pc)
-    (setf (status-bit :break) 1)
-    (stack-push (cpu-sr cpu))
-    (setf (status-bit :interrupt) 1)
+    (stack-push-word pc cpu)
+    (setf (status-bit :break cpu) 1)
+    (stack-push (cpu-sr cpu) cpu)
+    (setf (status-bit :interrupt cpu) 1)
     (setf (cpu-pc cpu) (get-word #xfffe))))
 
 (defopcode bvc (:docs "Branch on Overflow Clear")
     ((#x50 2 2 'relative))
-  (branch-if (lambda () (zerop (status-bit :overflow)))))
+  (branch-if cpu (lambda () (zerop (status-bit :overflow cpu)))))
 
 (defopcode bvs (:docs "Branch on Overflow Set")
     ((#x70 2 2 'relative))
-  (branch-if (lambda () (plusp (status-bit :overflow)))))
+  (branch-if cpu (lambda () (plusp (status-bit :overflow cpu)))))
 
 (defopcode clc (:docs "Clear Carry Flag")
     ((#x18 2 1 'implied))
-  (setf (status-bit :carry) 0))
+  (setf (status-bit :carry cpu) 0))
 
 (defopcode cld (:docs "Clear Decimal Flag")
     ((#xd8 2 1 'implied))
-  (setf (status-bit :decimal) 0))
+  (setf (status-bit :decimal cpu) 0))
 
 (defopcode cli (:docs "Clear Interrupt Flag")
     ((#x59 2 1 'implied))
-  (setf (status-bit :interrupt) 0))
+  (setf (status-bit :interrupt cpu) 0))
 
 (defopcode clv (:docs "Clear Overflow Flag")
     ((#xb8 2 1 'implied))
-  (setf (status-bit :overflow) 0))
+  (setf (status-bit :overflow cpu) 0))
 
 (defopcode cmp (:docs "Compare Memory with Accumulator")
     ((#xc1 6 2 'indirect-x)
@@ -199,7 +199,7 @@
 
 (defopcode jsr (:docs "Jump to Subroutine" :raw t)
     ((#x20 6 3 'absolute))
-  (stack-push-word (wrap-word (1+ (cpu-pc cpu))))
+  (stack-push-word (wrap-word (1+ (cpu-pc cpu))) cpu)
   (setf (cpu-pc cpu) (get-word (funcall mode cpu))))
 
 (defopcode lda (:docs "Load Accumulator from Memory")
@@ -260,20 +260,20 @@
 
 (defopcode pha (:docs "Push Accumulator")
     ((#x48 3 1 'implied))
-  (stack-push (cpu-ar cpu)))
+  (stack-push (cpu-ar cpu) cpu))
 
 (defopcode php (:docs "Push Processor Status")
     ((#x08 3 1 'implied))
-  (stack-push (cpu-sr cpu)))
+  (stack-push (cpu-sr cpu) cpu))
 
 (defopcode pla (:docs "Pull Accumulator from Stack")
     ((#x68 4 1 'implied))
-  (let ((result (setf (cpu-ar cpu) (stack-pop))))
+  (let ((result (setf (cpu-ar cpu) (stack-pop cpu))))
     (update-flags result)))
 
 (defopcode plp (:docs "Pull Processor Status from Stack")
     ((#x26 4 1 'implied))
-  (setf (cpu-sr cpu) (stack-pop)))
+  (setf (cpu-sr cpu) (stack-pop cpu)))
 
 (defopcode rol (:docs "Rotate Left")
     ((#x2a 2 1 'accumulator)
@@ -297,12 +297,12 @@
 
 (defopcode rti (:docs "Return from Interrupt")
     ((#x40 6 1 'implied))
-  (setf (cpu-sr cpu) (stack-pop))
-  (setf (cpu-pc cpu) (stack-pop-word)))
+  (setf (cpu-sr cpu) (stack-pop cpu))
+  (setf (cpu-pc cpu) (stack-pop-word cpu)))
 
 (defopcode rts (:docs "Return from Subroutine")
     ((#x60 6 1 'implied))
-  (setf (cpu-pc cpu) (1+ (stack-pop-word))))
+  (setf (cpu-pc cpu) (1+ (stack-pop-word cpu))))
 
 (defopcode sbc (:docs "Subtract from Accumulator with Carry")
     ((#xe1 6 2 'indirect-x)
@@ -314,21 +314,21 @@
      (#xf9 4 3 'absolute-y)
      (#xfd 4 3 'absolute-x))
   ; TODO: This is a naive implementation. Have a look at py6502's opSBC.
-  (let ((result (- (cpu-ar cpu) (funcall mode cpu) (status-bit :carry))))
+  (let ((result (- (cpu-ar cpu) (funcall mode cpu) (status-bit :carry cpu))))
     (setf (cpu-ar cpu) result)
     (update-flags result '(:carry :overflow :negative :zero))))
 
 (defopcode sec (:docs "Set Carry Flag")
     ((#x38 2 1 'implied))
-  (setf (status-bit :carry) 1))
+  (setf (status-bit :carry cpu) 1))
 
 (defopcode sed (:docs "Set Decimal Flag")
     ((#xf8 2 1 'implied))
-  (setf (status-bit :decimal) 1))
+  (setf (status-bit :decimal cpu) 1))
 
 (defopcode sei (:docs "Set Interrupt Flag")
     ((#x78 2 1 'implied))
-  (setf (status-bit :interrupt) 1))
+  (setf (status-bit :interrupt cpu) 1))
 
 (defopcode sta (:docs "Store Accumulator" :raw t)
     ((#x80 4 3 'absolute)
