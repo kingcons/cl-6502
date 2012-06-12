@@ -251,10 +251,10 @@
      (#x05 3 2 'zero-page)
      (#x09 2 2 'immediate)
      (#x0d 4 3 'absolute)
-     (#x10 4 3 'absolute-x)
      (#x11 5 2 'indirect-y)
      (#x15 4 2 'zero-page-x)
-     (#x19 4 3 'absolute-y))
+     (#x19 4 3 'absolute-y)
+     (#x1d 4 3 'absolute-x))
   (let ((result (setf (cpu-ar cpu) (logior (cpu-ar cpu) (funcall mode cpu)))))
     (update-flags result)))
 
@@ -272,7 +272,7 @@
     (update-flags result)))
 
 (defopcode plp (:docs "Pull Processor Status from Stack")
-    ((#x26 4 1 'implied))
+    ((#x28 4 1 'implied))
   (setf (cpu-sr cpu) (stack-pop cpu)))
 
 (defopcode rol (:docs "Rotate Left")

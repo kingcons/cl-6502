@@ -249,6 +249,8 @@ that may be funcalled with a value to set the address computed by MODE."
   `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) &key (cpu *cpu*)
                      (,(intern "MODE") ,mode) (,(intern "SETF-FORM") ,setf-form))
      ,@body
+     ,(when (and (not (eql mode 'relative)) (> byte-count 1))
+        `(incf (cpu-pc cpu) ,(1- byte-count)))
      (incf (cpu-cc cpu) ,cycle-count)))
 
 (defmacro defopcode (name (&key docs raw) modes &body body)
