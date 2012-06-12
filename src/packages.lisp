@@ -31,9 +31,6 @@
            #:relative
            ;; Utils
            #:disasm
-           #:execute
-           #:next
-           #:6502-step
            #:reset
            #:get-instruction
            #:get-byte
@@ -115,7 +112,11 @@
            #:tsx
            #:txa
            #:txs
-           #:tya)
+           #:tya
+           ;; Utils/UI
+           #:execute
+           #:next
+           #:6502-step)
   ;; Note: BE NOT AFRAID, DEVELOPERS! (But also, don't :use this package.)
   (:shadow #:bit
            #:and))
