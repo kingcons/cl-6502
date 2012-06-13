@@ -871,7 +871,7 @@ the 6510 (the C64 processor).
   |  Zero Page     |   ORA Oper            |    05   |    2    |    3     |
   |  Zero Page,X   |   ORA Oper,X          |    15   |    2    |    4     |
   |  Absolute      |   ORA Oper            |    0D   |    3    |    4     |
-  |  Absolute,X    |   ORA Oper,X          |    10   |    3    |    4*    |
+  |  Absolute,X    |   ORA Oper,X          |    1D   |    3    |    4*    |
   |  Absolute,Y    |   ORA Oper,Y          |    19   |    3    |    4*    |
   |  (Indirect,X)  |   ORA (Oper,X)        |    01   |    2    |    6     |
   |  (Indirect),Y  |   ORA (Oper),Y        |    11   |    2    |    5     |
