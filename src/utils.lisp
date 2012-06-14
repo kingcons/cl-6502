@@ -1,15 +1,10 @@
 (in-package :6502)
 
-(defmethod execute ((cpu cpu) &optional start)
-  "Step the CPU until the interrupt flag is set and BRK is fetched.
-If START is provided, the PC is set so execution begins at that address."
-  (when start
-    (setf (cpu-pc cpu) start))
-  (loop for op = (zero-page cpu)
-        until (zerop op)
-        do (6502-step cpu op))
-  (funcall 'brk 0)
-  (print :done)
+(defmethod execute ((cpu cpu))
+  "Step the CPU until a BRK occurs."
+  (loop for result = (next)
+        until (eql :done result)
+        finally (print result))
   cpu)
 
 (defun next (&optional start (cpu *cpu*))
@@ -20,6 +15,8 @@ If START is provided, the PC is set so execution begins at that address."
 
 (defmethod 6502-step ((cpu cpu) opcode)
   "Step the CPU through the next instruction."
+  (when (zerop opcode)
+    (return-from 6502-step :done))
   (setf (cpu-pc cpu) (wrap-word (1+ (cpu-pc cpu))))
   (handler-case (funcall (get-instruction opcode) opcode)
     (undefined-function ()
@@ -29,4 +26,3 @@ If START is provided, the PC is set so execution begins at that address."
     ;; (defmethod no-applicable-method ((fun t) &rest args) (error ...))
     (simple-error ()
       (error 'not-yet-implemented :opcode opcode))))
-

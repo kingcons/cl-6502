@@ -25,7 +25,7 @@
   "The 6502 instance used by opcodes in the package.")
 
 (defparameter *opcodes* (make-array (expt 2 8) :element-type 'cons)
-  "A mapping of opcodes to instruction mnemonic/byte-count pairs.")
+  "A mapping of opcodes to instruction mnemonic/metadata conses.")
 
 ;;; Helpers
 
@@ -248,7 +248,7 @@ TRACK-PC is t, the default, the program counter will be incremented to just
 past the instruction's operands. Otherwise, BODY is responsible for the PC."
   ;; KLUDGE: Why do I have to intern these symbols so they are created
   ;; in the correct package, i.e. the calling package rather than 6502-cpu?
-  `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) &key (cpu *cpu*)
+  `(defmethod ,name ((opcode (eql ,opcode)) &key (cpu *cpu*)
                      (,(intern "MODE") ,mode) (,(intern "SETF-FORM") ,setf-form))
      ,@body
      ,(when (and track-pc (> byte-count 1))
