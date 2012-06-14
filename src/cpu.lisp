@@ -240,21 +240,23 @@ address. If CPU-REG is non-nil, BODY will be wrapped in a get-byte for setf."
 ;;; Opcode Macrology
 
 (defmacro defins ((name opcode cycle-count byte-count mode)
-                  (&key setf-form) &body body)
+                  (&key setf-form (track-pc t)) &body body)
   "Define an EQL-Specialized method on OPCODE named NAME. MODE must return an
 address or byte at an address if funcalled with a cpu. SETF-FORM is a lambda
-that may be funcalled with a value to set the address computed by MODE."
+that may be funcalled with a value to set the address computed by MODE. If
+TRACK-PC is t, the default, the program counter will be incremented to just
+past the instruction's operands. Otherwise, BODY is responsible for the PC."
   ;; KLUDGE: Why do I have to intern these symbols so they are created
   ;; in the correct package, i.e. the calling package rather than 6502-cpu?
   `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) &key (cpu *cpu*)
                      (,(intern "MODE") ,mode) (,(intern "SETF-FORM") ,setf-form))
      ,@body
      ;; TODO: account for jsr+jmp, rts, relative mode. no-count arg to defopcode?
-     ,(when (> byte-count 1)
+     ,(when (and track-pc (> byte-count 1))
         `(incf (cpu-pc cpu) ,(1- byte-count)))
      (incf (cpu-cc cpu) ,cycle-count)))
 
-(defmacro defopcode (name (&key docs raw) modes &body body)
+(defmacro defopcode (name (&key docs raw (track-pc t)) modes &body body)
   "Define a Generic Function NAME with DOCS if provided and instructions,
 i.e. methods, via DEFINS for each addressing mode listed in MODES. If RAW is
 non-nil, MODE can be funcalled with a cpu in BODY to retrieve the byte at MODE's
@@ -270,6 +272,7 @@ address. Otherwise, funcalling MODE will return the computed address itself."
                      (setf (alexandria:lastcar mode)
                            `(lambda (cpu) (get-byte (,mode-name cpu)))))
                    `(defins (,name ,@mode)
-                        (:setf-form (lambda (x) (setf (,mode-name cpu) x)))
+                        (:setf-form (lambda (x) (setf (,mode-name cpu) x))
+                         :track-pc ,track-pc)
                       ,@body)))
                modes)))

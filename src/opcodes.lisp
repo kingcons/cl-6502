@@ -51,15 +51,15 @@
     (update-flags result)
     (funcall setf-form result)))
 
-(defopcode bcc (:docs "Branch on Carry Clear")
+(defopcode bcc (:docs "Branch on Carry Clear" :track-pc nil)
     ((#x90 2 2 'relative))
   (branch-if cpu (lambda () (zerop (status-bit :carry cpu)))))
 
-(defopcode bcs (:docs "Branch on Carry Set")
+(defopcode bcs (:docs "Branch on Carry Set" :track-pc nil)
     ((#xb0 2 2 'relative))
   (branch-if cpu (lambda () (plusp (status-bit :carry cpu)))))
 
-(defopcode beq (:docs "Branch if Equal")
+(defopcode beq (:docs "Branch if Equal" :track-pc nil)
     ((#xf0 2 2 'relative))
   (branch-if cpu (lambda () (plusp (status-bit :zero cpu)))))
 
@@ -71,15 +71,15 @@
       (setf (status-bit :zero cpu) 1))
     (update-flags result '(:negative :overflow))))
 
-(defopcode bmi (:docs "Branch on Negative Result")
+(defopcode bmi (:docs "Branch on Negative Result" :track-pc nil)
     ((#x30 2 2 'relative))
   (branch-if cpu (lambda () (plusp (status-bit :negative cpu)))))
 
-(defopcode bne (:docs "Branch if Not Equal")
+(defopcode bne (:docs "Branch if Not Equal" :track-pc nil)
     ((#xd0 2 2 'relative))
   (branch-if cpu (lambda () (zerop (status-bit :zero cpu)))))
 
-(defopcode bpl (:docs "Branch on Positive Result")
+(defopcode bpl (:docs "Branch on Positive Result" :track-pc nil)
     ((#x10 2 2 'relative))
   (branch-if cpu (lambda () (zerop (status-bit :negative cpu)))))
 
@@ -92,11 +92,11 @@
     (setf (status-bit :interrupt cpu) 1)
     (setf (cpu-pc cpu) (get-word #xfffe))))
 
-(defopcode bvc (:docs "Branch on Overflow Clear")
+(defopcode bvc (:docs "Branch on Overflow Clear" :track-pc nil)
     ((#x50 2 2 'relative))
   (branch-if cpu (lambda () (zerop (status-bit :overflow cpu)))))
 
-(defopcode bvs (:docs "Branch on Overflow Set")
+(defopcode bvs (:docs "Branch on Overflow Set" :track-pc nil)
     ((#x70 2 2 'relative))
   (branch-if cpu (lambda () (plusp (status-bit :overflow cpu)))))
 
@@ -192,12 +192,12 @@
   (let ((result (setf (cpu-yr cpu) (wrap-byte (1+ (cpu-yr cpu))))))
     (update-flags result)))
 
-(defopcode jmp (:docs "Jump, unconditionally, to new location" :raw t)
+(defopcode jmp (:docs "Jump Unconditionally" :raw t :track-pc nil)
     ((#x4c 3 3 'absolute)
      (#x6c 5 3 'indirect))
   (setf (cpu-pc cpu) (funcall mode cpu)))
 
-(defopcode jsr (:docs "Jump to Subroutine" :raw t)
+(defopcode jsr (:docs "Jump to Subroutine" :raw t :track-pc nil)
     ((#x20 6 3 'absolute))
   (stack-push-word (wrap-word (1+ (cpu-pc cpu))) cpu)
   (setf (cpu-pc cpu) (get-word (funcall mode cpu))))
@@ -300,7 +300,7 @@
   (setf (cpu-sr cpu) (stack-pop cpu))
   (setf (cpu-pc cpu) (stack-pop-word cpu)))
 
-(defopcode rts (:docs "Return from Subroutine")
+(defopcode rts (:docs "Return from Subroutine" :track-pc nil)
     ((#x60 6 1 'implied))
   (setf (cpu-pc cpu) (1+ (stack-pop-word cpu))))
 
