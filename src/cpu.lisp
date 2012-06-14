@@ -251,7 +251,6 @@ past the instruction's operands. Otherwise, BODY is responsible for the PC."
   `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) &key (cpu *cpu*)
                      (,(intern "MODE") ,mode) (,(intern "SETF-FORM") ,setf-form))
      ,@body
-     ;; TODO: account for jsr+jmp, rts, relative mode. no-count arg to defopcode?
      ,(when (and track-pc (> byte-count 1))
         `(incf (cpu-pc cpu) ,(1- byte-count)))
      (incf (cpu-cc cpu) ,cycle-count)))
