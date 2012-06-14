@@ -15,14 +15,14 @@
 ;; Worth using sb-sprof sampling profiler to find low hanging fruit.
 
 (defopcode adc (:docs "Add to Accumulator with Carry")
-    ((#x60 4 3 'absolute)
-     (#x61 6 2 'indirect-x)
+    ((#x61 6 2 'indirect-x)
      (#x65 3 2 'zero-page)
      (#x69 2 2 'immediate)
-     (#x70 4 3 'absolute-x)
+     (#x6d 4 3 'absolute)
      (#x71 5 2 'indirect-y)
      (#x75 4 2 'zero-page-x)
-     (#x79 4 3 'absolute-y))
+     (#x79 4 3 'absolute-y)
+     (#x7d 4 3 'absolute-x))
   ; TODO: This is a naive implementation. Have a look at py6502's opADC.
   (let ((result (+ (cpu-ar cpu) (funcall mode cpu) (status-bit :carry cpu))))
     (setf (cpu-ar cpu) result)
@@ -109,7 +109,7 @@
   (setf (status-bit :decimal cpu) 0))
 
 (defopcode cli (:docs "Clear Interrupt Flag")
-    ((#x59 2 1 'implied))
+    ((#x58 2 1 'implied))
   (setf (status-bit :interrupt cpu) 0))
 
 (defopcode clv (:docs "Clear Overflow Flag")
@@ -162,14 +162,14 @@
     (update-flags result)))
 
 (defopcode eor (:docs "Exclusive OR with Accumulator")
-    ((#x40 4 3 'absolute)
-     (#x41 6 2 'indirect-x)
+    ((#x41 6 2 'indirect-x)
      (#x45 3 2 'zero-page)
      (#x49 2 2 'immediate)
-     (#x50 4 3 'absolute-x)
+     (#x4d 4 3 'absolute)
      (#x51 5 2 'indirect-y)
      (#x55 4 2 'zero-page-x)
-     (#x59 4 3 'absolute-y))
+     (#x59 4 3 'absolute-y)
+     (#x5d 4 3 'absolute-x))
   (let ((result (setf (cpu-ar cpu) (logxor (funcall mode cpu) (cpu-ar cpu)))))
     (update-flags result)))
 
@@ -237,7 +237,7 @@
      (#x4a 2 1 'accumulator)
      (#x4e 6 3 'absolute)
      (#x56 6 2 'zero-page-x)
-     (#x53 7 3 'absolute-x))
+     (#x5e 7 3 'absolute-x))
   (let ((result (ash (get-byte (funcall mode cpu)) -1)))
     (update-flags result '(:zero))
     (funcall setf-form result)))
@@ -331,13 +331,13 @@
   (setf (status-bit :interrupt cpu) 1))
 
 (defopcode sta (:docs "Store Accumulator" :raw t)
-    ((#x80 4 3 'absolute)
-     (#x81 6 2 'indirect-x)
+    ((#x81 6 2 'indirect-x)
      (#x85 3 2 'zero-page)
-     (#x90 5 3 'absolute-x)
+     (#x8d 4 3 'absolute)
      (#x91 6 2 'indirect-y)
      (#x95 4 2 'zero-page-x)
-     (#x99 5 3 'absolute-y))
+     (#x99 5 3 'absolute-y)
+     (#x9d 5 3 'absolute-x))
   (funcall setf-form (cpu-ar cpu)))
 
 (defopcode stx (:docs "Store X register" :raw t)

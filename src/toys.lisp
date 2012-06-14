@@ -21,11 +21,11 @@
   (setf (get-range 0) *benchmark*)
   (execute cpu 0))
 
-(defun byte-check-test ()
+(defun byte-check-test (&optional (start 0))
   (flet ((how-many-bytes (x)
            (format t "How many bytes does py65 incf the PC by for ~2,'0x?" x)
            (read-line *query-io*)))
-    (loop for i from 0 upto 255
+    (loop for i from start upto 255
           unless (numberp (aref 6502-cpu::*opcodes* i))
             do (let ((py-count (parse-integer (how-many-bytes i)))
                      (cl-count (third (aref 6502-cpu::*opcodes* i))))
