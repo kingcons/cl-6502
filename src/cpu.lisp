@@ -170,15 +170,17 @@ instead of left. SIZE specifies the bitlength of the integer being rotated."
 
 ;;; Addressing
 
-; Usually we want the byte pointed to by an address, not the address.
-(defmacro defaddress (name (&key cpu-reg) &body body)
+(defmacro defaddress (name (&key cpu-reg (docs "")) &body body)
   "Define an Addressing Mode in the form of a method called NAME specialized on
 CPU returning an address according to BODY and a setf function to store to that
-address. If CPU-REG is non-nil, BODY will be wrapped in a get-byte for setf."
+address. If CPU-REG is non-nil, BODY will be wrapped in a get-byte for setf. DOCS
+is used as the documentation for the method and setf function when provided."
   `(progn
-     (defmethod ,name ((cpu cpu))
-       ,@body)
+     (defgeneric ,name (cpu)
+       (:documentation ,docs)
+       (:method ((cpu cpu)) ,@body))
      (defun (setf ,name) (new-value cpu)
+       ,docs
        ,(if cpu-reg
             `(setf ,@body new-value)
             `(let ((address (,name cpu)))
@@ -255,7 +257,7 @@ past the instruction's operands. Otherwise, BODY is responsible for the PC."
         `(incf (cpu-pc cpu) ,(1- byte-count)))
      (incf (cpu-cc cpu) ,cycle-count)))
 
-(defmacro defopcode (name (&key docs raw (track-pc t)) modes &body body)
+(defmacro defopcode (name (&key (docs "") raw (track-pc t)) modes &body body)
   "Define a Generic Function NAME with DOCS if provided and instructions,
 i.e. methods, via DEFINS for each addressing mode listed in MODES. If RAW is
 non-nil, MODE can be funcalled with a cpu in BODY to retrieve the byte at MODE's
