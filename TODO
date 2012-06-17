@@ -1,12 +1,9 @@
-Audit opcodes for potential removal of RAW.
+Fix *benchmark* loop issue.
+Fix empty *opcodes*/FASL-loading bug. Opcodes need EVAL-WHEN?
 Investigate handling of negative numbers.
-Write disassembler.
-Find test programs.
 MOAR UNIT TESTS! (opcodes+defopcode, addressing modes, helpers)
 
 Ideas:
 Define restarts for step?
 -- Define the instruction.
 -- Hand over a lambda to funcall/form to eval.
-
-
