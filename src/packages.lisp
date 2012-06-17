@@ -115,7 +115,6 @@
            #:tya
            ;; Utils/UI
            #:execute
-           #:next
            #:6502-step)
   ;; Note: BE NOT AFRAID, DEVELOPERS! (But also, don't :use this package.)
   (:shadow #:bit

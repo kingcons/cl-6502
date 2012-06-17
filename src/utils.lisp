@@ -8,17 +8,10 @@ PROGRAM should be a list or array of bytes.")
     (when program
       (setf (get-range 0) program
             (cpu-pc cpu) 0))
-    (loop for result = (next)
+    (loop for result = (6502-step cpu (zero-page cpu))
        until (eql :done result)
        finally (print result))
     cpu))
-
-(defun next (&optional start (cpu *cpu*))
-  "A simple wrapper for 6502-step. If START is provided, the PC is set to START
-before 6502-STEP is called."
-  (when start
-    (setf (cpu-pc cpu) start))
-  (6502-step cpu (zero-page cpu)))
 
 (defgeneric 6502-step (cpu opcode)
   (:documentation "Step the CPU through the next instruction.")
