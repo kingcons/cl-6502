@@ -21,9 +21,3 @@
     #x00       ; $0012 00    BRK
     #xed)      ; $0013 ed    SBC
   "Should leave the Y register with the value 47.")
-
-(defun my-bench (&optional (cpu *cpu*))
-  (reset)
-  (setf (get-range 0) *benchmark*
-        (cpu-pc cpu) 0)
-  (execute cpu))

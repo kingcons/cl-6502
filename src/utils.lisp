@@ -1,8 +1,13 @@
 (in-package :6502)
 
-(defgeneric execute (cpu)
-  (:documentation "Step the CPU until a BRK occurs.")
-  (:method ((cpu cpu))
+(defgeneric execute (cpu &optional program)
+  (:documentation "Step the CPU until a BRK occurs. If PROGRAM is provided,
+it will be placed at the beginning of *ram* and the PC will be set to 0.
+PROGRAM should be a list or array of bytes.")
+  (:method ((cpu cpu) &optional program)
+    (when program
+      (setf (get-range 0) program
+            (cpu-pc cpu) 0))
     (loop for result = (next)
        until (eql :done result)
        finally (print result))

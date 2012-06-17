@@ -397,10 +397,12 @@ else
 <div class="symboldecl">
 <div class="definition">
 <a class="symbolname" name="execute_func" href="#execute_func">execute</a>
-<span class="lambdalist">cpu</span>
+<span class="lambdalist">cpu &optional program</span>
 <span class="symboltype">standard-generic-function</span></div>
 <div class="documentation">
-<pre>Step the CPU until a BRK occurs.</pre></div></div>
+<pre>Step the CPU until a BRK occurs. If PROGRAM is provided,
+it will be placed at the beginning of *ram* and the PC will be set to 0.
+PROGRAM should be a list or array of bytes.</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
 <a class="symbolname" name="inc_func" href="#inc_func">inc</a>
