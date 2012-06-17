@@ -9,7 +9,8 @@
     cpu))
 
 (defun next (&optional start (cpu *cpu*))
-  "A simple wrapper for 6502-step. START behaves as in execute."
+  "A simple wrapper for 6502-step. If START is provided, the PC is set to START
+before 6502-STEP is called."
   (when start
     (setf (cpu-pc cpu) start))
   (6502-step cpu (zero-page cpu)))
