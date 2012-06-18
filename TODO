@@ -1,7 +1,7 @@
-Fix *benchmark* loop issue.
-Fix empty *opcodes*/FASL-loading bug. Opcodes need EVAL-WHEN?
-Investigate handling of negative numbers.
 MOAR UNIT TESTS! (opcodes+defopcode, addressing modes, helpers)
+Fix *benchmark* loop issue.
+Find other example programs?
+Investigate handling of negative numbers.
 
 Ideas:
 Define restarts for step?
