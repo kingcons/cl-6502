@@ -253,8 +253,8 @@ past the instruction's operands. Otherwise, BODY is responsible for the PC."
   `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) &key (cpu *cpu*)
                      (,(intern "MODE") ,mode) (,(intern "SETF-FORM") ,setf-form))
      ,@body
-     ,(when (and track-pc (> byte-count 1))
-        `(incf (cpu-pc cpu) ,(1- byte-count)))
+     ,@(when (and track-pc (> byte-count 1))
+         `((incf (cpu-pc cpu) ,(1- byte-count))))
      (incf (cpu-cc cpu) ,cycle-count)))
 
 (defmacro defopcode (name (&key (docs "") raw (track-pc t)) modes &body body)
@@ -262,18 +262,22 @@ past the instruction's operands. Otherwise, BODY is responsible for the PC."
 i.e. methods, via DEFINS for each addressing mode listed in MODES. If RAW is
 non-nil, MODE can be funcalled with a cpu in BODY to retrieve the byte at MODE's
 address. Otherwise, funcalling MODE will return the computed address itself."
-  `(progn
-     (defgeneric ,name (opcode &key cpu mode setf-form)
-       (:documentation ,docs))
-     ,@(mapcar (lambda (mode)
-                 (let ((mode-name (second (alexandria:lastcar mode))))
-                   (setf (aref *opcodes* (first mode))
-                         `(,name ,@(subseq (butlast mode) 1) ,mode-name))
-                   (unless raw
-                     (setf (alexandria:lastcar mode)
-                           `(lambda (cpu) (get-byte (,mode-name cpu)))))
-                   `(defins (,name ,@mode)
-                        (:setf-form (lambda (x) (setf (,mode-name cpu) x))
-                         :track-pc ,track-pc)
-                      ,@body)))
-               modes)))
+  (flet ((make-fetcher (mode)
+           (let ((mode-name (alexandria:lastcar mode)))
+             (substitute `(lambda (cpu) (get-byte (,(second mode-name) cpu)))
+                         mode-name mode))))
+    `(progn
+       (eval-when (:compile-toplevel :load-toplevel)
+         (loop for (opcode cycles bytes mode) in ',modes
+            do (setf (aref *opcodes* opcode)
+                     (list ',name cycles bytes mode))))
+       (defgeneric ,name (opcode &key cpu mode setf-form)
+         (:documentation ,docs))
+       ,@(mapcar (lambda (mode)
+                   (let ((mode-name (second (alexandria:lastcar mode)))
+                         (mode (if raw mode (make-fetcher mode))))
+                     `(defins (,name ,@mode)
+                          (:setf-form (lambda (x) (setf (,mode-name cpu) x))
+                           :track-pc ,track-pc)
+                        ,@body)))
+                 modes))))

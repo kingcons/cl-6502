@@ -51,7 +51,8 @@
            #:branch-if
            #:rotate-byte
            ;; Opcode Macrology
-           #:defopcode))
+           #:defopcode
+           #:defins))
 
 (defpackage :6502
   (:documentation "Homepage: <a href=\"http://github.com/redline6561/cl-6502\">Github</a>")
