@@ -8,6 +8,8 @@ the [original NES](http://en.wikipedia.org/wiki/Nintendo_Entertainment_System),
 the [Commodore 64](http://en.wikipedia.org/wiki/Commodore_64),
 and [Michael Steil's phenomenal talk](http://media.ccc.de/browse/congress/2010/27c3-4159-en-reverse_engineering_mos_6502.html) at 27C3.
 
+A few notes on why I'm doing this and the design of the 6502 are [here](http://redlinernotes.com/blog/?p=1421).
+
 ## Install
 Just git clone this library and make sure the resulting path is on your ```asdf:*central-registry*``` list. Hopefully, this will be in Zach Beane's positively delightful [quicklisp](http://quicklisp.org/) "real soon now". Start your lisp and then:
 
