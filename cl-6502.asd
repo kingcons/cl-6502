@@ -16,7 +16,8 @@
                (:file "toys"))
   :in-order-to ((test-op (load-op cl-6502-tests)))
   :perform (test-op :after (op c)
-                    (funcall (intern "RUN!" :6502-tests))))
+                    (funcall (intern "RUN!" :6502-tests)
+                             (intern "6502-TESTS" :6502-tests))))
 
 (defsystem #:cl-6502-tests
   :depends-on (cl-6502 fiveam)
