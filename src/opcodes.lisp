@@ -26,7 +26,7 @@
   ; TODO: This is a naive implementation. Have a look at py6502's opADC.
   (let ((result (+ (cpu-ar cpu) (funcall mode cpu) (status-bit :carry cpu))))
     (setf (cpu-ar cpu) result)
-    (update-flags result '(:carry :overflow :negative :zero))))
+    (update-flags result cpu '(:carry :overflow :negative :zero))))
 
 (defopcode and (:docs "And with Accumulator")
     ((#x21 6 2 'indirect-x)
@@ -38,7 +38,7 @@
      (#x39 4 3 'absolute-y)
      (#x3d 4 3 'absolute-x))
   (let ((result (setf (cpu-ar cpu) (logand (cpu-ar cpu) (funcall mode cpu)))))
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode asl (:docs "Arithmetic Shift Left" :raw t)
     ((#x06 5 2 'zero-page)
@@ -46,9 +46,9 @@
      (#x0e 6 3 'absolute)
      (#x16 6 2 'zero-page-x)
      (#x1e 7 3 'absolute-x))
-  (update-flags (funcall mode cpu) '(:carry))
+  (update-flags (funcall mode cpu) cpu '(:carry))
   (let ((result (wrap-byte (ash (funcall mode cpu) 1))))
-    (update-flags result)
+    (update-flags result cpu)
     (funcall setf-form result)))
 
 (defopcode bcc (:docs "Branch on Carry Clear" :track-pc nil)
@@ -69,7 +69,7 @@
   (let ((result (funcall mode cpu)))
     (when (zerop (logand (cpu-ar cpu) result))
       (setf (status-bit :zero cpu) 1))
-    (update-flags result '(:negative :overflow))))
+    (update-flags result cpu '(:negative :overflow))))
 
 (defopcode bmi (:docs "Branch on Negative Result" :track-pc nil)
     ((#x30 2 2 'relative))
@@ -126,21 +126,21 @@
      (#xd9 4 3 'absolute-y)
      (#xdd 4 3 'absolute-x))
   (let ((result (- (cpu-ar cpu) (funcall mode cpu))))
-    (update-flags result '(:negative :carry :zero))))
+    (update-flags result cpu '(:negative :carry :zero))))
 
 (defopcode cpx (:docs "Compare Memory with X register")
     ((#xe0 2 2 'immediate)
      (#xe4 3 2 'zero-page)
      (#xec 4 3 'absolute))
   (let ((result (- (cpu-xr cpu) (funcall mode cpu))))
-    (update-flags result '(:negative :carry :zero))))
+    (update-flags result cpu '(:negative :carry :zero))))
 
 (defopcode cpy (:docs "Compare Memory with Y register")
     ((#xc0 2 2 'immediate)
      (#xc4 3 2 'zero-page)
      (#xcc 4 3 'absolute))
   (let ((result (- (cpu-yr cpu) (funcall mode cpu))))
-    (update-flags result '(:negative :carry :zero))))
+    (update-flags result cpu '(:negative :carry :zero))))
 
 (defopcode dec (:docs "Decrement Memory")
     ((#xc6 5 2 'zero-page)
@@ -149,17 +149,17 @@
      (#xde 7 3 'absolute-x))
   (let ((result (wrap-byte (1- (funcall mode cpu)))))
     (funcall setf-form result)
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode dex (:docs "Decrement X register")
     ((#xca 2 1 'implied))
   (let ((result (setf (cpu-xr cpu) (wrap-byte (1- (cpu-xr cpu))))))
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode dey (:docs "Decrement Y register")
     ((#x88 2 1 'implied))
   (let ((result (setf (cpu-yr cpu) (wrap-byte (1- (cpu-yr cpu))))))
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode eor (:docs "Exclusive OR with Accumulator")
     ((#x41 6 2 'indirect-x)
@@ -171,7 +171,7 @@
      (#x59 4 3 'absolute-y)
      (#x5d 4 3 'absolute-x))
   (let ((result (setf (cpu-ar cpu) (logxor (funcall mode cpu) (cpu-ar cpu)))))
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode inc (:docs "Increment Memory")
     ((#xe6 5 2 'zero-page)
@@ -180,17 +180,17 @@
      (#xfe 7 3 'absolute-x))
   (let ((result (wrap-byte (1+ (funcall mode cpu)))))
     (funcall setf-form result)
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode inx (:docs "Increment X register")
     ((#xe8 2 1 'implied))
   (let ((result (setf (cpu-xr cpu) (wrap-byte (1+ (cpu-xr cpu))))))
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode iny (:docs "Increment Y register")
     ((#xc8 2 1 'implied))
   (let ((result (setf (cpu-yr cpu) (wrap-byte (1+ (cpu-yr cpu))))))
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode jmp (:docs "Jump Unconditionally" :raw t :track-pc nil)
     ((#x4c 3 3 'absolute)
@@ -212,7 +212,7 @@
      (#xb9 4 3 'absolute-y)
      (#xbd 4 3 'absolute-x))
   (let ((result (setf (cpu-ar cpu) (funcall mode cpu))))
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode ldx (:docs "Load X register from Memory")
     ((#xa2 2 2 'immediate)
@@ -221,7 +221,7 @@
      (#xb6 4 2 'zero-page-y)
      (#xbe 4 3 'absolute-y))
   (let ((result (setf (cpu-xr cpu) (funcall mode cpu))))
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode ldy (:docs "Load Y register from Memory")
     ((#xa0 2 2 'immediate)
@@ -230,7 +230,7 @@
      (#xbc 4 3 'absolute-x)
      (#xb4 4 2 'zero-page-x))
   (let ((result (setf (cpu-yr cpu) (funcall mode cpu))))
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode lsr (:docs "Logical Shift Right" :raw t)
     ((#x46 5 2 'zero-page)
@@ -239,7 +239,7 @@
      (#x56 6 2 'zero-page-x)
      (#x5e 7 3 'absolute-x))
   (let ((result (ash (get-byte (funcall mode cpu)) -1)))
-    (update-flags result '(:zero))
+    (update-flags result cpu '(:zero))
     (funcall setf-form result)))
 
 (defopcode nop (:docs "No Operation")
@@ -256,7 +256,7 @@
      (#x19 4 3 'absolute-y)
      (#x1d 4 3 'absolute-x))
   (let ((result (setf (cpu-ar cpu) (logior (cpu-ar cpu) (funcall mode cpu)))))
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode pha (:docs "Push Accumulator")
     ((#x48 3 1 'implied))
@@ -269,7 +269,7 @@
 (defopcode pla (:docs "Pull Accumulator from Stack")
     ((#x68 4 1 'implied))
   (let ((result (setf (cpu-ar cpu) (stack-pop cpu))))
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode plp (:docs "Pull Processor Status from Stack")
     ((#x28 4 1 'implied))
@@ -283,7 +283,7 @@
      (#x3e 7 3 'absolute-x))
   (let ((result (wrap-byte (rotate-byte (funcall mode cpu) 1))))
     (funcall setf-form result)
-    (update-flags result '(:carry :negative :zero))))
+    (update-flags result cpu '(:carry :negative :zero))))
 
 (defopcode ror (:docs "Rotate Right")
     ((#x66 5 2 'zero-page)
@@ -293,7 +293,7 @@
      (#x7e 7 3 'absolute-x))
   (let ((result (rotate-byte (funcall mode cpu) -1)))
     (funcall setf-form result)
-    (update-flags result '(:carry :negative :zero))))
+    (update-flags result cpu '(:carry :negative :zero))))
 
 (defopcode rti (:docs "Return from Interrupt")
     ((#x40 6 1 'implied))
@@ -316,7 +316,7 @@
   ; TODO: This is a naive implementation. Have a look at py6502's opSBC.
   (let ((result (- (cpu-ar cpu) (funcall mode cpu) (status-bit :carry cpu))))
     (setf (cpu-ar cpu) result)
-    (update-flags result '(:carry :overflow :negative :zero))))
+    (update-flags result cpu '(:carry :overflow :negative :zero))))
 
 (defopcode sec (:docs "Set Carry Flag")
     ((#x38 2 1 'implied))
@@ -355,22 +355,22 @@
 (defopcode tax (:docs "Transfer Accumulator to X register")
     ((#xaa 2 1 'implied))
   (let ((result (setf (cpu-xr cpu) (cpu-ar cpu))))
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode tay (:docs "Transfer Accumulator to Y register")
     ((#xa8 2 1 'implied))
   (let ((result (setf (cpu-yr cpu) (cpu-ar cpu))))
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode tsx (:docs "Transfer Stack Pointer to X register")
     ((#xba 2 1 'implied))
   (let ((result (setf (cpu-xr cpu) (cpu-sp cpu))))
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode txa (:docs "Transfer X register to Accumulator")
     ((#x8a 2 1 'implied))
   (let ((result (setf (cpu-ar cpu) (cpu-xr cpu))))
-    (update-flags result)))
+    (update-flags result cpu)))
 
 (defopcode txs (:docs "Transfer X register to Stack Pointer")
     ((#x9a 2 1 ' implied))
@@ -379,4 +379,4 @@
 (defopcode tya (:docs "Transfer Y register to Accumulator")
     ((#x98 2 1 'implied))
   (let ((result (setf (cpu-ar cpu) (cpu-yr cpu))))
-    (update-flags result)))
+    (update-flags result cpu)))

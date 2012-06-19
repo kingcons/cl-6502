@@ -107,7 +107,7 @@ e.g. When the last two bytes of ADDRESS are #xff."
   "Pop a 16-bit word off the stack."
   (+ (stack-pop cpu) (ash (stack-pop cpu) 8)))
 
-(defun %status-bit (n)
+(defun %status-bit (key)
   (let ((status-register '((:carry     . 0)
                            (:zero      . 1)
                            (:interrupt . 2)
@@ -116,21 +116,21 @@ e.g. When the last two bytes of ADDRESS are #xff."
                            (:unused    . 5)
                            (:overflow  . 6)
                            (:negative  . 7))))
-    (rest (assoc n status-register))))
+    (rest (assoc key status-register))))
 
-(defun status-bit (n &optional (cpu *cpu*))
-  "Retrieve bit N from the status register. N should be a keyword."
-  (ldb (byte 1 (%status-bit n)) (cpu-sr cpu)))
+(defun status-bit (key cpu)
+  "Retrieve bit KEY from the status register of CPU. KEY should be a keyword."
+  (ldb (byte 1 (%status-bit key)) (cpu-sr cpu)))
 
-(defun (setf status-bit) (new-val n &optional (cpu *cpu*))
-  "Set bit N in the status register to NEW-VAL. N should be a keyword."
+(defun (setf status-bit) (new-val key cpu)
+  "Set bit KEY in the status reg of CPU to NEW-VAL. KEY should be a keyword."
   (if (or (zerop new-val) (= 1 new-val))
-      (setf (ldb (byte 1 (%status-bit n)) (cpu-sr cpu)) new-val)
-      (error 'status-bit-error :index (%status-bit n))))
+      (setf (ldb (byte 1 (%status-bit key)) (cpu-sr cpu)) new-val)
+      (error 'status-bit-error :index (%status-bit key))))
 
-(defun update-flags (value &optional (flags '(:zero :negative)) (cpu *cpu*))
+(defun update-flags (value cpu &optional (flags '(:zero :negative)))
   "Loop over FLAGS which should be a list of keywords and set flags in the
-status register based on VALUE. FLAGS is '(:zero :negative) by default."
+status register of CPU based on VALUE. FLAGS is '(:zero :negative) by default."
   (loop for flag in flags do
     (setf (status-bit flag cpu)
           (ecase flag ; TODO: Do carry and negative always work as expected?
