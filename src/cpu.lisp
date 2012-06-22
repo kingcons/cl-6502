@@ -35,6 +35,15 @@
   (setf *ram* (make-array (expt 2 16) :element-type '(unsigned-byte 8))
         *cpu* (make-cpu)))
 
+(defun load-image (cpu ram)
+  "Set *CPU* and *RAM* to CPU and RAM."
+  (setf *cpu* cpu
+        *ram* ram))
+
+(defun save-image ()
+  "Return a list containing the current *CPU* and *RAM*."
+  (list *cpu* *ram*))
+
 (defun get-instruction (opcode)
   "Get the mnemonic for OPCODE. Returns a symbol to be funcalled or nil."
   (first (aref *opcodes* opcode)))

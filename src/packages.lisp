@@ -32,6 +32,8 @@
            ;; Utils
            #:disasm
            #:reset
+           #:load-image
+           #:save-image
            #:get-instruction
            #:get-byte
            #:get-word
