@@ -24,7 +24,8 @@
 (defparameter *cpu* (make-cpu)
   "The 6502 instance used by opcodes in the package.")
 
-(defparameter *opcodes* (make-array (expt 2 8) :element-type 'cons)
+(defparameter *opcodes* (make-array (expt 2 8) :element-type 'cons
+                                    :initial-element nil)
   "A mapping of opcodes to instruction mnemonic/metadata conses.")
 
 ;;; Helpers
@@ -35,7 +36,7 @@
         *cpu* (make-cpu)))
 
 (defun get-instruction (opcode)
-  "Get the mnemonic for OPCODE. Returns a symbol to be funcalled."
+  "Get the mnemonic for OPCODE. Returns a symbol to be funcalled or nil."
   (first (aref *opcodes* opcode)))
 
 (defun get-byte (address)
@@ -146,7 +147,7 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
                 (logand address #xff00)))
     (incf (cpu-cc cpu))))
 
-(defun branch-if (cpu predicate)
+(defun branch-if (predicate cpu)
   "Take a Relative branch if PREDICATE is true, otherwise increment the PC."
   (if (funcall predicate)
       (setf (cpu-pc cpu) (relative cpu))

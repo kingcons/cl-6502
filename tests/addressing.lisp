@@ -73,7 +73,8 @@ by the Program Counter, summed with the Y register and wrapped."
     (is (= (absolute-y cpu) (wrap-word (+ (get-word pc-addr) y-reg))))))
 
 (deftest indirect
-    "The indirect mode should always return the (unsigned-byte 16) pointed to by the word pointed to by the Program Counter."
+    "The indirect mode should always return the (unsigned-byte 16) pointed to
+by the word pointed to by the Program Counter."
   (for-all ((pc-addr (gen-integer :min 0 :max #xffff)))
     (setf (cpu-pc cpu) pc-addr)
     (is (typep (indirect cpu) '(unsigned-byte 16)))

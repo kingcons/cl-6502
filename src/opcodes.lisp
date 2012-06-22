@@ -53,15 +53,15 @@
 
 (defopcode bcc (:docs "Branch on Carry Clear" :track-pc nil)
     ((#x90 2 2 'relative))
-  (branch-if cpu (lambda () (zerop (status-bit :carry cpu)))))
+  (branch-if (lambda () (zerop (status-bit :carry cpu))) cpu))
 
 (defopcode bcs (:docs "Branch on Carry Set" :track-pc nil)
     ((#xb0 2 2 'relative))
-  (branch-if cpu (lambda () (plusp (status-bit :carry cpu)))))
+  (branch-if (lambda () (plusp (status-bit :carry cpu))) cpu))
 
 (defopcode beq (:docs "Branch if Equal" :track-pc nil)
     ((#xf0 2 2 'relative))
-  (branch-if cpu (lambda () (plusp (status-bit :zero cpu)))))
+  (branch-if (lambda () (plusp (status-bit :zero cpu))) cpu))
 
 (defopcode bit (:docs "Test Bits in Memory with Accumulator")
     ((#x24 3 2 'zero-page)
@@ -73,15 +73,15 @@
 
 (defopcode bmi (:docs "Branch on Negative Result" :track-pc nil)
     ((#x30 2 2 'relative))
-  (branch-if cpu (lambda () (plusp (status-bit :negative cpu)))))
+  (branch-if (lambda () (plusp (status-bit :negative cpu))) cpu))
 
 (defopcode bne (:docs "Branch if Not Equal" :track-pc nil)
     ((#xd0 2 2 'relative))
-  (branch-if cpu (lambda () (zerop (status-bit :zero cpu)))))
+  (branch-if (lambda () (zerop (status-bit :zero cpu))) cpu))
 
 (defopcode bpl (:docs "Branch on Positive Result" :track-pc nil)
     ((#x10 2 2 'relative))
-  (branch-if cpu (lambda () (zerop (status-bit :negative cpu)))))
+  (branch-if (lambda () (zerop (status-bit :negative cpu))) cpu))
 
 (defopcode brk (:docs "Force Break")
     ((#x00 7 1 'implied))
@@ -94,11 +94,11 @@
 
 (defopcode bvc (:docs "Branch on Overflow Clear" :track-pc nil)
     ((#x50 2 2 'relative))
-  (branch-if cpu (lambda () (zerop (status-bit :overflow cpu)))))
+  (branch-if (lambda () (zerop (status-bit :overflow cpu))) cpu))
 
 (defopcode bvs (:docs "Branch on Overflow Set" :track-pc nil)
     ((#x70 2 2 'relative))
-  (branch-if cpu (lambda () (plusp (status-bit :overflow cpu)))))
+  (branch-if (lambda () (plusp (status-bit :overflow cpu))) cpu))
 
 (defopcode clc (:docs "Clear Carry Flag")
     ((#x18 2 1 'implied))
