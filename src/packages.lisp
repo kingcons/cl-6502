@@ -55,7 +55,6 @@
            #:defins))
 
 (defpackage :6502
-  (:documentation "Homepage: <a href=\"http://github.com/redline6561/cl-6502\">Github</a>")
   (:use :cl :alexandria :6502-cpu)
   (:export ;; Opcodes
            #:adc
@@ -120,3 +119,27 @@
   ;; Note: BE NOT AFRAID, DEVELOPERS! (But also, don't :use this package.)
   (:shadow #:bit
            #:and))
+
+(defpackage :cl-6502
+  (:documentation "Homepage: <a href=\"http://github.com/redline6561/cl-6502\">Github</a>")
+  (:use :cl)
+  (:import-from :6502 #:reset
+                      #:6502-step
+                      #:execute
+                      #:asm
+                      #:disasm
+                      #:get-byte
+                      #:get-word
+                      #:get-range
+                      #:load-image
+                      #:save-image)
+  (:export #:reset
+           #:6502-step
+           #:execute
+           #:asm
+           #:disasm
+           #:get-byte
+           #:get-word
+           #:get-range
+           #:load-image
+           #:save-image))
