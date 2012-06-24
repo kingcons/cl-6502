@@ -11,6 +11,7 @@
                (:file "conditions")
                (:file "cpu")
                (:file "disassemble")
+               (:file "assemble")
                (:file "opcodes")
                (:file "utils")
                (:file "toys"))

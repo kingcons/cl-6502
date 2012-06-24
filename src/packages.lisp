@@ -30,6 +30,7 @@
            #:absolute-y
            #:relative
            ;; Utils
+           #:asm
            #:disasm
            #:reset
            #:load-image
