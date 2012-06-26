@@ -76,6 +76,10 @@ provided."
   (let ((size (length bytevector)))
     (setf (subseq *ram* start (+ start size)) bytevector)))
 
+(defun wrap-nibble (val)
+  "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 4))."
+  (logand val #xf))
+
 (defun wrap-byte (val)
   "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 8)),
 e.g. a Stack Pointer or general purpose register."

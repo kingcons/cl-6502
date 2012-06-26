@@ -39,6 +39,7 @@
            #:get-byte
            #:get-word
            #:get-range
+           #:wrap-nibble
            #:wrap-byte
            #:wrap-word
            #:wrap-stack
