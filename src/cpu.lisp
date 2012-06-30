@@ -142,16 +142,19 @@ e.g. When the last two bytes of ADDRESS are #xff."
       (setf (ldb (byte 1 (%status-bit key)) (cpu-sr cpu)) new-val)
       (error 'status-bit-error :index (%status-bit key))))
 
-(defun update-flags (value cpu &optional (flags '(:zero :negative)))
-  "Loop over FLAGS which should be a list of keywords and set flags in the
-status register of CPU based on VALUE. FLAGS is '(:zero :negative) by default."
-  (loop for flag in flags do
-    (setf (status-bit flag cpu)
-          (ecase flag ; TODO: Do carry and negative always work as expected?
-            (:zero (if (zerop value) 1 0))
-            (:carry (if (logbitp 7 value) 1 0))
-            (:negative (if (logbitp 7 value) 1 0))
-            (:overflow (if (logbitp 6 value) 1 0))))))
+(defun set-flags-if (cpu &rest flag-preds)
+  "Takes any even number of arguments where the first is a keyword denoting a
+status bit and the second is a funcallable predicate that takes no arguments.
+It will set each flag to 1 if its predicate is true, otherwise 0."
+  (assert (evenp (length flag-preds)))
+  (loop for (flag pred . nil) on flag-preds by #'cddr
+     do (setf (status-bit flag cpu) (if (funcall pred) 1 0))))
+
+(declaim (inline set-flags-nz))
+(defun set-flags-nz (cpu value)
+  "Set the zero and negative bits of CPU's staus-register based on VALUE."
+  (set-flags-if :zero (lambda () (zerop value))
+                :negative (lambda () (logbitp 7 value))))
 
 (defun maybe-update-cycle-count (cpu address &optional start)
   "If ADDRESS crosses a page boundary, add an extra cycle to CPU's count. If

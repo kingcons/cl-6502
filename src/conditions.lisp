@@ -11,9 +11,9 @@
 (define-condition status-bit-error (6502-error)
   ((index :initarg :index :reader index))
   (:report (lambda (condition stream)
-             (format stream "Tried to set status bit ~D to a non-bit value."
+             (format stream "Cannot set status-bit ~D to a non-bit value."
                      (index condition))))
-  (:documentation "A bit can only be zero or one."))
+  (:documentation "An invalid status-register value was provided."))
 
 (define-condition illegal-opcode (6502-error)
   ((opcode :initarg :opcode :reader opcode))

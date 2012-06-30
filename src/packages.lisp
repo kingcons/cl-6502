@@ -50,7 +50,8 @@
            #:stack-pop-word
            #:status-bit
            #:negative-p
-           #:update-flags
+           #:set-flags-if
+           #:set-flags-nz
            #:maybe-update-cycle-count
            #:branch-if
            #:rotate-byte
