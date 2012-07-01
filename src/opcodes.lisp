@@ -261,8 +261,7 @@
      (#x19 4 3 'absolute-y)
      (#x1d 4 3 'absolute-x))
   (let ((result (setf (cpu-ar cpu) (logior (cpu-ar cpu) (funcall mode cpu)))))
-    (set-flags-if cpu :zero (lambda () (zerop result))
-                  :negative (lambda () (logbitp 7 result)))))
+    (set-flags-nz cpu result)))
 
 (defopcode pha (:docs "Push Accumulator")
     ((#x48 3 1 'implied))

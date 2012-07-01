@@ -1,6 +1,5 @@
 MOAR UNIT TESTS! (opcodes+defopcode, addressing modes, helpers)
-Fix Carry and Overflow handling. See 6502.txt.
-Fix *benchmark* loop issue.
+Fix SBC/ADC.
 Improve the disassembler for browsing large ROMs. (i.e. Mega Man 2)
 Find other example programs?
 
