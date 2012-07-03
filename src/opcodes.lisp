@@ -14,6 +14,7 @@
 ;; Optimize later! See Frodo redpill + ICU64 for an example of what's possible.
 ;; Worth using sb-sprof sampling profiler to find low hanging fruit.
 
+; TODO: Add support for Decimal mode. (not supported on NES)
 (defopcode adc (:docs "Add to Accumulator with Carry")
     ((#x61 6 2 'indirect-x)
      (#x65 3 2 'zero-page)
@@ -23,10 +24,14 @@
      (#x75 4 2 'zero-page-x)
      (#x79 4 3 'absolute-y)
      (#x7d 4 3 'absolute-x))
-  ; TODO: This is a naive implementation. Have a look at py6502's opADC.
-  (let ((result (+ (cpu-ar cpu) (funcall mode cpu) (status-bit :carry cpu))))
-    (setf (cpu-ar cpu) result)
-    (update-flags result cpu '(:carry :overflow :negative :zero))))
+  (let* ((result (+ (cpu-ar cpu) (funcall mode cpu) (status-bit :carry cpu)))
+         (tmp (lognot (logand (logxor (cpu-ar cpu) (funcall mode cpu))
+                              (logxor (cpu-ar cpu) result)))))
+    (set-flags-if cpu :carry (lambda () (> result #xff))
+                  :overflow (lambda () (plusp (logand tmp #x80)))
+                  :negative (lambda () (logbitp 7 result))
+                  :zero (lambda () (zerop (wrap-byte result))))
+    (setf (cpu-ar cpu) (wrap-byte result))))
 
 (defopcode and (:docs "And with Accumulator")
     ((#x21 6 2 'indirect-x)
@@ -311,6 +316,7 @@
     ((#x60 6 1 'implied))
   (setf (cpu-pc cpu) (1+ (stack-pop-word cpu))))
 
+; TODO: Add support for Decimal mode. (not supported on NES)
 (defopcode sbc (:docs "Subtract from Accumulator with Carry")
     ((#xe1 6 2 'indirect-x)
      (#xe5 3 2 'zero-page)
@@ -320,10 +326,15 @@
      (#xf5 4 2 'zero-page-x)
      (#xf9 4 3 'absolute-y)
      (#xfd 4 3 'absolute-x))
-  ; TODO: This is a naive implementation. Have a look at py6502's opSBC.
-  (let ((result (- (cpu-ar cpu) (funcall mode cpu) (status-bit :carry cpu))))
-    (setf (cpu-ar cpu) result)
-    (update-flags result cpu '(:carry :overflow :negative :zero))))
+  (let* ((result (- (cpu-ar cpu) (funcall mode cpu)
+                    (if (zerop (status-bit :carry cpu)) 1 0)))
+         (tmp (logand (logxor (cpu-ar cpu) (funcall mode cpu))
+                      (logxor (cpu-ar cpu) result))))
+    (set-flags-if cpu :zero (lambda () (zerop (wrap-byte result)))
+                  :overflow (lambda () (plusp (logand tmp 128)))
+                  :negative (lambda () (logbitp 7 result))
+                  :carry (lambda () (< result #x100)))
+    (setf (cpu-ar cpu) (wrap-byte result))))
 
 (defopcode sec (:docs "Set Carry Flag")
     ((#x38 2 1 'implied))

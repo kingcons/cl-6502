@@ -76,10 +76,6 @@ provided."
   (let ((size (length bytevector)))
     (setf (subseq *ram* start (+ start size)) bytevector)))
 
-(defun wrap-nibble (val)
-  "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 4))."
-  (logand val #xf))
-
 (defun wrap-byte (val)
   "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 8)),
 e.g. a Stack Pointer or general purpose register."
@@ -153,7 +149,7 @@ It will set each flag to 1 if its predicate is true, otherwise 0."
 (declaim (inline set-flags-nz))
 (defun set-flags-nz (cpu value)
   "Set the zero and negative bits of CPU's staus-register based on VALUE."
-  (set-flags-if :zero (lambda () (zerop value))
+  (set-flags-if cpu :zero (lambda () (zerop value))
                 :negative (lambda () (logbitp 7 value))))
 
 (defun maybe-update-cycle-count (cpu address &optional start)
