@@ -18,24 +18,20 @@
 
 ;;; Tasty Globals
 
-(defparameter *ram* (make-array (expt 2 16) :element-type '(unsigned-byte 8))
+(defparameter *ram* (make-array #x10000 :element-type '(unsigned-byte 8))
   "A lovely hunk of bytes.")
 
 (defparameter *cpu* (make-cpu)
   "The 6502 instance used by opcodes in the package.")
 
-(defparameter *opcodes* (make-array (expt 2 8) :element-type 'cons
+(defparameter *opcodes* (make-array #x100 :element-type 'cons
                                     :initial-element nil)
   "A mapping of opcodes to instruction mnemonic/metadata conses.")
 
 ;;; Helpers
 
-(defun reset ()
-  "Reset the virtual machine to an initial state."
-  (setf *ram* (make-array (expt 2 16) :element-type '(unsigned-byte 8))
-        *cpu* (make-cpu)))
-
-(defun load-image (cpu ram)
+(defun load-image (&key (cpu (make-cpu))
+                   (ram (make-array #x10000 :element-type '(unsigned-byte 8))))
   "Set *CPU* and *RAM* to CPU and RAM."
   (setf *cpu* cpu
         *ram* ram))
@@ -43,6 +39,10 @@
 (defun save-image ()
   "Return a list containing the current *CPU* and *RAM*."
   (list *cpu* *ram*))
+
+(defun reset ()
+  "Reset the virtual machine to an initial state."
+  (load-image))
 
 (defun get-instruction (opcode)
   "Get the mnemonic for OPCODE. Returns a symbol to be funcalled or nil."
