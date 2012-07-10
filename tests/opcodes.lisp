@@ -6,7 +6,7 @@
 (deftest brk-sets-flags
   "brk flag (4) and disable interrupts flag (2) must be set."
   (with-fixture cpu ()
-    (6502:brk #x00)
+    (6502::brk #x00)
     (is (plusp (status-bit :break cpu)))
     (is (plusp (status-bit :interrupt cpu)))))
 
@@ -14,11 +14,11 @@
   "Program Counter (2) + Stack Pointer (1) == 3 bytes
    The stack is decremented from #xFF giving #xFC."
   (with-fixture cpu ()
-    (6502:brk #x00)
+    (6502::brk #x00)
     (is (= (cpu-sp cpu) #xfc))))
 
 (deftest ora-sets-zero-flag
   "Zero flag must be set after calling ORA."
   (with-fixture cpu ()
-    (6502:ora #x05)
+    (6502::ora #x05)
     (is (plusp (status-bit :zero cpu)))))
