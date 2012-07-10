@@ -1,4 +1,5 @@
 MOAR UNIT TESTS! (opcodes+defopcode, addressing modes, helpers)
+Write the damn assembler!
 Improve the disassembler for browsing large ROMs. (i.e. Mega Man 2)
 Find other example programs?
 

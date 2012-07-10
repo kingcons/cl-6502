@@ -60,64 +60,7 @@
 
 (defpackage :6502
   (:use :cl :alexandria :6502-cpu)
-  (:export ;; Opcodes
-           #:adc
-           #:and
-           #:asl
-           #:bcc
-           #:bcs
-           #:beq
-           #:bit
-           #:bmi
-           #:bne
-           #:bpl
-           #:brk
-           #:bvc
-           #:bvs
-           #:clc
-           #:cld
-           #:cli
-           #:clv
-           #:cmp
-           #:cpx
-           #:cpy
-           #:dec
-           #:dex
-           #:dey
-           #:eor
-           #:inc
-           #:inx
-           #:iny
-           #:jmp
-           #:jsr
-           #:lda
-           #:ldx
-           #:ldy
-           #:lsr
-           #:nop
-           #:ora
-           #:pha
-           #:php
-           #:pla
-           #:plp
-           #:rol
-           #:ror
-           #:rti
-           #:rts
-           #:sbc
-           #:sec
-           #:sed
-           #:sei
-           #:sta
-           #:stx
-           #:sty
-           #:tax
-           #:tay
-           #:tsx
-           #:txa
-           #:txs
-           #:tya
-           ;; Utils/UI
+  (:export ;; Utils/UI
            #:execute
            #:6502-step)
   ;; Note: BE NOT AFRAID, DEVELOPERS! (But also, don't :use this package.)
