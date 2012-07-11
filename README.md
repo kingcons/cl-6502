@@ -19,7 +19,7 @@ Just git clone this library and make sure the resulting path is on your ```asdf:
 To run the tests, after you've loaded *cl-6502* just run ```(asdf:oos 'asdf:test-op 'cl-6502)```. There is a dearth of tests at the moment but there will be more soon as the design has recently solidified.
 
 ## Getting Started
-* Check out the docs for the [6502](http://redlinernotes.com/docs/6502.html) and [6502-cpu](http://redlinernotes.com/docs/6502-cpu.html) packages.
+* Check out the docs for the [cl-6502](http://redlinernotes.com/docs/cl-6502.html) and [6502-cpu](http://redlinernotes.com/docs/6502-cpu.html) packages.
 * Play around at the REPL!
 * Use it to create your own wacky code artifacts. (NOTE: As the 6502 package shadows *BIT* and *AND*, you're hereby advised not to *:use* it in any other packages.)
 

@@ -5,5 +5,5 @@
 ;; http://ahefner.livejournal.com/20528.html
 
 (defun asm ()
-  ""
+  "Not yet implemented."
   nil)

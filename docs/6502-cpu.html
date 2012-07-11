@@ -91,7 +91,7 @@ else
 <span class="lambdalist">(6502-error)</span>
 <span class="symboltype">class</span></div>
 <div class="documentation">
-<pre>A bit can only be zero or one.</pre></div></div></div></div>
+<pre>An invalid status-register value was provided.</pre></div></div></div></div>
 <div class="frame">
 <div class="labeltitle">
 <span class="expander" onclick="expand(this, 'functions');">-</span>Functions</div>
@@ -154,8 +154,15 @@ else
 <pre></pre></div></div>
 <div class="symboldecl">
 <div class="definition">
+<a class="symbolname" name="asm_func" href="#asm_func">asm</a>
+<span class="lambdalist"></span>
+<span class="symboltype">function</span></div>
+<div class="documentation">
+<pre>Not yet implemented.</pre></div></div>
+<div class="symboldecl">
+<div class="definition">
 <a class="symbolname" name="branch-if_func" href="#branch-if_func">branch-if</a>
-<span class="lambdalist">cpu predicate</span>
+<span class="lambdalist">predicate cpu</span>
 <span class="symboltype">function</span></div>
 <div class="documentation">
 <pre>Take a Relative branch if PREDICATE is true, otherwise increment the PC.</pre></div></div>
@@ -259,6 +266,17 @@ else
 <pre>:undocumented</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
+<a class="symbolname" name="defins_func" href="#defins_func">defins</a>
+<span class="lambdalist">(name opcode cycle-count byte-count mode) (&key setf-form (track-pc t)) &body body</span>
+<span class="symboltype">function</span></div>
+<div class="documentation">
+<pre>Define an EQL-Specialized method on OPCODE named NAME. MODE must return an
+address or byte at an address if funcalled with a cpu. SETF-FORM is a lambda
+that may be funcalled with a value to set the address computed by MODE. If
+TRACK-PC is t, the default, the program counter will be incremented to just
+past the instruction's operands. Otherwise, BODY is responsible for the PC.</pre></div></div>
+<div class="symboldecl">
+<div class="definition">
 <a class="symbolname" name="defopcode_func" href="#defopcode_func">defopcode</a>
 <span class="lambdalist">name (&key (docs ) raw (track-pc t)) modes &body body</span>
 <span class="symboltype">function</span></div>
@@ -296,7 +314,7 @@ bytevector to be diassembled in lieu of *ram*.</pre></div></div>
 <span class="lambdalist">opcode</span>
 <span class="symboltype">function</span></div>
 <div class="documentation">
-<pre>Get the mnemonic for OPCODE. Returns a symbol to be funcalled.</pre></div></div>
+<pre>Get the mnemonic for OPCODE. Returns a symbol to be funcalled or nil.</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
 <a class="symbolname" name="get-range_func" href="#get-range_func">get-range</a>
@@ -398,6 +416,13 @@ provided.</pre></div></div>
 <pre></pre></div></div>
 <div class="symboldecl">
 <div class="definition">
+<a class="symbolname" name="load-image_func" href="#load-image_func">load-image</a>
+<span class="lambdalist">&key (cpu (make-cpu)) (ram (make-array 65536 element-type '(unsigned-byte 8)))</span>
+<span class="symboltype">function</span></div>
+<div class="documentation">
+<pre>Set *CPU* and *RAM* to CPU and RAM.</pre></div></div>
+<div class="symboldecl">
+<div class="definition">
 <a class="symbolname" name="maybe-update-cycle-count_func" href="#maybe-update-cycle-count_func">maybe-update-cycle-count</a>
 <span class="lambdalist">cpu address &optional start</span>
 <span class="symboltype">function</span></div>
@@ -435,6 +460,29 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu).</pr
 instead of left. SIZE specifies the bitlength of the integer being rotated.</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
+<a class="symbolname" name="save-image_func" href="#save-image_func">save-image</a>
+<span class="lambdalist"></span>
+<span class="symboltype">function</span></div>
+<div class="documentation">
+<pre>Return a list containing the current *CPU* and *RAM*.</pre></div></div>
+<div class="symboldecl">
+<div class="definition">
+<a class="symbolname" name="set-flags-if_func" href="#set-flags-if_func">set-flags-if</a>
+<span class="lambdalist">cpu &rest flag-preds</span>
+<span class="symboltype">function</span></div>
+<div class="documentation">
+<pre>Takes any even number of arguments where the first is a keyword denoting a
+status bit and the second is a funcallable predicate that takes no arguments.
+It will set each flag to 1 if its predicate is true, otherwise 0.</pre></div></div>
+<div class="symboldecl">
+<div class="definition">
+<a class="symbolname" name="set-flags-nz_func" href="#set-flags-nz_func">set-flags-nz</a>
+<span class="lambdalist">cpu value</span>
+<span class="symboltype">function</span></div>
+<div class="documentation">
+<pre>Set the zero and negative bits of CPU's staus-register based on VALUE.</pre></div></div>
+<div class="symboldecl">
+<div class="definition">
 <a class="symbolname" name="stack-pop_func" href="#stack-pop_func">stack-pop</a>
 <span class="lambdalist">cpu</span>
 <span class="symboltype">function</span></div>
@@ -464,25 +512,17 @@ instead of left. SIZE specifies the bitlength of the integer being rotated.</pre
 <div class="symboldecl">
 <div class="definition">
 <a class="symbolname" name="status-bit_func" href="#status-bit_func">status-bit</a>
-<span class="lambdalist">n &optional (cpu *cpu*)</span>
+<span class="lambdalist">key cpu</span>
 <span class="symboltype">function</span></div>
 <div class="documentation">
-<pre>Retrieve bit N from the status register. N should be a keyword.</pre></div></div>
+<pre>Retrieve bit KEY from the status register of CPU. KEY should be a keyword.</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
 <a class="symbolname" name="(setf status-bit)_func" href="#(setf status-bit)_func">(setf status-bit)</a>
-<span class="lambdalist">new-val n &optional (cpu *cpu*)</span>
+<span class="lambdalist">new-val key cpu</span>
 <span class="symboltype">function</span></div>
 <div class="documentation">
-<pre>Set bit N in the status register to NEW-VAL. N should be a keyword.</pre></div></div>
-<div class="symboldecl">
-<div class="definition">
-<a class="symbolname" name="update-flags_func" href="#update-flags_func">update-flags</a>
-<span class="lambdalist">value &optional (flags '(zero negative)) (cpu *cpu*)</span>
-<span class="symboltype">function</span></div>
-<div class="documentation">
-<pre>Loop over FLAGS which should be a list of keywords and set flags in the
-status register based on VALUE. FLAGS is '(:zero :negative) by default.</pre></div></div>
+<pre>Set bit KEY in the status reg of CPU to NEW-VAL. KEY should be a keyword.</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
 <a class="symbolname" name="wrap-byte_func" href="#wrap-byte_func">wrap-byte</a>
@@ -560,6 +600,17 @@ e.g. a Program Counter address.</pre></div></div>
 <div class="labeltitle">
 <span class="expander" onclick="expand(this, 'macros');">-</span>Macros</div>
 <div id="macros">
+<div class="symboldecl">
+<div class="definition">
+<a class="symbolname" name="defins_macro" href="#defins_macro">defins</a>
+<span class="lambdalist">(name opcode cycle-count byte-count mode) (&key setf-form (track-pc t)) &body body</span>
+<span class="symboltype">macro</span></div>
+<div class="documentation">
+<pre>Define an EQL-Specialized method on OPCODE named NAME. MODE must return an
+address or byte at an address if funcalled with a cpu. SETF-FORM is a lambda
+that may be funcalled with a value to set the address computed by MODE. If
+TRACK-PC is t, the default, the program counter will be incremented to just
+past the instruction's operands. Otherwise, BODY is responsible for the PC.</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
 <a class="symbolname" name="defopcode_macro" href="#defopcode_macro">defopcode</a>
