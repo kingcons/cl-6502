@@ -2,9 +2,8 @@
 
 ;;;; REFERENCES:
 ;; http://www.obelisk.demon.co.uk/6502/reference.html
-;; http://www.6502.org/tutorials/6502opcodes.html
-;; http://nesdev.parodius.com/6502.txt
 ;; https://github.com/mnaberez/py65/blob/master/src/py65/devices/mpu6502.py
+;; http://nesdev.parodius.com/6502.txt
 
 ;;;; DESIGN:
 ;; Why methods and a case instead of functions inline in the case?
