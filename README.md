@@ -24,6 +24,7 @@ In particular, [disasm](http://redlinernotes.com/docs/cl-6502.html#disasm_func),
 
 ### A simple example:
 (An example program, [```*benchmark*```](http://github.com/redline6561/cl-6502/blob/master/src/toys.lisp), currently exists.)
+
 1. Load cl-6502.
 2. Define a vector of bytes to execute. Optionally, check the disassembly with ```(disasm *my-bytevector*)```. Assembly of symbolic code into bytevectors will be available soon. :)
 3. Load it into memory with ```(setf (get-range 0) *my-bytevector*)```, set the program counter to 0 and manually step through it with ```6502-step``` OR load it into memory and run it with ```(execute *cpu* *my-bytevector*)```.
