@@ -66,7 +66,8 @@ else
 <span class="lambdalist">cpu opcode</span>
 <span class="symboltype">standard-generic-function</span></div>
 <div class="documentation">
-<pre>Step the CPU through the next instruction.</pre></div></div>
+<pre>Step the CPU through the next instruction, returning the CPU
+or :done.</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
 <a class="symbolname" name="asm_func" href="#asm_func">asm</a>
@@ -89,9 +90,8 @@ bytevector to be diassembled in lieu of *ram*.</pre></div></div>
 <span class="lambdalist">cpu &optional program</span>
 <span class="symboltype">standard-generic-function</span></div>
 <div class="documentation">
-<pre>Step the CPU until a BRK occurs. If PROGRAM is provided,
-it will be placed at the beginning of *ram* and the PC will be set to 0.
-PROGRAM should be a list or array of bytes.</pre></div></div>
+<pre>Step the CPU until a BRK. If a PROGRAM bytevector is supplied,
+it will be placed at the beginning of *ram* and the PC will be set to 0.</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
 <a class="symbolname" name="get-byte_func" href="#get-byte_func">get-byte</a>
