@@ -3,8 +3,7 @@
 ;;;; REFERENCES:
 ;; http://www.obelisk.demon.co.uk/6502/registers.html
 ;; http://www.obelisk.demon.co.uk/6502/addressing.html
-;; http://code.google.com/p/applepy/source/browse/trunk/processor.py
-;; https://github.com/jaoswald/cl-comfy-6502/blob/master/6502-opcodes.lisp
+;; http://nesdev.parodius.com/6502.txt
 
 (defstruct cpu
   "A 6502 CPU with an extra slot for tracking the cycle count/clock ticks."
@@ -33,8 +32,7 @@
 (defun load-image (&key (cpu (make-cpu))
                    (ram (make-array #x10000 :element-type '(unsigned-byte 8))))
   "Set *CPU* and *RAM* to CPU and RAM."
-  (setf *cpu* cpu
-        *ram* ram))
+  (setf *ram* ram *cpu* cpu))
 
 (defun save-image ()
   "Return a list containing the current *CPU* and *RAM*."
@@ -268,7 +266,8 @@ past the instruction's operands. Otherwise, BODY is responsible for the PC."
      ,@body
      ,@(when (and track-pc (> byte-count 1))
          `((incf (cpu-pc cpu) ,(1- byte-count))))
-     (incf (cpu-cc cpu) ,cycle-count)))
+     (incf (cpu-cc cpu) ,cycle-count)
+     cpu))
 
 (defmacro defopcode (name (&key (docs "") raw (track-pc t)) modes &body body)
   "Define a Generic Function NAME with DOCS if provided and instructions,
