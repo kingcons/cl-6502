@@ -30,7 +30,7 @@ print-instruction for formatting and display, and return the instruction length.
 (defun print-instruction (bytes index name mode docs)
   "Format the instruction at INDEX and its operands for display."
   (flet ((arg-formatter (arg)
-           (case (cadr mode)
+           (case (second mode)
              (absolute (format nil "$~{~2,'0x~}" (reverse arg)))
              (absolute-x (format nil "$~{~2,'0x~}, X" (reverse arg)))
              (absolute-y (format nil "$~{~2,'0x~}, Y" (reverse arg)))

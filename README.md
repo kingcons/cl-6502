@@ -11,9 +11,7 @@ and [Michael Steil's phenomenal talk](http://media.ccc.de/browse/congress/2010/2
 A few notes on why I'm doing this are [here](http://redlinernotes.com/blog/?p=1421). Some notes on the design of cl-6502 are [here](http://redlinernotes.com/blog/?p=1428).
 
 ## Install
-You are strongly encouraged to use this library via [Quicklisp](http://quicklisp.org/). Simply start your lisp and...
-
-* Using [Quicklisp](http://quicklisp.org/): ```(ql:quickload 'cl-6502)```
+You are strongly encouraged to use this library via [Quicklisp](http://quicklisp.org/). Simply start your lisp and run: ```(ql:quickload 'cl-6502)```.
 
 ## Getting Started
 * Check out the docs for the [*cl-6502*](http://redlinernotes.com/docs/cl-6502.html) and [*6502-cpu*](http://redlinernotes.com/docs/6502-cpu.html) packages. There is also a *6502* package but it exists primarily to house the implementation of all the [opcodes](http://github.com/redline6561/cl-6502/blob/master/src/opcodes.lisp).
@@ -33,4 +31,4 @@ In particular, [disasm](http://redlinernotes.com/docs/cl-6502.html#disasm_func),
 
 * Using Quicklisp: For local development, git clone this repository into the ```local-projects``` subdirectory of quicklisp.
 
-To run the tests, after you've loaded *cl-6502* just run ```(asdf:oos 'asdf:test-op 'cl-6502)```. There is a dearth of tests at the moment but there will be more soon as the design has recently solidified.
+To run the tests, after you've loaded *cl-6502* just run ```(asdf:oos 'asdf:test-op 'cl-6502)```. You may need to ```(ql:quickload 'cl-6502-tests)``` to ensure that the fiveam dependency is satisfied first. There is a dearth of tests at the moment but there will be more soon as the design has recently solidified.
