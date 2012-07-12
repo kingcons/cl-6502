@@ -10,6 +10,7 @@ bytevector to be diassembled in lieu of *ram*."
                     (get-range start end)))
          (bytes-length (length bytes))
          (index 0))
+    (assert (typep bytes 'vector))
     (flet ((instruction-end (index)
              (+ index (third (aref *opcodes* (aref bytes index))))))
       (loop until (>= (instruction-end index) bytes-length)
@@ -29,7 +30,7 @@ print-instruction for formatting and display, and return the instruction length.
 (defun print-instruction (bytes index name mode docs)
   "Format the instruction at INDEX and its operands for display."
   (flet ((arg-formatter (arg)
-           (case mode
+           (case (cadr mode)
              (absolute (format nil "$~{~2,'0x~}" (reverse arg)))
              (absolute-x (format nil "$~{~2,'0x~}, X" (reverse arg)))
              (absolute-y (format nil "$~{~2,'0x~}, Y" (reverse arg)))
@@ -40,5 +41,5 @@ print-instruction for formatting and display, and return the instruction length.
              (otherwise (format nil "~{$~2,'0x~}" arg)))))
     (let* ((byte-str (format nil "~{~2,'0x ~}" bytes))
            (args-str (format nil "~A ~A" name (arg-formatter (subseq bytes 1))))
-           (formatter "$~4,'0x   ~8A  ;; ~12A,  ~A~%"))
+           (formatter "$~4,'0x   ~9A  ;; ~14A ~A~%"))
       (format t formatter index byte-str args-str docs))))
