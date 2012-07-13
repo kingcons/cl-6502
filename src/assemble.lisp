@@ -77,7 +77,6 @@
   "Takes a tokenized block of code and generates an appropriate 6502 bytevector."
   (let* ((mnemonic (first tokens))
          (mode (find-mode (rest tokens)))
-         (opcode (find-opcode mnemonic mode))
          (args (loop for token in (rest tokens)
                   for arg = (cl-ppcre:scan-to-strings "[0-9a-fA-F]{2,4}" token)
                   if (member mode '(absolute absolute-x absolute-y indirect))
@@ -89,4 +88,6 @@
                     collect (or (gethash token *symbol-table*)
                                 (error 'syntax-error :token token
                                        :line (format nil "~{~A ~}" tokens))))))
-    (concatenate 'vector (vector opcode) args)))
+    (if mnemonic
+        (concatenate 'vector (vector (find-opcode mnemonic mode)) args)
+        #())))
