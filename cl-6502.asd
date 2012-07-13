@@ -5,7 +5,7 @@
   :license "BSD"
   :author "Brit Butler <redline6561@gmail.com>"
   :pathname "src/"
-  :depends-on (:alexandria)
+  :depends-on (:alexandria :cl-ppcre)
   :serial t
   :components ((:file "packages")
                (:file "conditions")
