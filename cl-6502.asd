@@ -26,6 +26,8 @@
   :serial t
   :components ((:file "packages")
                (:file "fixtures")
+               (:file "assembler")
+               (:file "disassembler")
                (:file "addressing")
                (:file "opcodes")))
 
