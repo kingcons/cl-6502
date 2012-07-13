@@ -80,9 +80,13 @@
          (opcode (find-opcode mnemonic mode))
          (args (loop for token in (rest tokens)
                   for arg = (cl-ppcre:scan-to-strings "[0-9a-fA-F]{2,4}" token)
-                  if arg collect (parse-integer arg :radix 16)
+                  if (member mode '(absolute absolute-x absolute-y indirect))
+                    return (mapcar (lambda (x) (parse-integer x :radix 16))
+                                   (list (subseq arg 2) (subseq arg 0 2)))
+                  if arg
+                    collect (parse-integer arg :radix 16)
                   else unless (cl-ppcre:scan "^[aAxXyY]" token)
-                  collect (or (gethash token *symbol-table*)
-                              (error 'syntax-error :token token
-                                     :line (format nil "~{~A ~}" tokens))))))
+                    collect (or (gethash token *symbol-table*)
+                                (error 'syntax-error :token token
+                                       :line (format nil "~{~A ~}" tokens))))))
     (concatenate 'vector (vector opcode) args)))

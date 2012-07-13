@@ -37,7 +37,7 @@
 
 (deftest assemble-absolute
     "Absolute mode instructions should be assembled correctly."
-  (is (equalp (asm "sbc #$0001") #(#xed 01 00))))
+  (is (equalp (asm "sbc $0001") #(#xed 01 00))))
 
 (deftest assemble-absolute-x
     "Absolute-x mode instructions should be assembled correctly."
