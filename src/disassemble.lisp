@@ -11,10 +11,8 @@ bytevector to be diassembled in lieu of *ram*."
          (bytes-length (length bytes))
          (index 0))
     (assert (typep bytes 'vector))
-    (flet ((instruction-end (index)
-             (+ index (third (aref *opcodes* (aref bytes index))))))
-      (loop until (>= (instruction-end index) bytes-length)
-         do (incf index (disasm-instruction bytes index))))))
+    (loop do (incf index (disasm-instruction bytes index))
+       until (>= index bytes-length))))
 
 (defun disasm-instruction (bytes index)
   "Lookup the metadata for the instruction at INDEX in BYTES, pass the info to
@@ -38,6 +36,8 @@ print-instruction for formatting and display, and return the instruction length.
              (indirect-x (format nil "($~{~2,'0x~}, X)" arg))
              (indirect-y (format nil "($~{~2,'0x~}, Y)" arg))
              (immediate (format nil "~{#$~2,'0x~}" arg))
+             (zero-page-x (format nil "$~{~2,'0x~}, X" arg))
+             (zero-page-y (format nil "$~{~2,'0x~}, Y" arg))
              (otherwise (format nil "~{$~2,'0x~}" arg)))))
     (let* ((byte-str (format nil "~{~2,'0x ~}" bytes))
            (args-str (format nil "~A ~A" name (arg-formatter (subseq bytes 1))))
