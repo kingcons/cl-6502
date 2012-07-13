@@ -70,8 +70,8 @@
 
 (deftest assemble-label
     "Labels ($LABEL:) should store a reference to the current PC."
-  (let ((code (format nil " loop: LDY #$00~% INY~% jmp loop")))
-    (is (eql (asm code) #(#xa0 0 #xc8 0)))))
+  (let ((code (format nil " loop: ~% LDY #$00~% INY~% jmp loop")))
+    (is (eql (asm code) #(#xa0 0 #xc8 #x4c 0)))))
 
 (deftest assemble-data
     "Variables ($VAR=value) should store values."

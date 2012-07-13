@@ -21,3 +21,18 @@
              (format stream "~A is not a legal opcode." (opcode condition))))
   (:documentation "Illegal opcodes are not currently implemented."))
 
+(define-condition unknown-mode (6502-error)
+  ((tokens :initarg :tokens :reader tokens))
+  (:report (lambda (condition stream)
+             (format stream "Couldn't find mode matching: ~A."
+                     (tokens condition))))
+  (:documentation "Assembly must conform to one of the 13 addressing modes
+supported by cl-6502."))
+
+(define-condition syntax-error (6502-error)
+  ((token :initarg :token :reader token)
+   (line :initarg :line :reader line))
+  (:report (lambda (condition stream)
+             (format stream "Couldn't parse token ~A on line ~A."
+                     (token condition) (line condition))))
+  (:documentation "Failure to parse a given token or label."))
