@@ -32,7 +32,8 @@ In particular, [asm](http://redlinernotes.com/docs/cl-6502.html#asm_func), [disa
 The assembler supports comments, constants, and a limited form of labels in addition to 6502 assembler code. There should only be one statement per line. A label currently stores the absolute address of the next instruction. Thus, ```loop: {newline} lda``` should store the absolute address of lda. Instructions and register names are case insensitive; labels and constants names are case sensitive. *Syntax Table*:
 
 * Label definition: ```name:```
-* Label usage: ```jmp !label``` where ! is the syntax of the desired addressing mode. Currently, lables only support: indirect, absolute, absolute-x, and absolute-y addressed instructions.
+* Label usage: ```jmp !label``` where ! is the syntax of the desired addressing mode.
+  * Currently, lables only support: indirect, absolute, absolute-x, and absolute-y addressed instructions.
 * Constant definition: ```name=val```
 * Constant usage: ```lda !name``` where ! is the syntax of the desired addressing mode.
 * Comments: ```foo ; a note about foo```
