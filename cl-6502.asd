@@ -1,7 +1,7 @@
 (defsystem #:cl-6502
   :name "cl-6502"
   :description "An emulator for the MOS 6502 CPU"
-  :version "0.7.5"
+  :version "0.8.0"
   :license "BSD"
   :author "Brit Butler <redline6561@gmail.com>"
   :pathname "src/"
