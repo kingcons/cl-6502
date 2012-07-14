@@ -70,12 +70,12 @@
 
 (deftest assemble-label
     "Labels ($LABEL:) should store a reference to the current PC."
-  (let ((code (format nil " loop: ~% LDY #$00~% INY~% jmp loop")))
+  (let ((code (format nil " loop: ~% LDY #$00~% INY~% jmp $loop")))
     (is (equalp (asm code) #(#xa0 0 #xc8 #x4c 0 0)))))
 
 (deftest assemble-data
     "Variables ($VAR=value) should store values."
-  (let ((code (format nil " hours=#$12~% lda hours~% hours=#$24~% ldy hours")))
+  (let ((code (format nil " hours=12~% lda #$hours~% hours=24~% ldy #$hours")))
     (is (equalp (asm code) #(#xa9 18 #xa0 36)))))
 
 ; (deftest assemble-pc "*" nil)?

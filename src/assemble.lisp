@@ -36,10 +36,10 @@
 
 (defun preprocess (line pc)
   "Preprocess the line setting values in the *SYMTABLE* accordingly."
-  (flet ((set-var (delimiter &optional default)
+  (flet ((set-var (delimiter &optional val)
            (destructuring-bind (var &rest src) (cl-ppcre:split delimiter line)
-             (setf (gethash var *symtable*) (or default (first src)))) nil))
-    (cond ((position #\: line) (set-var "\\:" (format nil "$~4,'0x" pc)))
+             (setf (gethash var *symtable*) (or val (first src))))))
+    (cond ((position #\: line) (set-var "\\:" (format nil "~4,'0x" pc)))
           ((position #\= line) (set-var "\\=")))))
 
 (defun asm (source)
@@ -86,7 +86,15 @@
 
 (defun process-syms (tokens)
   "Resolve any symbols in TOKENS."
-  (mapcar (lambda (sym) (or (gethash sym *symtable*) sym)) tokens))
+  (let ((prefixes '(#\# #\$ #\( #\&)))
+    (labels ((prefix-sym (x)
+               (subseq x 0 (1+ (loop for char in prefixes
+                                  maximizing (or (position char x) 0)))))
+             (splice-sym (x)
+               (let ((result (gethash (string-trim prefixes x) *symtable*)))
+                 (when result
+                   (concatenate 'string (prefix-sym x) result)))))
+      (mapcar (lambda (sym) (or (splice-sym sym) sym)) tokens))))
 
 (defun process-args (tokens mode)
   "Take a list of args TOKENS and produce an appropriate 6502 bytevector."
