@@ -26,29 +26,30 @@
             (mapcar #'parse-hex (list (subseq token 2) (subseq token 0 2)))
             (parse-hex token))))))
 
+(defun tokenize (line)
+  "Split a LINE by spaces into its constituent tokens."
+  (cl-ppcre:split "\\ " line))
+
+(defun preprocess-p (line)
+  "Take a LINE of source and return T if it contains a preprocessor statement."
+  (or (position #\: line) (position #\= line)))
+
+(defun preprocess (line pc)
+  "Preprocess the line setting values in the *SYMBOL-TABLE* accordingly."
+  (flet ((set-var (delimiter &optional default)
+           (destructuring-bind (var &rest src) (cl-ppcre:split delimiter line)
+             (setf (gethash var *symbol-table*) (or default (first src)))) nil))
+    (cond ((position #\: line) (set-var "\\:" (format nil "$~4,'0x" pc)))
+          ((position #\= line) (set-var "\\=")))))
+
 (defun asm (source)
   "Assemble SOURCE string into a bytevector and return it."
-  (flet ((bytes (line)
-           (if (or (position #\: line) (position #\= line))
-               0
-               (length (cl-ppcre:split "\\ " line)))))
-    (apply 'concatenate 'vector
-           (loop for line in (mapcar #'extract-code (cl-ppcre:split "\\n" source))
-              for pc = 0 then (+ pc (bytes line))
-              collecting (asm-instruction line pc)))))
-
-(defun asm-instruction (code pc)
-  "Assemble CODE into a bytevector, using the *CONTEXT* as necessary."
-  (print pc)
-  (let ((label-p (position #\: code))
-        (store-p (position #\= code))
-        (tokens (cl-ppcre:split "\\ " code)))
-    (flet ((set-var (delimiter &optional default)
-             (destructuring-bind (var &rest src) (cl-ppcre:split delimiter code)
-               (setf (gethash var *symbol-table*) (or default (first src)))) nil))
-      (cond (label-p (set-var "\\:" (format nil "$~4,'0x" pc)))
-            (store-p (set-var "\\="))
-            (t (process-tokens tokens))))))
+  (apply 'concatenate 'vector
+         (loop for line in (mapcar #'extract-code (cl-ppcre:split "\\n" source))
+            for pc = 0 then (or (unless (preprocess-p line)
+                                  (+ pc (length (tokenize line)))) pc)
+            if (preprocess-p line) do (preprocess line pc)
+            else collect (process-tokens (tokenize line)))))
 
 (defun find-opcode (name mode)
   "Find an opcode matching NAME and MODE, raising ILLEGAL-OPCODE otherwise."
