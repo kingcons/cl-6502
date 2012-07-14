@@ -5,8 +5,8 @@
 ;; http://ahefner.livejournal.com/20528.html
 ;; https://github.com/mnaberez/py65/blob/master/src/py65/assembler.py
 
-(defvar *symbol-table* (make-hash-table :test #'equal)
-  "A symbol-table for use during assembly.")
+(defvar *symtable* (make-hash-table :test #'equal)
+  "A symbol table for use during assembly.")
 
 (defun trim-whitespace (str)
   "Remove trailing and leading Tabs, Returns, and Spaces from STR."
@@ -35,15 +35,16 @@
   (or (position #\: line) (position #\= line)))
 
 (defun preprocess (line pc)
-  "Preprocess the line setting values in the *SYMBOL-TABLE* accordingly."
+  "Preprocess the line setting values in the *SYMTABLE* accordingly."
   (flet ((set-var (delimiter &optional default)
            (destructuring-bind (var &rest src) (cl-ppcre:split delimiter line)
-             (setf (gethash var *symbol-table*) (or default (first src)))) nil))
+             (setf (gethash var *symtable*) (or default (first src)))) nil))
     (cond ((position #\: line) (set-var "\\:" (format nil "$~4,'0x" pc)))
           ((position #\= line) (set-var "\\=")))))
 
 (defun asm (source)
   "Assemble SOURCE string into a bytevector and return it."
+  (clrhash *symtable*)
   (apply 'concatenate 'vector
          (loop for line in (mapcar #'extract-code (cl-ppcre:split "\\n" source))
             for pc = 0 then (or (unless (preprocess-p line)
@@ -56,12 +57,9 @@
   (flet ((match-p (op)
            (and (string-equal name (symbol-name (first op)))
                 (eql mode (second (alexandria:lastcar op))))))
-    (let ((result (loop for i from 0 to 255
-                     when (match-p (aref *opcodes* i))
-                     collect i)))
-      (unless result
-        (error 'illegal-opcode :opcode (format nil "Name:~A Mode:~A" name mode)))
-      (first result))))
+    (let ((result (loop for i from 0 to (length *opcodes*)
+                     when (match-p (aref *opcodes* i)) return i)))
+      (or result (error 'illegal-opcode :opcode (list name mode))))))
 
 (defun match-mode (str)
   "Given a string, STR, match it to an addressing mode returning that or NIL."
@@ -79,29 +77,25 @@
                        ("^\\(\\$[0-9a-fA-F]{4}\\)$" . indirect)
                        ("^&[0-9a-fA-F]{2,4}$" . relative))))
     (loop for (regex . mode) in regex-modes
-       when (cl-ppcre:scan regex str)
-       return mode)))
+       when (cl-ppcre:scan regex str) return mode)))
 
 (defun find-mode (tokens)
   "Determine which mode is being used by TOKENS, raising UNKNOWN-MODE otherwise."
-  (let* ((token-str (apply 'concatenate 'string tokens))
-         (result (if (gethash token-str *symbol-table*)
-                     (match-mode (gethash token-str *symbol-table*))
-                     (match-mode token-str))))
+  (let ((result (match-mode (apply 'concatenate 'string tokens))))
     (or result (error 'unknown-mode :tokens tokens))))
+
+(defun process-syms (tokens)
+  "Resolve any symbols in TOKENS."
+  (mapcar (lambda (sym) (or (gethash sym *symtable*) sym)) tokens))
+
+(defun process-args (tokens mode)
+  "Take a list of args TOKENS and produce an appropriate 6502 bytevector."
+  (flatten (remove nil (mapcar (lambda (x) (extract-num x mode)) tokens))))
 
 (defun process-tokens (tokens)
   "Takes a tokenized block of code and generates an appropriate 6502 bytevector."
   (let* ((mnemonic (first tokens))
-         (mode (find-mode (rest tokens)))
-         (args (loop for token in (rest tokens)
-                  for sym = (gethash token *symbol-table*)
-                  for arg = (extract-num token mode)
-                  if sym collect (extract-num sym mode)
-                  else if arg collect arg
-                  else unless (cl-ppcre:scan "^[aAxXyY]" token)
-                  return (error 'syntax-error :token token
-                                :line (format nil "~{~A ~}" tokens)))))
-    (if (and mnemonic (not (gethash mnemonic *symbol-table*)))
-        (apply 'vector (find-opcode mnemonic mode) (flatten args))
-        #())))
+         (args (process-syms (rest tokens)))
+         (mode (find-mode args)))
+    (when tokens
+      (apply 'vector (find-opcode mnemonic mode) (process-args args mode)))))
