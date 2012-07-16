@@ -9,8 +9,9 @@
          LDX #$00
          LDY #$00
          ;; Increment Y until it wraps around to zero, then proceed to 0x0b
+         loop:
          INY
-         BNE &fd
+         BNE &loop
          ;; subtract the sum of value at 0x01+carry from accumulator and halt.
          ;; (remember that absolute addresses are stored low-byte first)
          SBC $0001
