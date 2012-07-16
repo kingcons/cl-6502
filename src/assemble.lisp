@@ -17,7 +17,7 @@
   (let ((trimmed-src (trim-whitespace src)))
     (trim-whitespace (subseq trimmed-src 0 (position #\; trimmed-src)))))
 
-(defun extract-num (str mode)
+(defun extract-num (str &optional (mode 'implied))
   "Extract a hex number from its containing string, STR."
   (let ((token (cl-ppcre:scan-to-strings "[0-9a-fA-F]{2,4}" str)))
     (flet ((parse-hex (x) (parse-integer x :radix 16)))
@@ -92,26 +92,39 @@
   (let ((result (match-mode (apply 'concatenate 'string tokens))))
     (or result (error 'unknown-mode :tokens tokens))))
 
-(defun process-syms (tokens)
+(defun prefix-of (str)
+  "Extract the mode prefix of STR."
+  (subseq str 0 (1+ (loop for char in '(#\# #\$ #\( #\&)
+                     maximizing (or (position char str) 0)))))
+
+(defun splice-sym (val prefix pc)
+  "Splice the stored VAL together with PREFIX, computing an offset if needed."
+  (when val
+    (let* ((result (format nil "~a~4,'0x" prefix val))
+           (label (extract-num result))
+           (mode (find-mode (list result))))
+      (if (eql mode 'relative)
+          (format nil "~a~4,'0x" prefix (wrap-byte (- label pc)))
+          result))))
+
+(defun maybe-sym (str pc)
+  "Resolve STR if it contains a symbol. Otherwise, return STR."
+  (let ((symbol (string-trim '(#\# #\$ #\( #\&) str)))
+    (or (splice-sym (gethash symbol *symtable*) (prefix-of str) pc) str)))
+
+(defun process-syms (tokens pc)
   "Resolve any symbols in TOKENS."
-  (let ((prefixes '(#\# #\$ #\( #\&)))
-    (labels ((prefix-sym (x)
-               (subseq x 0 (1+ (loop for char in prefixes
-                                  maximizing (or (position char x) 0)))))
-             (splice-sym (x)
-               (let ((result (gethash (string-trim prefixes x) *symtable*)))
-                 (when result
-                   (concatenate 'string (prefix-sym x) result)))))
-      (mapcar (lambda (sym) (or (splice-sym sym) sym)) tokens))))
+  (loop for token in tokens
+     collect (maybe-sym token pc)))
 
 (defun process-args (tokens mode)
   "Take a list of args TOKENS and produce an appropriate 6502 bytevector."
   (flatten (remove nil (mapcar (lambda (x) (extract-num x mode)) tokens))))
 
-(defun process-tokens (tokens)
+(defun process-tokens (tokens pc)
   "Takes a tokenized block of code and generates an appropriate 6502 bytevector."
   (let* ((mnemonic (first tokens))
-         (args (process-syms (rest tokens)))
+         (args (process-syms (rest tokens) pc))
          (mode (find-mode args)))
     (when tokens
       (apply 'vector (find-opcode mnemonic mode) (process-args args mode)))))
