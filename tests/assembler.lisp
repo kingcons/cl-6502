@@ -78,8 +78,14 @@
   (let ((code (format nil " hours=12~% lda #$hours~% hours=24~% ldy #$hours")))
     (is (equalp (asm code) #(#xa9 18 #xa0 36)))))
 
-; (deftest assemble-pc "*" nil)?
-
 (deftest assemble-program
     "A basic program should assemble correctly."
-  nil)
+  (let ((code (format nil "CLC~% LDA #$00~% LDY #$00~%
+                           loop:~% INY~% bne &loop~% sbc $0001~% brk")))
+    ;; 253 is 255-2. numbers over 128 "walk backwards" from 255.
+    ;; numbers below "walk forwards". (wrap-byte (- label pc))
+    (is (equalp (asm code) #(24 169 0 160 0 200 208 253 237 1 0 0)))
+    (cl-6502:execute cpu (asm code))
+    (is (eql (cpu-ar cpu) 86))))
+
+; (deftest assemble-pc "*" nil)?

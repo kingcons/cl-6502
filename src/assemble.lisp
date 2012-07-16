@@ -42,22 +42,30 @@
     (cond ((position #\: line) (set-var "\\:" (format nil "~4,'0x" pc)))
           ((position #\= line) (set-var "\\=")))))
 
+(defun next-pc (tokens pc)
+  "Compute the new PC from TOKENS and the old PC."
+  (let* ((name (first tokens))
+         (mode (and name (find-mode (process-syms (rest tokens) pc)))))
+    (if name
+        (+ pc (third (aref *opcodes* (find-opcode name mode))))
+        pc)))
+
 (defun asm (source)
   "Assemble SOURCE string into a bytevector and return it."
   (clrhash *symtable*)
   (apply 'concatenate 'vector
          (loop for line in (mapcar #'extract-code (cl-ppcre:split "\\n" source))
             for pc = 0 then (or (unless (preprocess-p line)
-                                  (+ pc (length (tokenize line)))) pc)
+                                  (next-pc (tokenize line) pc)) pc)
             if (preprocess-p line) do (preprocess line pc)
-            else collect (process-tokens (tokenize line)))))
+            else collect (process-tokens (tokenize line) pc))))
 
 (defun find-opcode (name mode)
   "Find an opcode matching NAME and MODE, raising ILLEGAL-OPCODE otherwise."
   (flet ((match-p (op)
            (and (string-equal name (symbol-name (first op)))
                 (eql mode (second (alexandria:lastcar op))))))
-    (let ((result (loop for i from 0 to (length *opcodes*)
+    (let ((result (loop for i from 0 to 255
                      when (match-p (aref *opcodes* i)) return i)))
       (or result (error 'illegal-opcode :opcode (list name mode))))))
 

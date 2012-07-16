@@ -33,9 +33,9 @@ The assembler supports comments, constants, and a limited form of labels in addi
 
 * Label definition: ```name:```
 * Label usage: ```jmp !label``` where ! is the syntax of the desired addressing mode.
-  * Currently, lables only support: indirect, absolute, absolute-x, and absolute-y addressed instructions.
 * Constant definition: ```name=val```
 * Constant usage: ```lda !name``` where ! is the syntax of the desired addressing mode.
+  * Currently, labels and constants only support: indirect, absolute, absolute-x, and absolute-y addressed instructions.
 * Comments: ```foo ; a note about foo```
 * Implied mode: ```BRK```
 * Accumulator mode: ```ldx a```
