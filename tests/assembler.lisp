@@ -88,4 +88,10 @@
     (cl-6502:execute cpu (asm code))
     (is (eql (cpu-ar cpu) 86))))
 
+(deftest assemble-forward-refs
+    "A program with forward references should assemble correctly."
+  (let ((code (format nil "jmp $loop~% CLC~% LDA #$00~% LDY #$00~%
+                           loop:~% INY~% bne &loop~% sbc $0001~% brk")))
+    (is (equalp (asm code) #(76 8 0 24 169 0 160 0 200 208 253 237 1 0 0)))))
+
 ; (deftest assemble-pc "*" nil)?
