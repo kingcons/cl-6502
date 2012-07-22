@@ -24,5 +24,5 @@
 (defparameter *nop-loop*
   (asm "loop:
           nop
-          bne &loop")
-  "Disassemble it and see!")
+          jmp $loop")
+  "Do nothing forever.")
