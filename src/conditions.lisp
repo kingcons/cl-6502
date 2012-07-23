@@ -22,9 +22,9 @@
   (:documentation "Illegal opcodes are not currently implemented."))
 
 (define-condition invalid-syntax (6502-error)
-  ((line :initarg :line :reader line))
+  ((tokens :initarg :tokens :reader tokens))
   (:report (lambda (condition stream)
              (format stream "Syntax for line ~S is invalid."
-                     (format nil "~{~A~^ ~}" (line condition)))))
+                     (format nil "~{~A~^ ~}" (tokens condition)))))
   (:documentation "Assembly must conform to the syntax in the README."))
 

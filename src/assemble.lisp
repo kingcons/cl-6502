@@ -64,12 +64,15 @@
 (defun asm (source)
   "Assemble SOURCE string into a bytevector and return it."
   (clrhash *symtable*)
-  (let ((results (loop for pc = 0 then (next-pc line pc)
-                    for line in (mapcar #'extract-code (split-lines source))
-                    if (preprocess-p line) do (preprocess line pc)
-                    else unless (emptyp line)
-                    collect (process-tokens (tokenize line)))))
-    (apply 'concatenate 'vector (resolve-syms (remove nil results)))))
+  (let* ((results (loop for pc = 0 then (next-pc line pc)
+                     for line in (mapcar #'extract-code (split-lines source))
+                     if (preprocess-p line) do (preprocess line pc)
+                     else unless (emptyp line)
+                     collect (process-tokens (tokenize line))))
+         (bytevecs (resolve-syms (remove nil results))))
+    (loop for item in bytevecs
+       unless (vectorp item) do (error 'invalid-syntax :tokens item))
+    (apply 'concatenate 'vector bytevecs)))
 
 (defun find-opcode (name mode)
   "Find an opcode matching NAME and MODE, raising ILLEGAL-OPCODE otherwise."
@@ -94,7 +97,7 @@
                        ("^\\(\\$[0-9a-fA-F]{2}\\),[xX]$" . indirect-x)
                        ("^\\(\\$[0-9a-fA-F]{2}\\),[yY]$" . indirect-y)
                        ("^\\(\\$[0-9a-fA-F]{4}\\)$" . indirect)
-                       ("^&[0-9a-fA-F]{2,4}$" . relative))))
+                       ("^&[0-9a-fA-F]{2}$" . relative))))
     (let ((line (apply 'concatenate 'string tokens)))
       (loop for (regex . mode) in regex-modes
          when (cl-ppcre:scan regex line) return mode))))
@@ -112,12 +115,14 @@
 
 (defun splice-sym (val prefix pc)
   "Splice together VAL and PREFIX, computing an offset if needed."
-  (let* ((result (format nil "~a~4,'0x" prefix val))
-         (label (extract-num result))
-         (mode (match-mode (list result))))
+  (let* ((result (format nil "~4,'0x" val))
+         (spliced (concatenate 'string prefix (if (string= prefix "&")
+                                                  (subseq result 2)
+                                                  result)))
+         (mode (match-mode (list spliced))))
     (if (eql mode 'relative)
-        (format nil "~a~4,'0x" prefix (compute-offset label pc))
-        result)))
+        (format nil "&~2,'0x" (compute-offset (extract-num spliced) pc))
+        spliced)))
 
 (defun resolve (tokens pc)
   "Given TOKENS, resolve symbols and return a vector, or raise INVALID-SYNTAX."
