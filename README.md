@@ -29,8 +29,9 @@ In particular, [asm](http://redlinernotes.com/docs/cl-6502.html#asm_func), [disa
 3. Load it into memory and run it with ```(execute *cpu* *my-bytevector*)``` OR load it with ```(setf (get-range 0) *my-bytevector*)```, set the program counter to 0 with ```(setf (cpu-pc *cpu*) 0)``` and manually step through it with ```(6502-step *cpu* (get-byte (immediate *cpu*)))```.
 
 ### A note on supported Assembler syntax
-The assembler supports comments, constants, and a limited form of labels in addition to 6502 assembler code. There should only be one statement per line. A label currently stores the absolute address of the next instruction. Thus, ```loop: {newline} lda``` should store the absolute address of lda. Instructions and register names are case insensitive; labels and constants names are case sensitive. *Syntax Table*:
+The assembler supports comments, constants, and labels in addition to 6502 assembler code. There should only be one statement per line. A label currently stores the absolute address of the next instruction. Thus, ```loop: {newline} lda``` should store the absolute address of lda. Forward references, i.e. use of labels before their definition, are allowed. Instructions and register names are case insensitive; labels and constants names are case sensitive.
 
+*Syntax Table*:
 * Label definition: ```name:```
 * Label usage: ```jmp !label``` where ! is the syntax of the desired addressing mode.
 * Constant definition: ```name=val```
