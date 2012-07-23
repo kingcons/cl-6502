@@ -21,10 +21,10 @@
              (format stream "~A is not a legal opcode." (opcode condition))))
   (:documentation "Illegal opcodes are not currently implemented."))
 
-(define-condition unknown-mode (6502-error)
-  ((tokens :initarg :tokens :reader tokens))
+(define-condition invalid-syntax (6502-error)
+  ((line :initarg :line :reader line))
   (:report (lambda (condition stream)
-             (format stream "Couldn't find mode matching: ~A."
-                     (tokens condition))))
-  (:documentation "Assembly must conform to one of the 13 addressing modes
-supported by cl-6502."))
+             (format stream "Syntax for line ~S is invalid."
+                     (format nil "~{~A~^ ~}" (line condition)))))
+  (:documentation "Assembly must conform to the syntax in the README."))
+
