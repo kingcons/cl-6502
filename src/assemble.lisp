@@ -46,33 +46,33 @@
     (cond ((position #\: line) (set-var "\\:" (format nil "~4,'0x" pc)))
           ((position #\= line) (set-var "\\=")))))
 
-(defmethod next-pc ((line vector) pc)
-  (+ pc (length line)))
+(defgeneric next-pc (line pc)
+  (:documentation "Compute the new Program Counter given LINE and PC.")
+  (:method ((line string) pc)
+    (if (or (preprocess-p line) (emptyp line))
+        pc
+        (next-pc (tokenize line) pc)))
+  (:method ((line list) pc)
+    (let* ((name (first line))
+           (mode (and name (match-mode (rest line)))))
+      (if mode
+          (+ pc (third (aref *opcodes* (find-opcode name mode))))
+          (+ pc 3)))))
 
-(defmethod next-pc ((line list) pc)
-  (let* ((name (first line))
-         (mode (and name (match-mode (rest line)))))
-    (if mode
-        (+ pc (third (aref *opcodes* (find-opcode name mode))))
-        (+ pc 3))))
-
-(defmethod next-pc ((line string) pc)
-  (if (or (preprocess-p line) (emptyp line))
-      pc
-      (next-pc (tokenize line) pc)))
+(defmacro with-src-pass ((src) &body body)
+  "Loop over SRC, tracking the PC and binding LINE. BODY should be a LOOP expr."
+  `(loop for pc = 0 then (next-pc line pc)
+      for line in (mapcar #'extract-code (split-lines ,src))
+        ,@body))
 
 (defun asm (source)
   "Assemble SOURCE string into a bytevector and return it."
   (clrhash *symtable*)
-  (let* ((results (loop for pc = 0 then (next-pc line pc)
-                     for line in (mapcar #'extract-code (split-lines source))
-                     if (preprocess-p line) do (preprocess line pc)
-                     else unless (emptyp line)
-                     collect (process-tokens (tokenize line))))
-         (bytevecs (resolve-syms (remove nil results))))
-    (loop for item in bytevecs
-       unless (vectorp item) do (error 'invalid-syntax :tokens item))
-    (apply 'concatenate 'vector bytevecs)))
+  (with-src-pass (source) if (preprocess-p line) do (preprocess line pc))
+  (let ((results (with-src-pass (source)
+                   unless (or (preprocess-p line) (emptyp line))
+                   collect (process-tokens (tokenize line) pc))))
+    (apply 'concatenate 'vector results)))
 
 (defun find-opcode (name mode)
   "Find an opcode matching NAME and MODE, raising ILLEGAL-OPCODE otherwise."
@@ -125,31 +125,21 @@
         spliced)))
 
 (defun resolve (tokens pc)
-  "Given TOKENS, resolve symbols and return a vector, or raise INVALID-SYNTAX."
+  "Given TOKENS and PC, resolve any symbols in TOKENS."
   (flet ((lookup (sym)
            (gethash (string-trim '(#\# #\$ #\( #\&) sym) *symtable*)))
-    (unless (some #'lookup tokens)
-      (error 'invalid-syntax :tokens tokens))
     (loop for token in tokens for sym = (lookup token)
        if sym collect (splice-sym sym (prefix-of token) (1+ pc))
        else collect token)))
-
-(defun resolve-syms (seqs)
-  "Take a list of tokens and vectors, SEQS, converting any tokens to vectors."
-  (loop for pc = 0 then (next-pc item pc)
-     for item in seqs
-     collect (etypecase item
-               (vector item)
-               (list (process-tokens (resolve item pc))))))
 
 (defun process-args (tokens mode)
   "Take a list of args TOKENS and produce an appropriate 6502 bytevector."
   (remove nil (flatten (mapcar (lambda (x) (extract-num x mode)) tokens))))
 
-(defun process-tokens (tokens)
+(defun process-tokens (tokens pc)
   "Takes a tokenized block of code and generates an appropriate 6502 bytevector."
-  (let ((mode (match-mode (rest tokens))))
+  (let* ((args (resolve (rest tokens) pc))
+         (mode (match-mode args)))
     (if mode
-        (destructuring-bind (mnemonic &rest args) tokens
-          (apply 'vector (find-opcode mnemonic mode) (process-args args mode)))
-        tokens)))
+        (apply 'vector (find-opcode (first tokens) mode) (process-args args mode))
+        (error 'invalid-syntax :line (format nil "~{~A~^ ~}" tokens)))))
