@@ -57,7 +57,7 @@
            (mode (and name (match-mode (rest line)))))
       (if mode
           (+ pc (third (aref *opcodes* (find-opcode name mode))))
-          (+ pc 3)))))
+          (+ pc (if (find #\& (second line)) 2 3))))))
 
 (defmacro with-src-pass ((src) &body body)
   "Loop over SRC, tracking the PC and binding LINE. BODY should be a LOOP expr."
