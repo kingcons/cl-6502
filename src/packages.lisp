@@ -8,6 +8,7 @@
            #:*cpu*
            ;; CPU Struct
            #:cpu
+           #:make-cpu
            #:cpu-pc
            #:cpu-sp
            #:cpu-xr

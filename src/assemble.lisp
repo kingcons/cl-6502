@@ -53,8 +53,8 @@
         pc
         (next-pc (tokenize line) pc)))
   (:method ((line list) pc)
-    (let* ((name (first line))
-           (mode (and name (match-mode (rest line)))))
+    (let ((name (first line))
+          (mode (match-mode (rest line))))
       (if mode
           (+ pc (third (aref *opcodes* (find-opcode name mode))))
           (+ pc (if (find #\& (second line)) 2 3))))))
