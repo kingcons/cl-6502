@@ -1,8 +1,9 @@
 (defpackage :6502-cpu
   (:use :cl :alexandria)
   (:export ;; Conditions
-           #:not-implemented-yet
            #:illegal-opcode
+           #:invalid-mode
+           #:invalid-syntax
            #:status-bit-error
            ;; Globals
            #:*cpu*

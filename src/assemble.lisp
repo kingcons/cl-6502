@@ -85,22 +85,9 @@
 
 (defun match-mode (tokens)
   "Given a list of args, TOKENS, match them to an addressing mode or return NIL."
-  (let ((regex-modes '(("^$" . implied)
-                       ("^[aA]$" . accumulator)
-                       ("^#\\$[0-9a-fA-F]{2}$" . immediate)
-                       ("^\\$[0-9a-fA-F]{4},[xX]$" . absolute-x)
-                       ("^\\$[0-9a-fA-F]{4},[yY]$" . absolute-y)
-                       ("^\\$[0-9a-fA-F]{4}$" . absolute)
-                       ("^\\$[0-9a-fA-F]{2},[xX]$" . zero-page-x)
-                       ("^\\$[0-9a-fA-F]{2},[yY]$" . zero-page-y)
-                       ("^\\$[0-9a-fA-F]{2}$" . zero-page)
-                       ("^\\(\\$[0-9a-fA-F]{2}\\),[xX]$" . indirect-x)
-                       ("^\\(\\$[0-9a-fA-F]{2}\\),[yY]$" . indirect-y)
-                       ("^\\(\\$[0-9a-fA-F]{4}\\)$" . indirect)
-                       ("^&[0-9a-fA-F]{2}$" . relative))))
-    (let ((line (apply 'concatenate 'string tokens)))
-      (loop for (regex . mode) in regex-modes
-         when (cl-ppcre:scan regex line) return mode))))
+  (let ((line (apply 'concatenate 'string tokens)))
+    (loop for mode in *modes*
+       when (cl-ppcre:scan (reader mode) line) return mode)))
 
 (defun prefix-of (str)
   "Extract the mode prefix of STR."

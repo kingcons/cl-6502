@@ -27,3 +27,9 @@
              (format stream "Syntax for line ~S is invalid." (line condition))))
   (:documentation "Assembly must conform to the syntax in the README."))
 
+(define-condition invalid-mode (6502-error)
+  ((mode :initarg :mode :reader mode))
+  (:report (lambda (condition stream)
+             (format stream "~S is not a valid addressing mode."
+                     (mode condition))))
+  (:documentation "Only the 6502 addressing modes have readers and printers."))
