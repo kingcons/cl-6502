@@ -27,9 +27,6 @@
                                     :initial-element nil)
   "A mapping of opcodes to instruction mnemonic/metadata conses.")
 
-(defparameter *modes* '()
-  "A list of addressing modes used by the 6502.")
-
 ;;; Helpers
 
 (defun load-image (&key (cpu (make-cpu))
@@ -200,8 +197,6 @@ READER should be a Perl-compatible regex that can read assembly in the mode.
 PRINTER should be the format string desired for disassembly of the mode.
 DOCS is used as the documentation for the method and setf function when provided."
   `(progn
-     (eval-when (:compile-toplevel :load-toplevel)
-       (pushnew ',name *modes*))
      (defgeneric ,name (cpu)
        (:documentation ,docs)
        (:method ((cpu cpu)) ,@body))

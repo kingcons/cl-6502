@@ -86,8 +86,8 @@
 (defun match-mode (tokens)
   "Given a list of args, TOKENS, match them to an addressing mode or return NIL."
   (let ((line (apply 'concatenate 'string tokens)))
-    (loop for mode in *modes*
-       when (cl-ppcre:scan (reader mode) line) return mode)))
+    (loop for (quote mode) in (remove-duplicates (map 'list #'fourth *opcodes*))
+       when (and mode (cl-ppcre:scan (reader mode) line)) return mode)))
 
 (defun prefix-of (str)
   "Extract the mode prefix of STR."
