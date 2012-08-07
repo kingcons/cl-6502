@@ -79,14 +79,14 @@
   (flet ((match (opcode)
            (let ((op (aref *opcodes* opcode)))
              (and (string-equal name (symbol-name (first op)))
-                  (eql mode (second (alexandria:lastcar op))) opcode))))
+                  (eql mode (fourth op)) opcode))))
     (loop for op from 0 to 255 thereis (match op)
        finally (error 'illegal-opcode :opcode (list name mode)))))
 
 (defun match-mode (tokens)
   "Given a list of args, TOKENS, match them to an addressing mode or return NIL."
   (let ((line (apply 'concatenate 'string tokens)))
-    (loop for (quote mode) in (remove-duplicates (map 'list #'fourth *opcodes*))
+    (loop for mode in (remove-duplicates (map 'list #'fourth *opcodes*))
        when (and mode (cl-ppcre:scan (reader mode) line)) return mode)))
 
 (defun prefix-of (str)
