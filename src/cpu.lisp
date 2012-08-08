@@ -209,15 +209,18 @@ DOCS is used as the documentation for the method and setf function when provided
             `(let ((address (,name cpu)))
                (setf (get-byte address) new-value))))))
 
-(defaddress implied (:reader "^$" :printer "")
+(defaddress implied (:reader "^$"
+                     :printer "")
   nil)
 
-(defaddress accumulator (:cpu-reg t :reader "^[aA]$"
-                         :printer "A")
+(defaddress accumulator (:reader "^[aA]$"
+                         :printer "A"
+                         :cpu-reg t)
   (cpu-ar cpu))
 
-(defaddress immediate (:cpu-reg t :reader "^#\\$[0-9a-fA-F]{2}$"
-                       :printer "~{#$~2,'0x~}")
+(defaddress immediate (:reader "^#\\$[0-9a-fA-F]{2}$"
+                       :printer "~{#$~2,'0x~}"
+                       :cpu-reg t)
   (cpu-pc cpu))
 
 (defaddress zero-page (:reader "^\\$[0-9a-fA-F]{2}$"
@@ -302,12 +305,10 @@ address. Otherwise, funcalling MODE will return the computed address itself."
   `(progn
      (eval-when (:compile-toplevel :load-toplevel)
        ,@(loop for (op cycles bytes mode) in modes
-            do (setf mode (second mode))
             collect `(setf (aref *opcodes* ,op) '(,name ,cycles ,bytes ,mode))))
      (defgeneric ,name (opcode &key cpu mode setf-form)
        (:documentation ,docs))
-     ,@(loop for mode in modes
-          for mname = (second (fourth mode))
+     ,@(loop for mode in modes for mname = (fourth mode)
           unless raw
             do (setf (fourth mode) `(lambda (cpu) (get-byte (,mname cpu))))
           collect `(defins (,name ,@mode)
