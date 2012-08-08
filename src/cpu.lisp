@@ -309,8 +309,9 @@ address. Otherwise, funcalling MODE will return the computed address itself."
      (defgeneric ,name (opcode &key cpu mode setf-form)
        (:documentation ,docs))
      ,@(loop for mode in modes for mname = (fourth mode)
-          unless raw
-            do (setf (fourth mode) `(lambda (cpu) (get-byte (,mname cpu))))
+          do (setf (fourth mode) (if raw
+                                     `',mname
+                                     `(lambda (cpu) (get-byte (,mname cpu)))))
           collect `(defins (,name ,@mode)
                        (:setf-form (lambda (x) (setf (,mname cpu) x))
                         :track-pc ,track-pc)
