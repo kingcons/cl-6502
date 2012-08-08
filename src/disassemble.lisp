@@ -28,10 +28,9 @@ print-instruction for formatting and display, and return the instruction length.
 (defun print-instruction (bytes index name mode docs)
   "Format the instruction at INDEX and its operands for display."
   (flet ((arg-formatter (arg)
-           (let ((format-str (printer (second mode))))
-             (if (member (second mode) '(absolute absolute-x absolute-y indirect))
-                 (format nil format-str (reverse arg))
-                 (format nil format-str arg)))))
+           (if (member mode '(absolute absolute-x absolute-y indirect))
+               (format nil (printer mode) (reverse arg))
+               (format nil (printer mode) arg))))
     (let* ((byte-str (format nil "~{~2,'0x ~}" bytes))
            (args-str (format nil "~A ~A" name (arg-formatter (subseq bytes 1))))
            (formatter "$~4,'0x   ~9A  ;; ~14A ~A~%"))
