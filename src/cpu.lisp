@@ -182,7 +182,7 @@ instead of left. SIZE specifies the bitlength of the integer being rotated."
 ;;; Addressing
 
 (defgeneric reader (mode)
-  (:documentation "Return a Perl-compatible Regex suitable for parsing MODE.")
+  (:documentation "Return a Perl-compatible regex suitable for parsing MODE.")
   (:method (mode) (error 'invalid-mode :mode mode)))
 
 (defgeneric printer (mode)
@@ -194,8 +194,8 @@ instead of left. SIZE specifies the bitlength of the integer being rotated."
 CPU returning an address according to BODY and a setf function to store to that
 address. If CPU-REG is non-nil, BODY will be wrapped in a get-byte for setf.
 READER should be a Perl-compatible regex that can read assembly in the mode.
-PRINTER should be the format string desired for disassembly of the mode.
-DOCS is used as the documentation for the method and setf function when provided."
+PRINTER should be the format string desired for disassembly of the mode. DOCS
+is used as the documentation for the method and setf function when provided."
   `(progn
      (defgeneric ,name (cpu)
        (:documentation ,docs)
@@ -287,8 +287,6 @@ address or byte at an address if funcalled with a cpu. SETF-FORM is a lambda
 that may be funcalled with a value to set the address computed by MODE. If
 TRACK-PC is t, the default, the program counter will be incremented to just
 past the instruction's operands. Otherwise, BODY is responsible for the PC."
-  ;; KLUDGE: Why do I have to intern these symbols so they are created
-  ;; in the correct package, i.e. the calling package rather than 6502-cpu?
   `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) &key (cpu *cpu*)
                      (,(intern "MODE") ,mode) (,(intern "SETF-FORM") ,setf-form))
      ,@body
@@ -306,13 +304,14 @@ address. Otherwise, funcalling MODE will return the computed address itself."
      (eval-when (:compile-toplevel :load-toplevel)
        ,@(loop for (op cycles bytes mode) in modes
             collect `(setf (aref *opcodes* ,op) '(,name ,cycles ,bytes ,mode))))
-     (defgeneric ,name (opcode &key cpu mode setf-form)
+     (defgeneric ,name (,(intern "OPCODE") &key cpu
+                         ,(intern "MODE") ,(intern "SETF-FORM"))
        (:documentation ,docs))
-     ,@(loop for mode in modes for mname = (fourth mode)
+     ,@(loop for mode in modes for mname = (fourth mode) with x = (intern "X")
           do (setf (fourth mode) (if raw
                                      `',mname
                                      `(lambda (cpu) (get-byte (,mname cpu)))))
           collect `(defins (,name ,@mode)
-                       (:setf-form (lambda (x) (setf (,mname cpu) x))
+                       (:setf-form (lambda (,x) (setf (,mname cpu) ,x))
                         :track-pc ,track-pc)
                      ,@body))))
