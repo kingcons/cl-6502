@@ -9,7 +9,7 @@ In case that sounds weird to you, the MOS 6502 is famous for its use in...
 * the [Commodore 64](http://en.wikipedia.org/wiki/Commodore_64),
 * and [Michael Steil's phenomenal talk](http://media.ccc.de/browse/congress/2010/27c3-4159-en-reverse_engineering_mos_6502.html) at 27C3.
 
-A few notes on why I'm doing this are [here](http://redlinernotes.com/blog/?p=1421). Some notes on the design of cl-6502 are [here](http://redlinernotes.com/blog/?p=1428).
+A few notes on why I'm doing this are [here](http://blog.redlinernotes.com/posts/On-Interactive-Retrocomputing.html). Some notes on the design of cl-6502 are [here](http://blog.redlinernotes.com/posts/An-Emulator-Design-Pattern.html).
 
 ## Install
 You are strongly encouraged to use this library via [Quicklisp](http://quicklisp.org/). Simply start your lisp and run: ```(ql:quickload 'cl-6502)```.
