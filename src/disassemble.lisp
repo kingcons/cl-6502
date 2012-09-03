@@ -5,14 +5,13 @@
   "Disassemble memory from START to END. The byte at START is assumed to be an
 instruction and not an operand. If STORAGE is non-nil, it is assumed to be a
 bytevector to be diassembled in lieu of *ram*."
-  (let* ((bytes (if storage
-                    (subseq storage start end)
-                    (get-range start end)))
-         (bytes-length (length bytes))
+  (let ((bytes (if storage
+                   (subseq storage start end)
+                   (get-range start end)))
          (index 0))
     (assert (typep bytes 'vector))
     (loop do (incf index (disasm-instruction bytes index))
-       until (>= index bytes-length))))
+       until (>= index (length bytes)))))
 
 (defun disasm-instruction (bytes index)
   "Lookup the metadata for the instruction at INDEX in BYTES, pass the info to
