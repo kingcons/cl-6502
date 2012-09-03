@@ -8,14 +8,9 @@
 (defvar *symtable* (make-hash-table :test #'equal)
   "A symbol table for use during assembly.")
 
-(defun trim-whitespace (str)
-  "Remove trailing and leading Tabs, Returns, and Spaces from STR."
-  (string-trim '(#\Tab #\Return #\Space) str))
-
 (defun extract-code (src)
   "Trim whitespace and remove comments from a given line of code, SRC."
-  (let ((trimmed-src (trim-whitespace src)))
-    (trim-whitespace (subseq trimmed-src 0 (position #\; trimmed-src)))))
+  (string-trim '(#\Tab #\Return #\Space) (subseq src 0 (position #\; src))))
 
 (defun extract-num (str &optional (mode 'implied))
   "Extract a hex number from its containing string, STR."
@@ -25,10 +20,6 @@
         (if (member mode '(absolute absolute-x absolute-y indirect))
             (mapcar #'parse-hex (list (subseq token 2) (subseq token 0 2)))
             (parse-hex token))))))
-
-(defun split-lines (text)
-  "Split TEXT by newlines into a list of strings."
-  (cl-ppcre:split "\\n" text))
 
 (defun tokenize (line)
   "Split a LINE by spaces into its constituent tokens."
@@ -62,7 +53,7 @@
 (defmacro with-src-pass ((src) &body body)
   "Loop over SRC, tracking the PC and binding LINE. BODY should be a LOOP expr."
   `(loop for pc = 0 then (next-pc line pc)
-      for line in (mapcar #'extract-code (split-lines ,src))
+      for line in (mapcar #'extract-code (cl-ppcre:split "\\n" ,src))
         ,@body))
 
 (defun asm (source)
