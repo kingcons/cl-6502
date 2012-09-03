@@ -9,6 +9,7 @@
   :serial t
   :components ((:file "packages")
                (:file "conditions")
+               (:file "addressing")
                (:file "cpu")
                (:file "disassemble")
                (:file "assemble")
