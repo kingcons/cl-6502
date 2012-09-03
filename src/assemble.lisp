@@ -8,10 +8,6 @@
 (defvar *symtable* (make-hash-table :test #'equal)
   "A symbol table for use during assembly.")
 
-(defun extract-code (src)
-  "Trim whitespace and remove comments from a given line of code, SRC."
-  (string-trim '(#\Tab #\Return #\Space) (subseq src 0 (position #\; src))))
-
 (defun extract-num (str &optional (mode 'implied))
   "Extract a hex number from its containing string, STR."
   (let ((token (cl-ppcre:scan-to-strings "[0-9a-fA-F]{2,4}" str)))
@@ -22,57 +18,54 @@
             (parse-hex token))))))
 
 (defun tokenize (line)
-  "Split a LINE by spaces into its constituent tokens."
-  (cl-ppcre:split "\\ " line))
+  "Split a LINE by spaces into its constituent tokens, removing comments."
+  (let ((code (subseq line 0 (position #\; line))))
+    (cl-ppcre:split "\\ " (string-trim '(#\Tab #\Return #\Space) code))))
 
-(defun preprocess-p (line)
-  "Take a LINE of source and return T if it contains a preprocessor statement."
-  (or (position #\: line) (position #\= line)))
+(defun preprocess-p (tokens)
+  "Take a list of TOKENS and return T if it contains a preprocessor statement."
+  (some (lambda (x) (search x (first tokens))) '(":" "=")))
 
-(defun preprocess (line pc)
-  "Preprocess the line setting values in the *SYMTABLE* accordingly."
+(defun preprocess (statement pc)
+  "Preprocess the STATEMENT setting values in the *SYMTABLE* accordingly."
   (flet ((set-var (delimiter &optional val)
-           (destructuring-bind (var &rest src) (cl-ppcre:split delimiter line)
+           (destructuring-bind (var &rest src) (cl-ppcre:split delimiter statement)
              (setf (gethash var *symtable*) (or val (first src))))))
-    (cond ((position #\: line) (set-var "\\:" (format nil "~4,'0x" pc)))
-          ((position #\= line) (set-var "\\=")))))
+    (cond ((search ":" statement) (set-var "\\:" (format nil "~4,'0x" pc)))
+          ((search "=" statement) (set-var "\\="))
+          (t (error 'invalid-syntax :line statement)))))
 
-(defgeneric next-pc (line pc)
-  (:documentation "Compute the new Program Counter given LINE and PC.")
-  (:method ((line string) pc)
-    (if (or (preprocess-p line) (emptyp line))
-        pc
-        (next-pc (tokenize line) pc)))
-  (:method ((line list) pc)
-    (let ((name (first line))
-          (mode (match-mode (rest line))))
-      (if mode
-          (+ pc (third (aref *opcodes* (find-opcode name mode))))
-          (+ pc (if (find #\& (second line)) 2 3))))))
+(defun next-pc (line pc)
+  "Compute the new program counter given LINE and PC."
+  (let ((mode (match-mode (rest line))))
+    (cond ((or (preprocess-p line) (emptyp line)) pc)
+          (mode (+ pc (third (find-opcode (first line) mode t))))
+          ((some (lambda (x) (search x (second line))) '("&" "#$")) (+ pc 2))
+          (t (+ pc 3)))))
 
 (defmacro with-src-pass ((src) &body body)
   "Loop over SRC, tracking the PC and binding LINE. BODY should be a LOOP expr."
   `(loop for pc = 0 then (next-pc line pc)
-      for line in (mapcar #'extract-code (cl-ppcre:split "\\n" ,src))
+      for line in (mapcar #'tokenize (cl-ppcre:split "\\n" ,src))
         ,@body))
 
 (defun asm (source)
   "Assemble SOURCE string into a bytevector and return it."
   (clrhash *symtable*)
-  (with-src-pass (source) if (preprocess-p line) do (preprocess line pc))
+  (with-src-pass (source) if (preprocess-p line) do (preprocess (first line) pc))
   (let ((results (with-src-pass (source)
                    unless (or (preprocess-p line) (emptyp line))
-                   collect (process-tokens (tokenize line) pc))))
+                   collect (process-tokens line pc))))
     (apply 'concatenate 'vector results)))
 
-(defun find-opcode (name mode)
-  "Find an opcode matching NAME and MODE, raising ILLEGAL-OPCODE otherwise."
-  (flet ((match (opcode)
-           (let ((op (aref *opcodes* opcode)))
-             (and (string-equal name (symbol-name (first op)))
-                  (eql mode (fourth op)) opcode))))
-    (loop for op from 0 to 255 thereis (match op)
-       finally (error 'illegal-opcode :opcode (list name mode)))))
+(defun find-opcode (name mode &optional return-match-p)
+  "Find an opcode matching NAME and MODE, raising ILLEGAL-OPCODE otherwise.
+If RETURN-MATCH-P is non-nil, return the match directly rather than its index."
+  (let* ((insts (remove-if-not (lambda (x) (eql mode x)) *opcodes* :key #'fourth))
+         (match (find (intern (string-upcase name) :6502) insts :key #'first)))
+    (cond ((and match return-match-p) match)
+          (match (position match *opcodes*))
+          (t (error 'illegal-opcode :opcode (list name mode))))))
 
 (defun match-mode (tokens)
   "Given a list of args, TOKENS, match them to an addressing mode or return NIL."

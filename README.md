@@ -33,7 +33,7 @@ In particular, [asm](http://redlinernotes.com/docs/cl-6502.html#asm_func), [disa
 4. ```(reset)``` the CPU as necessary and keep hacking! :)
 
 ### A note on supported Assembler syntax
-The assembler supports comments, constants, and labels in addition to 6502 assembler code. There should only be one statement per line. A label currently stores the absolute address of the next instruction. Thus, ```loop: {newline} lda``` should store the absolute address of lda. Forward references, i.e. use of labels before their definition, are allowed. Instructions and register names are case insensitive; labels and constants names are case sensitive.
+The assembler supports comments, constants, and labels in addition to 6502 assembler code. There should only be one statement per line. A label stores the Program Counter, that is, the absolute address of the next instruction. Thus, ```loop: {newline} lda``` should store the absolute address of lda. If a label is used with a relative addressed instruction, it will be truncated as needed. Forward references, i.e. use of labels before their definition, are allowed. Instructions and register names are case insensitive; labels and constants names are case sensitive.
 
 *Syntax Table*:
 * Label definition: ```name:```
