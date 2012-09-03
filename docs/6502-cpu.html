@@ -87,6 +87,20 @@ else
 <pre>Illegal opcodes are not currently implemented.</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
+<a class="symbolname" name="invalid-mode_class" href="#invalid-mode_class">invalid-mode</a>
+<span class="lambdalist">(6502-error)</span>
+<span class="symboltype">class</span></div>
+<div class="documentation">
+<pre>Only the 6502 addressing modes have readers and printers.</pre></div></div>
+<div class="symboldecl">
+<div class="definition">
+<a class="symbolname" name="invalid-syntax_class" href="#invalid-syntax_class">invalid-syntax</a>
+<span class="lambdalist">(6502-error)</span>
+<span class="symboltype">class</span></div>
+<div class="documentation">
+<pre>Assembly must conform to the syntax in the README.</pre></div></div>
+<div class="symboldecl">
+<div class="definition">
 <a class="symbolname" name="status-bit-error_class" href="#status-bit-error_class">status-bit-error</a>
 <span class="lambdalist">(6502-error)</span>
 <span class="symboltype">class</span></div>
@@ -296,6 +310,13 @@ instruction and not an operand. If STORAGE is non-nil, it is assumed to be a
 bytevector to be diassembled in lieu of *ram*.</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
+<a class="symbolname" name="disasm-to-str_func" href="#disasm-to-str_func">disasm-to-str</a>
+<span class="lambdalist">start end &optional bytes</span>
+<span class="symboltype">function</span></div>
+<div class="documentation">
+<pre>Call DISASM with the provided args and return its output as a string.</pre></div></div>
+<div class="symboldecl">
+<div class="definition">
 <a class="symbolname" name="get-byte_func" href="#get-byte_func">get-byte</a>
 <span class="lambdalist">address</span>
 <span class="symboltype">function</span></div>
@@ -421,6 +442,18 @@ provided.</pre></div></div>
 <span class="symboltype">function</span></div>
 <div class="documentation">
 <pre>Set *CPU* and *RAM* to CPU and RAM.</pre></div></div>
+<div class="symboldecl">
+<div class="definition">
+<a class="symbolname" name="make-cpu_func" href="#make-cpu_func">make-cpu</a>
+<span class="lambdalist">&key ((pc dum0) 65532) ((sp dum1) 255) ((sr dum2) 48) ((xr dum3) 0) ((yr dum4)
+                                                                     0) ((ar
+                                                                          dum5)
+                                                                         0) ((cc
+                                                                              dum6)
+                                                                             0)</span>
+<span class="symboltype">function</span></div>
+<div class="documentation">
+<pre>:undocumented</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
 <a class="symbolname" name="maybe-update-cycle-count_func" href="#maybe-update-cycle-count_func">maybe-update-cycle-count</a>
