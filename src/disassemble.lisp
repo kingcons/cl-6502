@@ -18,7 +18,7 @@ bytevector to be diassembled in lieu of *ram*."
 print-instruction for formatting and display, and return the instruction length."
   (destructuring-bind (name cycles length mode) (aref *opcodes* (aref bytes index))
     (declare (ignore cycles))
-    (let ((code-block (coerce (subseq bytes index (+ index length) 'list))))
+    (let ((code-block (coerce (subseq bytes index (+ index length)) 'list)))
       (print-instruction code-block index name mode))
     length))
 
@@ -30,5 +30,10 @@ print-instruction for formatting and display, and return the instruction length.
                (format nil (printer mode) arg))))
     (let ((byte-str (format nil "~{~2,'0x ~}" bytes))
           (args-str (format nil "~A ~A" name (arg-formatter (subseq bytes 1))))
-          (formatter "$~4,'0x   ~9A  ;; ~14A ~A~%"))
-      (format t formatter index byte-str args-str (documentation name 'function)))))
+          (docs (documentation name 'function)))
+      (format t "$~4,'0x   ~9A  ;; ~14A ~A~%" index byte-str args-str docs))))
+
+(defun disasm-to-str (start end &optional bytes)
+  "Call DISASM with the provided args and return its output as a string."
+  (with-output-to-string (*standard-output*)
+    (disasm start end bytes)))

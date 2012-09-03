@@ -34,6 +34,7 @@
            ;; Utils
            #:asm
            #:disasm
+           #:disasm-to-str
            #:reset
            #:load-image
            #:save-image
@@ -77,6 +78,7 @@
                       #:execute
                       #:asm
                       #:disasm
+                      #:disasm-to-str
                       #:get-byte
                       #:get-word
                       #:get-range
@@ -87,6 +89,7 @@
            #:execute
            #:asm
            #:disasm
+           #:disasm-to-str
            #:get-byte
            #:get-word
            #:get-range
