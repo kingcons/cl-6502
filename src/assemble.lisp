@@ -93,14 +93,10 @@
 
 (defun splice-sym (val prefix pc)
   "Splice together VAL and PREFIX, computing an offset if needed."
-  (let* ((result (format nil "~4,'0x" val))
-         (spliced (concatenate 'string prefix (if (string= prefix "&")
-                                                  (subseq result 2)
-                                                  result)))
-         (mode (match-mode (list spliced))))
-    (if (eql mode 'relative)
-        (format nil "&~2,'0x" (compute-offset (extract-num spliced) pc))
-        spliced)))
+  (let ((spliced (if (string= prefix "&")
+                     (format nil "~2,'0x" (compute-offset (extract-num val) pc))
+                     val)))
+    (format nil "~a~a" prefix spliced)))
 
 (defun resolve (tokens pc)
   "Given TOKENS and PC, resolve any symbols in TOKENS."
