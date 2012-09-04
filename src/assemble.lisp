@@ -31,7 +31,7 @@
   (flet ((set-var (delimiter &optional val)
            (destructuring-bind (var &rest src) (cl-ppcre:split delimiter statement)
              (setf (gethash var *symtable*) (or val (first src))))))
-    (cond ((search ":" statement) (set-var "\\:" (format nil "~4,'0x" pc)))
+    (cond ((search ":" statement) (set-var "\\:" pc))
           ((search "=" statement) (set-var "\\="))
           (t (error 'invalid-syntax :line statement)))))
 
@@ -87,8 +87,8 @@ If RETURN-MATCH-P is non-nil, return the match directly rather than its index."
 (defun splice-sym (val prefix pc)
   "Splice together VAL and PREFIX, computing an offset if needed."
   (let ((spliced (if (string= prefix "&")
-                     (format nil "~2,'0x" (compute-offset (extract-num val) pc))
-                     val)))
+                     (format nil "~2,'0x" (compute-offset val pc))
+                     (format nil "~4,'0x" val))))
     (format nil "~a~a" prefix spliced)))
 
 (defun resolve (tokens pc)
