@@ -73,7 +73,8 @@
 (defpackage :cl-6502
   (:documentation "Homepage: <a href=\"http://github.com/redline6561/cl-6502\">Github</a>")
   (:use :cl)
-  (:import-from :6502 #:reset
+  (:import-from :6502 #:*cpu*
+                      #:reset
                       #:6502-step
                       #:execute
                       #:asm
@@ -84,7 +85,8 @@
                       #:get-range
                       #:load-image
                       #:save-image)
-  (:export #:reset
+  (:export #:*cpu*
+           #:reset
            #:6502-step
            #:execute
            #:asm
