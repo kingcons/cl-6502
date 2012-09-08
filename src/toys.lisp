@@ -26,3 +26,10 @@
           nop
           jmp $loop")
   "Do nothing forever.")
+
+; Thanks to Ed Spittles for his wisdom and assistance
+(defun klaus-test ()
+  "Run Klaus' functional testsuite."
+  (6502::load-binary "projects/cl-6502/tests/6502_functional_test.bin")
+  (setf (cpu-pc *cpu*) #x1000)
+  (execute *cpu*))
