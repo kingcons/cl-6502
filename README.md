@@ -61,3 +61,7 @@ The assembler supports comments, constants, and labels in addition to 6502 assem
 * Using Quicklisp: For local development, git clone this repository into the ```local-projects``` subdirectory of quicklisp.
 
 To run the tests, after you've loaded *cl-6502* just run ```(asdf:oos 'asdf:test-op 'cl-6502)```. You may need to ```(ql:quickload 'cl-6502-tests)``` to ensure that the fiveam dependency is satisfied first. There is a dearth of tests at the moment but there will be more soon as the design has recently solidified.
+
+## License
+
+The code is under a BSD license except for docs/6502.txt and tests/6502_functional_test.a65 which are only present by 'mere aggregation' and not strictly part of my sources.
