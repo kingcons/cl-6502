@@ -1,8 +1,7 @@
 (in-package :6502)
 
 (defparameter *benchmark*
-  (asm " ;; Clear the Decimal and Carry status bits
-         CLD
+  (asm " ;; Clear the Carry status bit
          CLC
          ;; Set the Accumulator and X and Y regs to zero
          LDA #$00
