@@ -7,6 +7,7 @@ In case that sounds weird to you, the MOS 6502 is famous for its use in...
 * the [Apple II](http://en.wikipedia.org/wiki/Apple_II_series),
 * the [original NES](http://en.wikipedia.org/wiki/Nintendo_Entertainment_System),
 * the [Commodore 64](http://en.wikipedia.org/wiki/Commodore_64),
+* the [BBC Micro](http://en.wikipedia.org/wiki/BBC_Micro),
 * and [Michael Steil's phenomenal talk](http://media.ccc.de/browse/congress/2010/27c3-4159-en-reverse_engineering_mos_6502.html) at 27C3.
 
 A few notes on why I'm doing this are [here](http://blog.redlinernotes.com/posts/On-Interactive-Retrocomputing.html). Some notes on the design of cl-6502 are [here](http://blog.redlinernotes.com/posts/An-Emulator-Design-Pattern.html).
