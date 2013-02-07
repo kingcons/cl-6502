@@ -32,6 +32,13 @@
 
 ;;; Helpers
 
+(defgeneric reset (obj)
+  (:documentation "Reset the OBJ to an initial state.")
+  (:method ((obj cpu))
+    (let ((cpu (make-cpu)))
+      (setf (cpu-pc cpu) (absolute cpu))
+      cpu)))
+
 (defun load-image (&key (cpu (make-cpu))
                    (ram (make-array #x10000 :element-type 'u8)))
   "Set *CPU* and *RAM* to CPU and RAM."
@@ -40,10 +47,6 @@
 (defun save-image ()
   "Return a list containing the current *CPU* and *RAM*."
   (list *cpu* *ram*))
-
-(defun reset ()
-  "Reset the virtual machine to an initial state."
-  (load-image))
 
 (defun get-instruction (opcode)
   "Get the mnemonic for OPCODE. Returns a symbol to be funcalled or nil."
