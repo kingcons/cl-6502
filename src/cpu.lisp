@@ -5,19 +5,22 @@
 ;; http://www.obelisk.demon.co.uk/6502/addressing.html
 ;; http://nesdev.parodius.com/6502.txt
 
+(deftype u8 () '(unsigned-byte 8))
+
+(declaim (inline make-cpu))
 (defstruct cpu
   "A 6502 CPU with an extra slot for tracking the cycle count/clock ticks."
   (pc #xfffc :type (unsigned-byte 16))  ;; program counter
-  (sp #xff   :type (unsigned-byte 8))   ;; stack pointer
-  (sr #x30   :type (unsigned-byte 8))   ;; status register
-  (xr 0      :type (unsigned-byte 8))   ;; x register
-  (yr 0      :type (unsigned-byte 8))   ;; y register
-  (ar 0      :type (unsigned-byte 8))   ;; accumulator
+  (sp #xff   :type 'u8)                  ;; stack pointer
+  (sr #x30   :type 'u8)                  ;; status register
+  (xr 0      :type 'u8)                  ;; x register
+  (yr 0      :type 'u8)                  ;; y register
+  (ar 0      :type 'u8)                  ;; accumulator
   (cc 0      :type fixnum))             ;; cycle counter
 
 ;;; Tasty Globals
 
-(defparameter *ram* (make-array #x10000 :element-type '(unsigned-byte 8))
+(defparameter *ram* (make-array #x10000 :element-type 'u8)
   "A lovely hunk of bytes.")
 
 (defparameter *cpu* (make-cpu)
@@ -30,7 +33,7 @@
 ;;; Helpers
 
 (defun load-image (&key (cpu (make-cpu))
-                   (ram (make-array #x10000 :element-type '(unsigned-byte 8))))
+                   (ram (make-array #x10000 :element-type 'u8)))
   "Set *CPU* and *RAM* to CPU and RAM."
   (setf *ram* ram *cpu* cpu))
 
@@ -144,7 +147,6 @@ It will set each flag to 1 if its predicate is true, otherwise 0."
   (loop for (flag pred . nil) on flag-preds by #'cddr
      do (setf (status-bit flag cpu) (if (funcall pred) 1 0))))
 
-(declaim (inline set-flags-nz))
 (defun set-flags-nz (cpu value)
   "Set the zero and negative bits of CPU's staus-register based on VALUE."
   (set-flags-if cpu :zero (lambda () (zerop value))

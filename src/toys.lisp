@@ -17,9 +17,6 @@
          BRK")
   "Should leave the Accumulator with the value 231.")
 
-; After (setf (get-range 0) *nop-loop*) do...
-; (time (loop until (> (cpu-cc *cpu*) 1800000) do (6502-step *cpu* (zero-page *cpu*))))
-; Maybe (require 'sb-sprof) (with-profiling (:max-samples 1000 :report :flat :show-progress t) ...)
 (defparameter *nop-loop*
   (asm "loop:
           nop
