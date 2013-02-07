@@ -18,8 +18,8 @@
   (ar 0      :type u8)                  ;; accumulator
   (cc 0      :type fixnum))             ;; cycle counter
 
-(defmethod initialize-instance :after ((obj cpu) &key)
-  (setf (cpu-pc obj) (absolute cpu)))
+(defmethod initialize-instance :after ((cpu cpu) &key)
+  (setf (cpu-pc cpu) (absolute cpu)))
 
 ;;; Tasty Globals
 
