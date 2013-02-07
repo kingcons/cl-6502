@@ -5,6 +5,8 @@
            #:invalid-mode
            #:invalid-syntax
            #:status-bit-error
+           ;; Types
+           #:u8
            ;; Globals
            #:*cpu*
            ;; CPU Struct

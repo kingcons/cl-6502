@@ -11,11 +11,11 @@
 (defstruct cpu
   "A 6502 CPU with an extra slot for tracking the cycle count/clock ticks."
   (pc #xfffc :type (unsigned-byte 16))  ;; program counter
-  (sp #xff   :type 'u8)                  ;; stack pointer
-  (sr #x30   :type 'u8)                  ;; status register
-  (xr 0      :type 'u8)                  ;; x register
-  (yr 0      :type 'u8)                  ;; y register
-  (ar 0      :type 'u8)                  ;; accumulator
+  (sp #xff   :type u8)                  ;; stack pointer
+  (sr #x30   :type u8)                  ;; status register
+  (xr 0      :type u8)                  ;; x register
+  (yr 0      :type u8)                  ;; y register
+  (ar 0      :type u8)                  ;; accumulator
   (cc 0      :type fixnum))             ;; cycle counter
 
 ;;; Tasty Globals
