@@ -10,7 +10,7 @@ In case that sounds weird to you, the MOS 6502 is famous for its use in...
 * the [BBC Micro](http://en.wikipedia.org/wiki/BBC_Micro),
 * and [Michael Steil's phenomenal talk](http://media.ccc.de/browse/congress/2010/27c3-4159-en-reverse_engineering_mos_6502.html) at 27C3.
 
-A few notes on why I'm doing this are [here](http://blog.redlinernotes.com/posts/On-Interactive-Retrocomputing.html). Some notes on the design of cl-6502 are [here](http://blog.redlinernotes.com/posts/An-Emulator-Design-Pattern.html).
+ I gave a talk on cl-6502 and related ideas which is online [here](http://vimeo.com/47364930). The slides are available separately [here](http://redlinernotes.com/docs/talks/opa.html). A few notes on why I'm writing it are [here](http://blog.redlinernotes.com/posts/On-Interactive-Retrocomputing.html) and minor notes on the design are [here](http://blog.redlinernotes.com/posts/An-Emulator-Design-Pattern.html).
 
 ## Install
 You are strongly encouraged to use this library via [Quicklisp](http://quicklisp.org/). Simply start your lisp and run: ```(ql:quickload 'cl-6502)```.
