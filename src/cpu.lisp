@@ -18,6 +18,9 @@
   (ar 0      :type u8)                  ;; accumulator
   (cc 0      :type fixnum))             ;; cycle counter
 
+(defmethod initialize-instance :after ((obj cpu) &key)
+  (setf (cpu-pc obj) (absolute cpu)))
+
 ;;; Tasty Globals
 
 (defparameter *ram* (make-array #x10000 :element-type 'u8)
@@ -34,10 +37,7 @@
 
 (defgeneric reset (obj)
   (:documentation "Reset the OBJ to an initial state.")
-  (:method ((obj cpu))
-    (let ((cpu (make-cpu)))
-      (setf (cpu-pc cpu) (absolute cpu))
-      cpu)))
+  (:method (obj) (initialize-instance obj)))
 
 (defun load-image (&key (cpu (make-cpu))
                    (ram (make-array #x10000 :element-type 'u8)))
