@@ -142,18 +142,18 @@ e.g. When the last two bytes of ADDRESS are #xff."
       (setf (ldb (byte 1 (%status-bit key)) (cpu-sr cpu)) new-val)
       (error 'status-bit-error :index (%status-bit key))))
 
-(defun set-flags-if (cpu &rest flag-preds)
+(defmacro set-flags-if (cpu &rest flag-preds)
   "Takes any even number of arguments where the first is a keyword denoting a
 status bit and the second is a funcallable predicate that takes no arguments.
 It will set each flag to 1 if its predicate is true, otherwise 0."
   (assert (evenp (length flag-preds)))
-  (loop for (flag pred . nil) on flag-preds by #'cddr
-     do (setf (status-bit flag cpu) (if (funcall pred) 1 0))))
+  `(setf ,@(loop for (flag pred . nil) on flag-preds by #'cddr
+              appending `((status-bit ,flag cpu) (if ,pred 1 0)))))
 
 (defun set-flags-nz (cpu value)
   "Set the zero and negative bits of CPU's staus-register based on VALUE."
-  (set-flags-if cpu :zero (lambda () (zerop value))
-                :negative (lambda () (logbitp 7 value))))
+  (set-flags-if cpu :zero (zerop value)
+                :negative (logbitp 7 value)))
 
 (defun maybe-update-cycle-count (cpu address &optional start)
   "If ADDRESS crosses a page boundary, add an extra cycle to CPU's count. If
