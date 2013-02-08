@@ -162,11 +162,11 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
                 (logand address #xff00)))
     (incf (cpu-cc cpu))))
 
-(defun branch-if (predicate cpu)
+(defmacro branch-if (predicate cpu)
   "Take a Relative branch if PREDICATE is true, otherwise increment the PC."
-  (if (funcall predicate)
-      (setf (cpu-pc cpu) (relative cpu))
-      (incf (cpu-pc cpu))))
+  `(if ,predicate
+       (setf (cpu-pc ,cpu) (relative ,cpu))
+       (incf (cpu-pc ,cpu))))
 
 ; Stolen and slightly hacked up from Cliki. Thanks cliki!
 (defun rotate-byte (integer &optional (count 1) (size 8))

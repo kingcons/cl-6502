@@ -5,7 +5,7 @@
 it will be placed at the beginning of *ram* and the PC will be set to 0.")
   (:method ((cpu cpu) &optional program)
     (when program
-      (setf (get-range 0) program))
+      (setf (get-range 0) program (cpu-pc cpu) 0))
     (loop for result = (6502-step cpu (get-byte (immediate cpu)))
        until (eql :done result)
        finally (print result))
