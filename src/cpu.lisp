@@ -39,6 +39,13 @@
   (:documentation "Reset the OBJ to an initial state.")
   (:method (obj) (initialize-instance obj)))
 
+(defgeneric nmi (obj)
+  (:documentation "Generate a non-maskable interrupt. Used for vblanking in NES.")
+  (:method (obj)
+    (stack-push-word (cpu-pc obj) obj)
+    (stack-push (cpu-sr obj) obj)
+    (setf (cpu-pc obj) (get-word #xfffa))))
+
 (defun load-image (&key (cpu (make-cpu))
                    (ram (make-array #x10000 :element-type 'u8)))
   "Set *CPU* and *RAM* to CPU and RAM."
@@ -138,7 +145,7 @@ e.g. When the last two bytes of ADDRESS are #xff."
 
 (defun (setf status-bit) (new-val key cpu)
   "Set bit KEY in the status reg of CPU to NEW-VAL. KEY should be a keyword."
-  (if (or (zerop new-val) (= 1 new-val))
+  (if (member new-val '(0 1))
       (setf (ldb (byte 1 (%status-bit key)) (cpu-sr cpu)) new-val)
       (error 'status-bit-error :index (%status-bit key))))
 
