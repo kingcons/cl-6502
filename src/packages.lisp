@@ -38,6 +38,7 @@
            #:disasm
            #:disasm-to-str
            #:reset
+           #:nmi
            #:load-image
            #:save-image
            #:get-instruction
