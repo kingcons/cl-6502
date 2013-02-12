@@ -200,7 +200,7 @@ address or byte at an address if funcalled with a cpu. SETF-FORM is a lambda
 that may be funcalled with a value to set the address computed by MODE. If
 TRACK-PC is t, the default, the program counter will be incremented to just
 past the instruction's operands. Otherwise, BODY is responsible for the PC."
-  `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) &key (cpu *cpu*)
+  `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) ,(intern "CPU") &key
                      (,(intern "MODE") ,mode) (,(intern "SETF-FORM") ,setf-form))
      ,@body
      ,@(when (and track-pc (> byte-count 1))
@@ -217,7 +217,7 @@ address. Otherwise, funcalling MODE will return the computed address itself."
      (eval-when (:compile-toplevel :load-toplevel)
        ,@(loop for (op cycles bytes mode) in modes
             collect `(setf (aref *opcodes* ,op) '(,name ,cycles ,bytes ,mode))))
-     (defgeneric ,name (,(intern "OPCODE") &key cpu
+     (defgeneric ,name (,(intern "OPCODE") ,(intern "CPU") &key
                          ,(intern "MODE") ,(intern "SETF-FORM"))
        (:documentation ,docs))
      ,@(loop for mode in modes for mname = (fourth mode) with x = (intern "X")
