@@ -17,7 +17,7 @@ or :done.")
   (:method ((cpu cpu) opcode)
     (setf (cpu-pc cpu) (wrap-word (1+ (cpu-pc cpu))))
     (handler-case
-        (let ((result (funcall (get-instruction opcode) opcode)))
+        (let ((result (funcall (get-instruction opcode) opcode cpu)))
           (if (zerop opcode)
               :done
               result))

@@ -18,6 +18,9 @@
   (ar 0      :type u8)                  ;; accumulator
   (cc 0      :type fixnum))             ;; cycle counter
 
+(defmethod initialize-instance :after ((cpu cpu) &key)
+  (setf (cpu-pc cpu) (absolute cpu)))
+
 ;;; Tasty Globals
 
 (defparameter *ram* (make-array #x10000 :element-type 'u8)
@@ -32,6 +35,17 @@
 
 ;;; Helpers
 
+(defgeneric reset (obj)
+  (:documentation "Reset the OBJ to an initial state.")
+  (:method (obj) (initialize-instance obj)))
+
+(defgeneric nmi (obj)
+  (:documentation "Generate a non-maskable interrupt. Used for vblanking in NES.")
+  (:method (obj)
+    (stack-push-word (cpu-pc obj) obj)
+    (stack-push (cpu-sr obj) obj)
+    (setf (cpu-pc obj) (get-word #xfffa))))
+
 (defun load-image (&key (cpu (make-cpu))
                    (ram (make-array #x10000 :element-type 'u8)))
   "Set *CPU* and *RAM* to CPU and RAM."
@@ -40,10 +54,6 @@
 (defun save-image ()
   "Return a list containing the current *CPU* and *RAM*."
   (list *cpu* *ram*))
-
-(defun reset ()
-  "Reset the virtual machine to an initial state."
-  (load-image))
 
 (defun get-instruction (opcode)
   "Get the mnemonic for OPCODE. Returns a symbol to be funcalled or nil."
@@ -135,22 +145,22 @@ e.g. When the last two bytes of ADDRESS are #xff."
 
 (defun (setf status-bit) (new-val key cpu)
   "Set bit KEY in the status reg of CPU to NEW-VAL. KEY should be a keyword."
-  (if (or (zerop new-val) (= 1 new-val))
+  (if (member new-val '(0 1))
       (setf (ldb (byte 1 (%status-bit key)) (cpu-sr cpu)) new-val)
       (error 'status-bit-error :index (%status-bit key))))
 
-(defun set-flags-if (cpu &rest flag-preds)
+(defmacro set-flags-if (cpu &rest flag-preds)
   "Takes any even number of arguments where the first is a keyword denoting a
 status bit and the second is a funcallable predicate that takes no arguments.
 It will set each flag to 1 if its predicate is true, otherwise 0."
   (assert (evenp (length flag-preds)))
-  (loop for (flag pred . nil) on flag-preds by #'cddr
-     do (setf (status-bit flag cpu) (if (funcall pred) 1 0))))
+  `(setf ,@(loop for (flag pred . nil) on flag-preds by #'cddr
+              appending `((status-bit ,flag cpu) (if ,pred 1 0)))))
 
 (defun set-flags-nz (cpu value)
   "Set the zero and negative bits of CPU's staus-register based on VALUE."
-  (set-flags-if cpu :zero (lambda () (zerop value))
-                :negative (lambda () (logbitp 7 value))))
+  (set-flags-if cpu :zero (zerop value)
+                :negative (logbitp 7 value)))
 
 (defun maybe-update-cycle-count (cpu address &optional start)
   "If ADDRESS crosses a page boundary, add an extra cycle to CPU's count. If
@@ -159,11 +169,11 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
                 (logand address #xff00)))
     (incf (cpu-cc cpu))))
 
-(defun branch-if (predicate cpu)
+(defmacro branch-if (predicate cpu)
   "Take a Relative branch if PREDICATE is true, otherwise increment the PC."
-  (if (funcall predicate)
-      (setf (cpu-pc cpu) (relative cpu))
-      (incf (cpu-pc cpu))))
+  `(if ,predicate
+       (setf (cpu-pc ,cpu) (relative ,cpu))
+       (incf (cpu-pc ,cpu))))
 
 ; Stolen and slightly hacked up from Cliki. Thanks cliki!
 (defun rotate-byte (integer &optional (count 1) (size 8))
@@ -190,7 +200,7 @@ address or byte at an address if funcalled with a cpu. SETF-FORM is a lambda
 that may be funcalled with a value to set the address computed by MODE. If
 TRACK-PC is t, the default, the program counter will be incremented to just
 past the instruction's operands. Otherwise, BODY is responsible for the PC."
-  `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) &key (cpu *cpu*)
+  `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) ,(intern "CPU") &key
                      (,(intern "MODE") ,mode) (,(intern "SETF-FORM") ,setf-form))
      ,@body
      ,@(when (and track-pc (> byte-count 1))
@@ -207,7 +217,7 @@ address. Otherwise, funcalling MODE will return the computed address itself."
      (eval-when (:compile-toplevel :load-toplevel)
        ,@(loop for (op cycles bytes mode) in modes
             collect `(setf (aref *opcodes* ,op) '(,name ,cycles ,bytes ,mode))))
-     (defgeneric ,name (,(intern "OPCODE") &key cpu
+     (defgeneric ,name (,(intern "OPCODE") ,(intern "CPU") &key
                          ,(intern "MODE") ,(intern "SETF-FORM"))
        (:documentation ,docs))
      ,@(loop for mode in modes for mname = (fourth mode) with x = (intern "X")
