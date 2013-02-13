@@ -207,7 +207,7 @@
 (defopcode jsr (:docs "Jump to Subroutine" :raw t :track-pc nil)
     ((#x20 6 3 absolute))
   (stack-push-word (wrap-word (1+ (cpu-pc cpu))) cpu)
-  (setf (cpu-pc cpu) (get-word (funcall mode cpu))))
+  (setf (cpu-pc cpu) (funcall mode cpu)))
 
 (defopcode lda (:docs "Load Accumulator from Memory")
     ((#xa1 6 2 indirect-x)
