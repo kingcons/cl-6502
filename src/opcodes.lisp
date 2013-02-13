@@ -130,8 +130,7 @@
      (#xd9 4 3 absolute-y)
      (#xdd 4 3 absolute-x))
   (let ((result (- (cpu-ar cpu) (funcall mode cpu))))
-    ; TODO: Is :carry correct for the Compare Opcodes?
-    (set-flags-if cpu :carry (plusp result))
+    (set-flags-if cpu :carry (< result #x100))
     (set-flags-nz cpu result)))
 
 (defopcode cpx (:docs "Compare Memory with X register")
@@ -139,7 +138,7 @@
      (#xe4 3 2 zero-page)
      (#xec 4 3 absolute))
   (let ((result (- (cpu-xr cpu) (funcall mode cpu))))
-    (set-flags-if cpu :carry (plusp result))
+    (set-flags-if cpu :carry (< result #x100))
     (set-flags-nz cpu result)))
 
 (defopcode cpy (:docs "Compare Memory with Y register")
@@ -147,7 +146,7 @@
      (#xc4 3 2 zero-page)
      (#xcc 4 3 absolute))
   (let ((result (- (cpu-yr cpu) (funcall mode cpu))))
-    (set-flags-if cpu :carry (plusp result))
+    (set-flags-if cpu :carry (< result #x100))
     (set-flags-nz cpu result)))
 
 (defopcode dec (:docs "Decrement Memory")
