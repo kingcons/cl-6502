@@ -5,5 +5,7 @@
 
 (deftest disassemble-implied
     "Implied mode instructions should disassemble correctly."
-  (is (search "BRK" (disasm-to-str 0 1 #(0))))
-  (is (search "NOP" (disasm-to-str 0 1 #(234)))))
+  (setf (get-byte 0) 0)
+  (is (search "BRK" (disasm-to-str 0 1)))
+  (setf (get-byte 0) 234)
+  (is (search "NOP" (disasm-to-str 0 1))))
