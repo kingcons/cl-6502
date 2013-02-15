@@ -26,7 +26,7 @@ In particular, [asm](http://redlinernotes.com/docs/cl-6502.html#asm_func), [disa
 (An example program, [```*benchmark*```](http://github.com/redline6561/cl-6502/blob/master/src/toys.lisp), currently exists.)
 
 1. Load cl-6502.
-2. Write some 6502 code and run it through ```asm``` (e.g. ```(asm "brk")```) to get a bytevector to execute. Optionally, check the disassembly with ```(disasm *my-bytevector*)```.
+2. Write some 6502 code and run it through ```asm``` (e.g. ```(asm "brk")```) to get a bytevector to execute.
 3. Load it into memory and run it with ```(execute *cpu* *my-bytevector*)``` OR
  1. Load it with ```(setf (get-range 0) *my-bytevector*)```
  2. Set the program counter to 0 with ```(setf (cpu-pc *cpu*) 0)```
