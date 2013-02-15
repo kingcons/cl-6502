@@ -29,4 +29,4 @@ print-instruction for formatting and display, returning the instruction length."
 (defun disasm-to-str (start end &optional bytes)
   "Call DISASM with the provided args and return its output as a string."
   (with-output-to-string (*standard-output*)
-    (disasm start end bytes)))
+    (disasm start end)))
