@@ -11,7 +11,6 @@
 
 (deftest brk-adds-3-bytes-to-stack
   "Program Counter (2) + Stack Pointer (1) == 3 bytes
-   The stack is decremented from #xFF giving #xFC."
+   The stack is decremented from #xFD giving #xFA."
   (6502::brk #x00 cpu)
-  (is (= (cpu-sp cpu) #xfc)))
-
+  (is (= (cpu-sp cpu) #xfa)))

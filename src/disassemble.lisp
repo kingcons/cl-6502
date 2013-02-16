@@ -11,7 +11,7 @@
 print-instruction for formatting and display, returning the instruction length."
   (destructuring-bind (name cycles length mode) (aref *opcodes* (get-byte index))
     (declare (ignore cycles))
-    (let ((code-block (coerce (get-range index (1- (+ index length))) 'list)))
+    (let ((code-block (coerce (get-range index (+ index length)) 'list)))
       (print-instruction code-block index name mode)
       length)))
 
