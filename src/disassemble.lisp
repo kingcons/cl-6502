@@ -11,7 +11,7 @@
 print-instruction for formatting and display, returning the instruction length."
   (destructuring-bind (name cycles length mode) (aref *opcodes* (get-byte index))
     (declare (ignore cycles))
-    (let ((code-block (coerce (get-range index (+ index length)) 'list)))
+    (let ((code-block (coerce (get-range index (1- (+ index length))) 'list)))
       (print-instruction code-block index name mode)
       length)))
 
@@ -26,7 +26,7 @@ print-instruction for formatting and display, returning the instruction length."
           (docs (documentation name 'function)))
       (format t "$~4,'0x   ~9A  ;; ~14A ~A~%" index byte-str args-str docs))))
 
-(defun disasm-to-str (start end &optional bytes)
+(defun disasm-to-str (start end)
   "Call DISASM with the provided args and return its output as a string."
   (with-output-to-string (*standard-output*)
     (disasm start end)))
