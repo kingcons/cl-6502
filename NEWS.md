@@ -1,10 +1,11 @@
-## Changes for 0.8.6 (2013-02-xx):
+## Changes for 0.8.6 (2013-02-20):
 
 * Added NMI support.
-* Fixed incorrect carry bit handling in CMP,CPX,CPY.
-* Fixed incorrect jumps when using JSR opcode.
 * Improved assembler error reporting.
 * Improved readability of generated code from defopcode/defins.
+* Fixed CPU initial state based on values in NESdev wiki.
+* Fixed incorrect carry bit handling in CMP,CPX,CPY.
+* Fixed incorrect jumps when using JSR opcode.
 * Fixed assembler PC tracking bug when using labels.
 * General refactoring and code cleanups.
 
