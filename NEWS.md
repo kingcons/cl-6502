@@ -1,3 +1,7 @@
+## Changes for 0.8.7 (2013-xx-xx):
+
+* Fixed incorrect break and unused bit handling in PHP and PLP.
+
 ## Changes for 0.8.6 (2013-02-20):
 
 * Added NMI support.

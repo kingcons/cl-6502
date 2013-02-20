@@ -272,7 +272,7 @@
 
 (defopcode php (:docs "Push Processor Status")
     ((#x08 3 1 implied))
-  (stack-push (cpu-sr cpu) cpu))
+  (stack-push (logior (cpu-sr cpu) #x10) cpu))
 
 (defopcode pla (:docs "Pull Accumulator from Stack")
     ((#x68 4 1 implied))
@@ -281,7 +281,8 @@
 
 (defopcode plp (:docs "Pull Processor Status from Stack")
     ((#x28 4 1 implied))
-  (setf (cpu-sr cpu) (stack-pop cpu)))
+  (let ((result (logior (stack-pop cpu) #x20)))
+    (setf (cpu-sr cpu) (logandc2 result #x10))))
 
 (defopcode rol (:docs "Rotate Left")
     ((#x2a 2 1 accumulator)
@@ -307,7 +308,7 @@
 
 (defopcode rti (:docs "Return from Interrupt")
     ((#x40 6 1 implied))
-  (setf (cpu-sr cpu) (stack-pop cpu))
+  (setf (cpu-sr cpu) (logior (stack-pop cpu) #x20))
   (setf (cpu-pc cpu) (stack-pop-word cpu)))
 
 (defopcode rts (:docs "Return from Subroutine" :track-pc nil)
