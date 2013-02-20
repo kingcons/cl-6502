@@ -1,6 +1,7 @@
 ## Changes for 0.8.7 (2013-xx-xx):
 
 * Fixed incorrect break and unused bit handling in PHP and PLP.
+* Fixed incorrect overflow bit handling in ADC.
 
 ## Changes for 0.8.6 (2013-02-20):
 
