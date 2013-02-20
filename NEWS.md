@@ -1,7 +1,10 @@
 ## Changes for 0.8.7 (2013-xx-xx):
 
-* Fixed incorrect break and unused bit handling in PHP and PLP.
+* Rewrote ROL and ROR, fixing bugs.
+* Fixed incorrect break and unused bit handling in PHP, PLP, and RTI.
 * Fixed incorrect overflow bit handling in ADC.
+* Fixed incorrect result in LSR due to extra fetch.
+* Fixed carry bit handling in SBC, CMP, CPX, and CPY. Previous fix didn't correctly handle all cases.
 
 ## Changes for 0.8.6 (2013-02-20):
 

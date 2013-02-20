@@ -175,21 +175,14 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
        (setf (cpu-pc ,cpu) (relative ,cpu))
        (incf (cpu-pc ,cpu))))
 
-; Stolen and slightly hacked up from Cliki. Thanks cliki!
-(defun rotate-byte (integer &optional (count 1) (size 8))
-  "Rotate the bits of INTEGER by COUNT. If COUNT is negative, rotate right
-instead of left. SIZE specifies the bitlength of the integer being rotated."
-  (let* ((count (mod count size))
-         (bytespec (byte size 0)))
-    (labels ((rotate-byte-from-0 (count integer)
-               (if (> count 0)
-                   (logior (ldb bytespec (ash integer count))
-                           (ldb bytespec (ash integer (- count size))))
-                   (logior (ldb bytespec (ash integer count))
-                           (ldb bytespec (ash integer (+ count size)))))))
-      (dpb (rotate-byte-from-0 count (ldb bytespec integer))
-           bytespec
-           integer))))
+(defun rotate-byte (integer count cpu)
+  "Rotate the bits of INTEGER by COUNT. If COUNT is negative, rotate right."
+  (let ((result (ash integer count)))
+    (if (plusp (status-bit :carry cpu))
+        (ecase count
+          (01 (logior result #x01))
+          (-1 (logior result #x80)))
+        result)))
 
 ;;; Opcode Macrology
 
