@@ -13,6 +13,7 @@
 ;; Optimize later! See Frodo redpill + ICU64 for an example of what's possible.
 ;; Worth using sb-sprof sampling profiler to find low hanging fruit.
 
+;; TODO: Cleanup overflow handling in ADC and SBC. Make it readable or comment!
 ; TODO: Add support for Decimal mode. (not supported on NES)
 (defopcode adc (:docs "Add to Accumulator with Carry")
     ((#x61 6 2 indirect-x)
@@ -330,9 +331,9 @@
          (tmp (logand (logxor (cpu-ar cpu) (funcall mode cpu))
                       (logxor (cpu-ar cpu) result))))
     (set-flags-if cpu :zero (zerop (wrap-byte result))
-                  :overflow (plusp (logand tmp 128))
+                  :overflow (plusp (logand tmp #x80))
                   :negative (logbitp 7 result)
-                  :carry (< result #x100))
+                  :carry (not (minusp result)))
     (setf (cpu-ar cpu) (wrap-byte result))))
 
 (defopcode sec (:docs "Set Carry Flag")
