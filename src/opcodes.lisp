@@ -247,7 +247,7 @@
      (#x56 6 2 zero-page-x)
      (#x5e 7 3 absolute-x))
   (set-flags-if cpu :carry (logbitp 0 (funcall mode cpu)))
-  (let ((result (ash (get-byte (funcall mode cpu)) -1)))
+  (let ((result (ash (funcall mode cpu) -1)))
     (funcall setf-form result)
     (set-flags-nz cpu result)))
 
