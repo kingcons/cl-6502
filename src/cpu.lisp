@@ -159,8 +159,7 @@ It will set each flag to 1 if its predicate is true, otherwise 0."
 
 (defun set-flags-nz (cpu value)
   "Set the zero and negative bits of CPU's staus-register based on VALUE."
-  (set-flags-if cpu :zero (zerop value)
-                :negative (logbitp 7 value)))
+  (set-flags-if cpu :zero (zerop value) :negative (logbitp 7 value)))
 
 (defun maybe-update-cycle-count (cpu address &optional start)
   "If ADDRESS crosses a page boundary, add an extra cycle to CPU's count. If
@@ -201,11 +200,14 @@ past the instruction's operands. Otherwise, BODY is responsible for the PC."
      (incf (cpu-cc cpu) ,cycle-count)
      cpu))
 
-(defmacro defopcode (name (&key (docs "") raw (track-pc t)) modes &body body)
+(defmacro defopcode (name (&key (docs "") addr-style (track-pc t))
+                     modes &body body)
   "Define a Generic Function NAME with DOCS if provided and instructions,
-i.e. methods, via DEFINS for each addressing mode listed in MODES. If RAW is
-non-nil, MODE can be funcalled with a cpu in BODY to retrieve the byte at MODE's
-address. Otherwise, funcalling MODE will return the computed address itself."
+i.e. methods, via DEFINS for each addressing mode listed in MODES. If ADDR-STYLE
+is :raw, MODE can be funcalled with a cpu in BODY to retrieve MODE's address. If
+ADDR-STYLE is :mixed, accumulator addressing returns the accumulator value while
+others return the byte at MODE's address. If ADDR-STYLE is nil, funcalling MODE
+will return the byte at the given address."
   `(progn
      (eval-when (:compile-toplevel :load-toplevel)
        ,@(loop for (op cycles bytes mode) in modes
@@ -214,9 +216,11 @@ address. Otherwise, funcalling MODE will return the computed address itself."
                          ,(intern "MODE") ,(intern "SETF-FORM"))
        (:documentation ,docs))
      ,@(loop for mode in modes for mname = (fourth mode) with x = (intern "X")
-          do (setf (fourth mode) (if raw
-                                     `',mname
-                                     `(lambda (cpu) (get-byte (,mname cpu)))))
+          do (setf (fourth mode)
+                   (cond ((and (eql addr-style :mixed) (eql mname 'accumulator))
+                          `',mname)
+                         ((eql addr-style :raw) `',mname)
+                         (t `(lambda (cpu) (get-byte (,mname cpu))))))
           collect `(defins (,name ,@mode)
                        (:setf-form (lambda (,x) (setf (,mname cpu) ,x))
                         :track-pc ,track-pc)

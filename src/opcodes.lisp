@@ -45,7 +45,7 @@
   (let ((result (setf (cpu-ar cpu) (logand (cpu-ar cpu) (funcall mode cpu)))))
     (set-flags-nz cpu result)))
 
-(defopcode asl (:docs "Arithmetic Shift Left" :raw t)
+(defopcode asl (:docs "Arithmetic Shift Left" :addr-style :mixed)
     ((#x06 5 2 zero-page)
      (#x0a 2 1 accumulator)
      (#x0e 6 3 absolute)
@@ -200,12 +200,12 @@
   (let ((result (setf (cpu-yr cpu) (wrap-byte (1+ (cpu-yr cpu))))))
     (set-flags-nz cpu result)))
 
-(defopcode jmp (:docs "Jump Unconditionally" :raw t :track-pc nil)
+(defopcode jmp (:docs "Jump Unconditionally" :addr-style :raw :track-pc nil)
     ((#x4c 3 3 absolute)
      (#x6c 5 3 indirect))
   (setf (cpu-pc cpu) (funcall mode cpu)))
 
-(defopcode jsr (:docs "Jump to Subroutine" :raw t :track-pc nil)
+(defopcode jsr (:docs "Jump to Subroutine" :addr-style :raw :track-pc nil)
     ((#x20 6 3 absolute))
   (stack-push-word (wrap-word (1+ (cpu-pc cpu))) cpu)
   (setf (cpu-pc cpu) (funcall mode cpu)))
@@ -240,7 +240,7 @@
   (let ((result (setf (cpu-yr cpu) (funcall mode cpu))))
     (set-flags-nz cpu result)))
 
-(defopcode lsr (:docs "Logical Shift Right" :raw t)
+(defopcode lsr (:docs "Logical Shift Right" :addr-style :mixed)
     ((#x46 5 2 zero-page)
      (#x4a 2 1 accumulator)
      (#x4e 6 3 absolute)
@@ -285,7 +285,7 @@
   (let ((result (logior (stack-pop cpu) #x20)))
     (setf (cpu-sr cpu) (logandc2 result #x10))))
 
-(defopcode rol (:docs "Rotate Left" :raw t)
+(defopcode rol (:docs "Rotate Left" :addr-style :mixed)
     ((#x2a 2 1 accumulator)
      (#x26 5 2 zero-page)
      (#x2e 6 3 absolute)
@@ -297,7 +297,7 @@
     (set-flags-if cpu :carry (logbitp 7 val))
     (set-flags-nz cpu result)))
 
-(defopcode ror (:docs "Rotate Right" :raw t)
+(defopcode ror (:docs "Rotate Right" :addr-style :mixed)
     ((#x66 5 2 zero-page)
      (#x6a 2 1 accumulator)
      (#x6e 6 3 absolute)
@@ -350,7 +350,7 @@
     ((#x78 2 1 implied))
   (setf (status-bit :interrupt cpu) 1))
 
-(defopcode sta (:docs "Store Accumulator" :raw t)
+(defopcode sta (:docs "Store Accumulator" :addr-style :raw)
     ((#x81 6 2 indirect-x)
      (#x85 3 2 zero-page)
      (#x8d 4 3 absolute)
@@ -360,13 +360,13 @@
      (#x9d 5 3 absolute-x))
   (funcall setf-form (cpu-ar cpu)))
 
-(defopcode stx (:docs "Store X register" :raw t)
+(defopcode stx (:docs "Store X register" :addr-style :raw)
     ((#x86 3 2 zero-page)
      (#x8e 4 3 absolute)
      (#x96 4 2 zero-page-y))
   (funcall setf-form (cpu-xr cpu)))
 
-(defopcode sty (:docs "Store Y register" :raw t)
+(defopcode sty (:docs "Store Y register" :addr-style :raw)
     ((#x84 3 2 zero-page)
      (#x8c 4 3 absolute)
      (#x94 4 2 zero-page-x))

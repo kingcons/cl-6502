@@ -1,5 +1,6 @@
 ## Changes for 0.8.7 (2013-xx-xx):
 
+* Tweaked DEFOPCODE to fix addressing mode handling of ASL, LSR, ROL, and ROR.
 * Rewrote ROL and ROR, fixing bugs.
 * Fixed incorrect break and unused bit handling in PHP, PLP, and RTI.
 * Fixed incorrect overflow bit handling in ADC.
