@@ -1,4 +1,4 @@
-## Changes for 0.8.7 (2013-xx-xx):
+## Changes for 0.8.7 (2013-02-21):
 
 * Tweaked DEFOPCODE to fix addressing mode handling of ASL, LSR, ROL, and ROR.
 * Rewrote ROL and ROR, fixing bugs.
