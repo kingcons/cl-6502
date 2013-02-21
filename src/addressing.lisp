@@ -74,7 +74,7 @@ is used as the documentation for the method and setf function when provided."
 
 (defaddress indirect (:reader "^\\(\\$[0-9a-fA-F]{4}\\)$"
                       :printer "($~{~2,'0x~})")
-  (get-word (absolute cpu)))
+  (get-word (absolute cpu) t))
 
 (defaddress indirect-x (:reader "^\\(\\$[0-9a-fA-F]{2}\\),[xX]$"
                         :printer "($~{~2,'0x~}), X")

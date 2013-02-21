@@ -2,6 +2,7 @@
 
 * Tweaked DEFOPCODE to fix addressing mode handling of ASL, LSR, ROL, and ROR.
 * Rewrote ROL and ROR, fixing bugs.
+* Emulate the infamous 6502 indirect JMP page wrapping bug.
 * Fixed incorrect break and unused bit handling in PHP, PLP, and RTI.
 * Fixed incorrect overflow bit handling in ADC.
 * Fixed incorrect result in LSR due to extra fetch.
