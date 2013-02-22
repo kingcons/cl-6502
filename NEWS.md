@@ -1,3 +1,8 @@
+## Changes for 0.8.8 (2013-02-23):
+
+* Massive package overhaul and docs update.
+* Minor dead code removal (i.e. toy assembly progs).
+
 ## Changes for 0.8.7 (2013-02-21):
 
 * Tweaked DEFOPCODE to fix addressing mode handling of ASL, LSR, ROL, and ROR.
