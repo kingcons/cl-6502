@@ -23,11 +23,3 @@ or :done.")
               result))
       (undefined-function ()
         (error 'illegal-opcode :opcode opcode)))))
-
-(defun load-binary (path)
-  "Load the binary file at PATH into memory."
-  (let ((binary (with-open-file (in path :element-type '(unsigned-byte 8))
-                  (let ((seq (make-array (file-length in))))
-                    (read-sequence seq in)
-                    seq))))
-    (setf (get-range (- #x10000 (length binary))) binary)))

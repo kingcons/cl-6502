@@ -46,15 +46,6 @@
     (stack-push (cpu-sr obj) obj)
     (setf (cpu-pc obj) (get-word #xfffa))))
 
-(defun load-image (&key (cpu (make-cpu))
-                   (ram (make-array #x10000 :element-type 'u8)))
-  "Set *CPU* and *RAM* to CPU and RAM."
-  (setf *ram* ram *cpu* cpu))
-
-(defun save-image ()
-  "Return a list containing the current *CPU* and *RAM*."
-  (list *cpu* *ram*))
-
 (defun get-instruction (opcode)
   "Get the mnemonic for OPCODE. Returns a symbol to be funcalled or nil."
   (first (aref *opcodes* opcode)))
@@ -145,15 +136,12 @@ e.g. When the last two bytes of ADDRESS are #xff."
 
 (defun (setf status-bit) (new-val key cpu)
   "Set bit KEY in the status reg of CPU to NEW-VAL. KEY should be a keyword."
-  (if (member new-val '(0 1))
-      (setf (ldb (byte 1 (%status-bit key)) (cpu-sr cpu)) new-val)
-      (error 'status-bit-error :index (%status-bit key))))
+  (setf (ldb (byte 1 (%status-bit key)) (cpu-sr cpu)) new-val))
 
 (defmacro set-flags-if (cpu &rest flag-preds)
   "Takes any even number of arguments where the first is a keyword denoting a
 status bit and the second is a funcallable predicate that takes no arguments.
 It will set each flag to 1 if its predicate is true, otherwise 0."
-  (assert (evenp (length flag-preds)))
   `(setf ,@(loop for (flag pred . nil) on flag-preds by #'cddr
               appending `((status-bit ,flag cpu) (if ,pred 1 0)))))
 

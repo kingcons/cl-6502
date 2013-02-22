@@ -4,7 +4,6 @@
            #:illegal-opcode
            #:invalid-mode
            #:invalid-syntax
-           #:status-bit-error
            ;; Types
            #:u8
            ;; Globals
@@ -39,8 +38,6 @@
            #:disasm-to-str
            #:reset
            #:nmi
-           #:load-image
-           #:save-image
            #:get-instruction
            #:get-byte
            #:get-word
@@ -54,7 +51,6 @@
            #:stack-pop
            #:stack-pop-word
            #:status-bit
-           #:negative-p
            #:set-flags-if
            #:set-flags-nz
            #:maybe-update-cycle-count
@@ -85,9 +81,7 @@
                       #:disasm-to-str
                       #:get-byte
                       #:get-word
-                      #:get-range
-                      #:load-image
-                      #:save-image)
+                      #:get-range)
   (:export #:*cpu*
            #:reset
            #:6502-step
@@ -97,6 +91,4 @@
            #:disasm-to-str
            #:get-byte
            #:get-word
-           #:get-range
-           #:load-image
-           #:save-image))
+           #:get-range))
