@@ -1,4 +1,4 @@
-(in-package :6502-cpu)
+(in-package :6502)
 
 ;;;; Abstract Conditions
 

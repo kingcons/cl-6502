@@ -1,4 +1,4 @@
-(in-package :6502-cpu)
+(in-package :6502)
 
 ;;;; REFERENCES:
 ;; http://josephoswald.nfshost.com/comfy/summary.html
@@ -63,7 +63,7 @@
 If RETURN-MATCH-P is non-nil, return the match directly rather than its index."
   (let* ((insts (remove-if-not (lambda (x) (eql mode x)) *opcodes* :key #'fourth))
          (match (find (intern (string-upcase name) :6502) insts :key #'first)))
-    (cond ((and match return-match-p) match)
+    (cond ((cl:and match return-match-p) match)
           (match (position match *opcodes*))
           (t (error 'illegal-opcode :opcode (list name mode))))))
 
@@ -71,7 +71,7 @@ If RETURN-MATCH-P is non-nil, return the match directly rather than its index."
   "Given a list of args, TOKENS, match them to an addressing mode or return NIL."
   (let ((line (apply 'concatenate 'string tokens)))
     (loop for mode in (remove-duplicates (map 'list #'fourth *opcodes*))
-       when (and mode (cl-ppcre:scan (reader mode) line)) return mode)))
+       when (cl:and mode (cl-ppcre:scan (reader mode) line)) return mode)))
 
 (defun prefix-of (str)
   "Extract the mode prefix of STR."

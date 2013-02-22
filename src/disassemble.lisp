@@ -1,4 +1,4 @@
-(in-package :6502-cpu)
+(in-package :6502)
 
 (defun disasm (start end)
   "Disassemble memory from START to END."

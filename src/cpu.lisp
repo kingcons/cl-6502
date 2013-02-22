@@ -1,4 +1,4 @@
-(in-package :6502-cpu)
+(in-package :6502)
 
 ;;;; REFERENCES:
 ;; http://www.obelisk.demon.co.uk/6502/registers.html
@@ -183,7 +183,7 @@ past the instruction's operands. Otherwise, BODY is responsible for the PC."
   `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) ,(intern "CPU") &key
                      (,(intern "MODE") ,mode) (,(intern "SETF-FORM") ,setf-form))
      ,@body
-     ,@(when (and track-pc (> byte-count 1))
+     ,@(when (cl:and track-pc (> byte-count 1))
          `((incf (cpu-pc cpu) ,(1- byte-count))))
      (incf (cpu-cc cpu) ,cycle-count)
      cpu))
@@ -205,8 +205,8 @@ will return the byte at the given address."
        (:documentation ,docs))
      ,@(loop for mode in modes for mname = (fourth mode) with x = (intern "X")
           do (setf (fourth mode)
-                   (cond ((and (eql addr-style :mixed)
-                               (eql mname 'accumulator)) `',mname)
+                   (cond ((cl:and (eql addr-style :mixed)
+                                  (eql mname 'accumulator)) `',mname)
                          ((eql addr-style :raw) `',mname)
                          (t `(lambda (cpu) (get-byte (,mname cpu))))))
           collect `(defins (,name ,@mode)
