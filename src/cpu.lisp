@@ -29,8 +29,7 @@
 (defparameter *cpu* (make-cpu)
   "The 6502 instance used by opcodes in the package.")
 
-(defparameter *opcodes* (make-array #x100 :element-type 'cons
-                                    :initial-element nil)
+(defparameter *opcodes* (make-array #x100 :element-type 'cons :initial-element nil)
   "A mapping of opcodes to instruction mnemonic/metadata conses.")
 
 ;;; Helpers
@@ -95,8 +94,7 @@ e.g. a Program Counter address."
 (defun wrap-page (address)
   "Wrap the given ADDRESS, ensuring that we don't cross a page boundary.
 e.g. When the last two bytes of ADDRESS are #xff."
-  (+ (logand address #xff00)
-     (logand (1+ address) #xff)))
+  (+ (logand address #xff00) (logand (1+ address) #xff)))
 
 (defun stack-push (value cpu)
   "Push the given VALUE on the stack and decrement the SP."

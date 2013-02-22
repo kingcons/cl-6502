@@ -19,7 +19,7 @@ You are strongly encouraged to use this library via [Quicklisp](http://quicklisp
 * Check out the docs for the [*cl-6502*](http://redlinernotes.com/docs/cl-6502.html) package.
 * Play around at the REPL!
 * Use it to create your own wacky code artifacts.
-* There is also a lower-level *6502* package if you really want to get your hands dirty. NOTE: The 6502 package shadows *BIT* and *AND* so you likely don't want to `:use` it in your own packages.
+* There is also a lower-level *6502* package if you really want to get your hands dirty. NOTE: The 6502 package shadows `BIT` and `AND` so you likely don't want to `:use` it in your own packages.
 
 In particular, [asm](http://redlinernotes.com/docs/cl-6502.html#asm_func), [disasm](http://redlinernotes.com/docs/cl-6502.html#disasm_func), [execute](http://redlinernotes.com/docs/cl-6502.html#execute_func), [6502-step](http://redlinernotes.com/docs/cl-6502.html#6502-step_func), and [reset](http://redlinernotes.com/docs/cl-6502.html#reset_func) are likely of interest.
 
