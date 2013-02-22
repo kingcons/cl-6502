@@ -5,7 +5,7 @@
 
 (def-fixture cpu ()
   (let ((*ram* (make-array (expt 2 16) :element-type '(unsigned-byte 8)))
-        (*cpu* (6502-cpu::make-cpu)))
+        (*cpu* (make-cpu)))
     (declare (special *ram*))
     (symbol-macrolet ((cpu *cpu*))
       (&body))))

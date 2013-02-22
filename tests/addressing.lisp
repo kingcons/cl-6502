@@ -95,8 +95,8 @@ by the word pointed to by the Program Counter."
 (deftest defaddress
     "Defaddress creates both setf functions and address methods for the body
 and name described."
-  (6502-cpu::defaddress xreg (:cpu-reg t) (cpu-xr cpu))
-  (6502-cpu::defaddress foo () 256)
+  (6502::defaddress xreg (:cpu-reg t) (cpu-xr cpu))
+  (6502::defaddress foo () 256)
   (setf (foo cpu) 8)
   (setf (xreg cpu) 9)
   (is (= 8 (get-byte 256)))
