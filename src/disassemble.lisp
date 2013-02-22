@@ -1,6 +1,5 @@
 (in-package :6502-cpu)
 
-; TODO: Error gracefully or properly handle segments that cut off operands.
 (defun disasm (start end)
   "Disassemble memory from START to END."
   (loop with index = start while (< index end)
