@@ -43,7 +43,7 @@ consist of scalar values or lists that start with a scalar value."
             (val (position key enum ,@(when (typep (car keys) 'list)
                                             '(:key #'first)))))
        (if next
-           (nth (1+ val) enum)
+           (nth (mod (1+ val) ,(length keys)) enum)
            val))))
 
 (defgeneric reset (obj)
