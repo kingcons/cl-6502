@@ -10,7 +10,7 @@
            #:implied #:accumulator #:immediate #:zero-page #:zero-page-x #:zero-page-y
            #:absolute #:absolute-x #:absolute-y #:indirect #:indirect-x #:indirect-y #:relative
            ;; Helpers
-           #:wrap-byte #:wrap-word #:status-bit #:get-instruction))
+           #:wrap-byte #:wrap-word #:status-bit #:get-instruction #:defenum))
 
 (defpackage :cl-6502
   (:documentation "Homepage: <a href=\"http://github.com/redline6561/cl-6502\">Github</a>")

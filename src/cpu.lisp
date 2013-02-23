@@ -34,6 +34,14 @@
 
 ;;; Helpers
 
+(defmacro defenum (name (&rest keys))
+  "Define a function named %NAME, that takes an argument KEY. If KEYS are
+scalar values, the corresponding index in KEYS is return. Otherwise, the
+associated value is returned."
+  `(defun ,(intern (format nil "%~A" (string-upcase name))) (key)
+     (let ((enum ',keys))
+       (position key enum ,@(when (typep (car keys) 'list) `(:key #'first))))))
+
 (defgeneric reset (obj)
   (:documentation "Reset the OBJ to an initial state.")
   (:method (obj) (initialize-instance obj)))
@@ -117,16 +125,8 @@ e.g. When the last two bytes of ADDRESS are #xff."
   "Pop a 16-bit word off the stack."
   (+ (stack-pop cpu) (ash (stack-pop cpu) 8)))
 
-(defun %status-bit (key)
-  (let ((status-register '((:carry     . 0)
-                           (:zero      . 1)
-                           (:interrupt . 2)
-                           (:decimal   . 3)
-                           (:break     . 4)
-                           (:unused    . 5)
-                           (:overflow  . 6)
-                           (:negative  . 7))))
-    (rest (assoc key status-register))))
+(defenum status-bit (:carry :zero :interrupt :decimal
+                     :break :unused :overflow :negative))
 
 (defun status-bit (key cpu)
   "Retrieve bit KEY from the status register of CPU. KEY should be a keyword."
