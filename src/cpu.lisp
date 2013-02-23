@@ -38,7 +38,7 @@
   "Define a function named %NAME, that takes an argument KEY. If KEY is a fixnum,
 return the value at KEY. Otherwise, return the index of KEY. KEYS may consist of
 non-numeric scalar values or lists that start with an EQL-testable scalar value."
-  `(defun ,(intern (format nil "%~A" (string-upcase name))) (key &optional next)
+  `(defun ,(intern (format nil "%~A" (string-upcase name))) (key)
      (let ((enum ',keys))
        (if (integerp key)
            (nth key enum)
