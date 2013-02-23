@@ -38,7 +38,7 @@
   "Define a function named %NAME, that takes args (KEY &OPTIONAL NEXT). If NEXT is
 non-nil, return the successor to KEY. Othewrise, return the index of KEY. KEYS may
 consist of scalar values or lists that start with a scalar value."
-  `(defun ,(intern (format nil "%~A" (string-upcase name))) (key &optional next)
+  `(defun ,(intern (format nil "%~:@(~A~)" name)) (key &optional next)
      (let* ((enum ',keys)
             (val (position key enum ,@(when (typep (car keys) 'list)
                                             '(:key #'first)))))
