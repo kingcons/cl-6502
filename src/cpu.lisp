@@ -6,6 +6,7 @@
 ;; http://nesdev.parodius.com/6502.txt
 
 (deftype u8 () '(unsigned-byte 8))
+(defun bytevector (size) (make-array size :element-type 'u8))
 
 (declaim (inline make-cpu))
 (defstruct cpu
@@ -23,7 +24,7 @@
 
 ;;; Tasty Globals
 
-(defparameter *ram* (make-array #x10000 :element-type 'u8)
+(defparameter *ram* (bytevector #x10000)
   "A lovely hunk of bytes.")
 
 (defparameter *cpu* (make-cpu)
