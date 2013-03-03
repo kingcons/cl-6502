@@ -34,3 +34,9 @@
 (defmethod operation-done-p ((op test-op)
                              (c (eql (find-system :cl-6502))))
   (values nil))
+
+(defpackage #:6502-conf (:export #:app-path))
+(defvar 6502-conf::*basedir*
+  (make-pathname :defaults *load-truename* :name nil :type nil))
+(defun 6502-conf:app-path (path &rest args)
+  (merge-pathnames (apply 'format nil path args) 6502-conf::*basedir*))
