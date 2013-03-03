@@ -1,3 +1,7 @@
+## Changes for 0.8.9 (2013-03-03):
+
+* Add symbolic assembly and disassembly, i.e. sexp-format support.
+
 ## Changes for 0.8.8 (2013-02-23):
 
 * Massive package overhaul and docs update.

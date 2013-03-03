@@ -3,8 +3,7 @@ Improve the disassembler for browsing large ROMs. (i.e. Mega Man 2)
 Find other example programs?
 
 Ideas:
-Turn ASM into a generic function.
--- Current definition becomes (asm STRING). Write (asm LIST). :)
+Write a high-level macro-assembler! (using defmacro and sexps, of course)
 Define restarts for step?
 -- Define the instruction.
 -- Hand over a lambda to funcall/form to eval.

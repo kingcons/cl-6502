@@ -43,15 +43,27 @@
           ((some (lambda (x) (search x (second line))) '("&" "#$")) (+ pc 2))
           (t (+ pc 3)))))
 
+(defgeneric asm (source)
+  (:documentation "Assemble SOURCE into a bytevector and return it.")
+  (:method :before (source) (clrhash *symtable*)))
+
+(defun process-statement (statement)
+  "Given a symbolic assembly STATEMENT, convert it to a list of bytes."
+  (destructuring-bind (op &rest args)
+      (mapcar (compose 'string-upcase 'symbol-name) statement)
+    (let ((mode (match-mode args)))
+      (list* (find-opcode op mode) (process-args args mode)))))
+
+(defmethod asm ((source list))
+  (apply 'concatenate 'vector (mapcar #'process-statement source)))
+
 (defmacro with-src-pass ((src) &body body)
   "Loop over SRC, tracking the PC and binding LINE. BODY should be a LOOP expr."
   `(loop for pc = 0 then (next-pc line pc)
       for line in (mapcar #'tokenize (cl-ppcre:split "\\n" ,src))
         ,@body))
 
-(defun asm (source)
-  "Assemble SOURCE string into a bytevector and return it."
-  (clrhash *symtable*)
+(defmethod asm ((source string))
   (with-src-pass (source) if (preprocess-p line) do (preprocess (first line) pc))
   (let ((results (with-src-pass (source)
                    unless (or (preprocess-p line) (emptyp line))

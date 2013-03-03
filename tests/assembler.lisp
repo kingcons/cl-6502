@@ -100,4 +100,17 @@
                            loop:~% INY~% bne &loop~% sbc $0001~% brk")))
     (is (equalp (asm code) #(76 8 0 24 169 0 160 0 200 208 253 237 1 0 0)))))
 
+(deftest assemble-symbolic
+    "A sexp-format program should assemble correctly."
+  (is (equalp (asm '((:brk))) #(0)))
+  (is (equalp (asm '((:nop))) #(234))))
+
+(deftest assemble-symbolic-with-args
+    "A sexp-format program with args should assemble correctly."
+  (let ((code '((:ldy :#$00)
+                (:iny)
+                (:bne :&fd)
+                (:sbc :$0001))))
+    (is (equalp (asm code) #(160 0 200 208 253 237 1 0)))))
+
 ; (deftest assemble-pc "*" nil)?
