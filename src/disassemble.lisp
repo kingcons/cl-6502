@@ -21,8 +21,8 @@ DISASM-OP for formatting and display, returning the instruction length."
         (docs (documentation name 'function)))
     (format t "$~4,'0x   ~9A  ;; ~14A ~A~%" index byte-str args-str docs)))
 
-(defun symbolize-instruction (bytes index name mode)
-  "Given BYTES and metadata, return a SEXP-format representation of it."
+(defun sexpify-instruction (bytes index name mode)
+  "Given BYTES and metadata, return a sexp-format representation of it."
   (declare (ignore index))
   (alexandria:if-let ((args (rest bytes))
                       (args-str (arg-formatter (rest bytes) mode)))
@@ -45,6 +45,6 @@ DISASM-OP for formatting and display, returning the instruction length."
     (disasm start end)))
 
 (defun disasm-to-list (start end)
-  "Disassemble a given region of memory into a SEXP-based format."
-  (with-disasm (start end :op #'symbolize-instruction)
+  "Disassemble a given region of memory into a sexp-based format."
+  (with-disasm (start end :op #'sexpify-instruction)
     do (incf index step) collect result))
