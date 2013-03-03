@@ -88,6 +88,10 @@ data_segment = $200
 ;                                   add 2.5 kB if I_flag = 2
 ;parts of the code are self modifying and must reside in RAM
 code_segment = $1000
+; some folks are lazy and choose not to implement decimal mode, if that's you
+; set testdecimal to 0
+testdecimal=0
+
 
 ;macros for error & success traps to allow user modification
 ;example:
@@ -4651,6 +4655,8 @@ tadd1   ora adrh        ;merge C to expected flags
         sta adrl
         bne tadd        ;iterate op2
 
+ if testdecimal=1
+
 ; decimal add/subtract test
 ; *** WARNING - tests documented behavior only! ***
 ;   only valid BCD operands are tested, N V Z flags are ignored
@@ -4732,6 +4738,8 @@ tdad6   dec ad2         ;operand 2 -1
         inc adrh        ;result carry
         bne tdad        ;iterate op2
 tdad7   cld
+
+ endif
 
 ; S U C C E S S ************************************************
 ; -------------
