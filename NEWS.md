@@ -1,3 +1,7 @@
+## Changes for 0.9.0 (2013-03-xx):
+
+* Fix stack wraparound in PHP, PLA, etc.
+
 ## Changes for 0.8.9 (2013-03-03):
 
 * Add symbolic assembly and disassembly, i.e. sexp-format support.

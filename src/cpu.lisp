@@ -100,10 +100,6 @@ e.g. a Stack Pointer or general purpose register."
 e.g. a Program Counter address."
   (logand val #xffff))
 
-(defmethod wrap-stack ((cpu cpu))
-  "Wrap the stack pointer."
-  (setf (cpu-sp cpu) (wrap-byte (cpu-sp cpu))))
-
 (defun wrap-page (address)
   "Wrap the given ADDRESS, ensuring that we don't cross a page boundary.
 e.g. When the last two bytes of ADDRESS are #xff."
@@ -112,8 +108,7 @@ e.g. When the last two bytes of ADDRESS are #xff."
 (defun stack-push (value cpu)
   "Push the given VALUE on the stack and decrement the SP."
   (setf (get-byte (+ (cpu-sp cpu) #x100)) (wrap-byte value))
-  (decf (cpu-sp cpu))
-  (wrap-stack cpu))
+  (setf (cpu-sp cpu) (wrap-byte (1- (cpu-sp cpu)))))
 
 (defun stack-push-word (value cpu)
   "Push the 16-bit word VALUE onto the stack."
@@ -122,8 +117,7 @@ e.g. When the last two bytes of ADDRESS are #xff."
 
 (defun stack-pop (cpu)
   "Pop the value pointed to by the SP and increment the SP."
-  (incf (cpu-sp cpu))
-  (wrap-stack cpu)
+  (setf (cpu-sp cpu) (wrap-byte (1+ (cpu-sp cpu))))
   (get-byte (+ (cpu-sp cpu) #x100)))
 
 (defun stack-pop-word (cpu)
