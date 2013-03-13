@@ -29,7 +29,8 @@
                (:file "assembler")
                (:file "disassembler")
                (:file "addressing")
-               (:file "opcodes")))
+               (:file "opcodes")
+               #+sbcl (:file "perf")))
 
 (defmethod operation-done-p ((op test-op)
                              (c (eql (find-system :cl-6502))))

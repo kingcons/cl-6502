@@ -1,4 +1,6 @@
-MOAR UNIT TESTS! (opcodes+macrology)
+Optimize!
+-- A third of our allocations running Klaus' testsuite is in OVERFLOW-P.
+-- Optimize status-bit% and generic-arithmetic calls CPU-time wise.
 Fix the sexp assembler/disassembler for more addressing modes. (x,y)
 -- substitute #\. #\, and remove whitespace?
 -- add support for * insert program counter in assembly/disassembly?
