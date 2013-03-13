@@ -3,10 +3,10 @@
 (defun disasm-ins (index &optional (disasm-op #'print-instruction))
     "Lookup the metadata for the instruction at INDEX and pass it to
 DISASM-OP for formatting and display, returning the instruction length."
-  (destructuring-bind (name cycles length mode) (aref *opcodes* (get-byte index))
+  (destructuring-bind (name cycles size mode) (aref *opcodes* (get-byte index))
     (declare (ignore cycles))
-    (let ((code-block (coerce (get-range index (+ index length)) 'list)))
-      (list length (funcall disasm-op code-block index name mode)))))
+    (let ((code-block (coerce (get-range index (+ index size)) 'list)))
+      (list size (funcall disasm-op code-block index name mode)))))
 
 (defun arg-formatter (arg mode)
   "Given an instruction's ARG, format it for display using the MODE's PRINTER."
@@ -30,21 +30,27 @@ DISASM-OP for formatting and display, returning the instruction length."
     (mapcar #'make-keyword (list name))))
 
 (defmacro with-disasm ((start end &key op) &body body)
-  "Loop from START to END, passing each instruction to OP and execute BODY."
+  "Loop from START to END, passing each instruction to OP and execute BODY.
+OP is PRINT-INSTRUCTION by default. Within BODY, the return value of OP is
+bound to RESULT and the length of the instruction in bytes is bound to STEP."
   `(loop with index = ,start while (< index ,end)
       for (step result) = (disasm-ins index ,@(when op (list op)))
-        ,@body))
+      do (incf index step) ,@body))
 
 (defun disasm (start end)
   "Disassemble memory from START to END."
-  (with-disasm (start end) do (incf index step)))
-
-(defun disasm-to-str (start end)
-  "Call DISASM with the provided args and return its output as a string."
-  (with-output-to-string (*standard-output*)
-    (disasm start end)))
+  (with-disasm (start end)))
 
 (defun disasm-to-list (start end)
   "Disassemble a given region of memory into a sexp-based format."
-  (with-disasm (start end :op #'sexpify-instruction)
-    do (incf index step) collect result))
+  (with-disasm (start end :op #'sexpify-instruction) collect result))
+
+(defun disasm-to-str (start end)
+  "Call DISASM with the provided args and return its output as a string."
+  (with-output-to-string (*standard-output*) (disasm start end)))
+
+(defun current-instruction (cpu &optional print-p)
+  "Return a list representing the current instruction. If PRINT-P is non-nil,
+print the current address and instruction and return NIL."
+  (let ((fn (if print-p #'print-instruction #'sexpify-instruction)))
+    (second (disasm-ins (cpu-pc cpu) fn))))

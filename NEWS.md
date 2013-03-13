@@ -1,5 +1,6 @@
 ## Changes for 0.9.0 (2013-03-xx):
 
+* Added and exported CURRENT-INSTRUCTION helper.
 * Fix stack wraparound in PHP, PLA, etc.
 
 ## Changes for 0.8.9 (2013-03-03):

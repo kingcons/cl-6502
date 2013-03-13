@@ -22,3 +22,9 @@
   (setf (get-range 0) #(160 0 200 208 253 237 1 0))
   (is (equalp (6502::disasm-to-list 0 7)
               '((:ldy :#$00) (:iny) (:bne :&fd) (:sbc :$0001)))))
+
+(deftest current-instruction
+    "We should be able to inspect the current instruction."
+  (setf (get-range #x3fa5) #(76 165 63)
+        (cpu-pc cpu) #x3fa5)
+  (is (equalp (6502::current-instruction cpu) '(:jmp :$3fa5))))

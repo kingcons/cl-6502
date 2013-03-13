@@ -1,6 +1,8 @@
 MOAR UNIT TESTS! (opcodes+macrology)
+Fix the sexp assembler/disassembler for more addressing modes. (x,y)
+-- substitute #\. #\, and remove whitespace?
+-- add support for * insert program counter in assembly/disassembly?
 Improve the disassembler for browsing large ROMs. (i.e. Mega Man 2)
-Find other example programs?
 
 Ideas:
 Write a high-level macro-assembler! (using defmacro and sexps, of course)

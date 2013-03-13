@@ -87,8 +87,7 @@ provided."
 
 (defun (setf get-range) (bytevector start)
   "Replace the contents of RAM, starting from START with BYTEVECTOR."
-  (let ((size (length bytevector)))
-    (setf (subseq *ram* start (+ start size)) bytevector)))
+  (setf (subseq *ram* start (+ start (length bytevector))) bytevector))
 
 (defun wrap-byte (val)
   "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 8)),
