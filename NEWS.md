@@ -1,6 +1,8 @@
 ## Changes for 0.9.0 (2013-03-xx):
 
 * Perfect run on Klaus Dorfmann's test suite aside from decimal mode ADC/SBC.
+* Fix bugs in new symbolic assembler. Indirect and *-x *-y addressing modes
+  were previously not working. Extended test suite to cover these cases.
 * Added and exported CURRENT-INSTRUCTION helper.
 * Fix stack wraparound in PHP, PLA, etc.
 

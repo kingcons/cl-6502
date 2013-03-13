@@ -1,9 +1,11 @@
+Fix!
+-- Disasm-to-list of indirect+x,y code.
+-- Can we clean up prefix-of/resolve. Maybe with cl-ppcre?
+Extend!
+-- add support for * insert program counter in assembly/disassembly?
 Optimize!
 -- A third of our allocations running Klaus' testsuite is in OVERFLOW-P.
 -- Optimize status-bit% and generic-arithmetic calls CPU-time wise.
-Fix the sexp assembler/disassembler for more addressing modes. (x,y)
--- substitute #\. #\, and remove whitespace?
--- add support for * insert program counter in assembly/disassembly?
 Improve the disassembler for browsing large ROMs. (i.e. Mega Man 2)
 
 Ideas:

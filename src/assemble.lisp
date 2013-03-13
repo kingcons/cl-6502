@@ -51,7 +51,7 @@
   "Given a symbolic assembly STATEMENT, convert it to a list of bytes."
   (destructuring-bind (op &rest args)
       (mapcar (compose 'string-upcase 'symbol-name) statement)
-    (let ((mode (match-mode args)))
+    (let ((mode (match-mode args :sexp)))
       (list* (find-opcode op mode) (process-args args mode)))))
 
 (defmethod asm ((source list))
@@ -79,8 +79,18 @@ If RETURN-MATCH-P is non-nil, return the match directly rather than its index."
           (match (position match *opcodes*))
           (t (error 'illegal-opcode :opcode (list name mode))))))
 
-(defun match-mode (tokens)
-  "Given a list of args, TOKENS, match them to an addressing mode or return NIL."
+(defun transform-sexp-syntax (tokens)
+  "Given a SEXP-token using an indirect, *.x or *.y addressing mode, transform
+it to use the classic string assembly syntax."
+  (flet ((munge-indirect (x)
+           (cl-ppcre:regex-replace "\@([^.]*)(.*)?" x "($\\1)\\2")))
+    (mapcar (lambda (x) (substitute #\, #\. (munge-indirect x))) tokens)))
+
+(defun match-mode (tokens &optional sexp-syntax-p)
+  "Given a list of args, TOKENS, match them to an addressing mode or return NIL.
+SEXP-SYNTAX-P should be t when tokens are in assembler's SEXP-based syntax."
+  (when sexp-syntax-p
+    (setf tokens (transform-sexp-syntax tokens)))
   (let ((line (apply 'concatenate 'string tokens)))
     (loop for mode in (remove-duplicates (map 'list #'fourth *opcodes*))
        when (cl:and mode (cl-ppcre:scan (reader mode) line)) return mode)))

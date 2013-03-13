@@ -6,7 +6,10 @@
 ;; http://nesdev.parodius.com/6502.txt
 
 (deftype u8 () '(unsigned-byte 8))
-(defun bytevector (size) (make-array size :element-type 'u8))
+
+(defun bytevector (size)
+  "Return an array of the given SIZE with element-type U8."
+  (make-array size :element-type 'u8))
 
 (declaim (inline make-cpu))
 (defstruct cpu
