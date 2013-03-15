@@ -7,7 +7,7 @@
            #:current-instruction #:get-byte #:get-word #:get-range #:*cpu* #:cpu
            #:nmi #:reset
            ;; CPU struct
-           #:make-cpu #:cpu-ar #:cpu-xr #:cpu-yr #:cpu-sr #:cpu-sp #:cpu-pc #:cpu-cc #:u8
+           #:make-cpu #:cpu-ar #:cpu-xr #:cpu-yr #:cpu-sr #:cpu-sp #:cpu-pc #:cpu-cc #:u8 #:u16
            ;; Addr modes
            #:implied #:accumulator #:immediate #:zero-page #:zero-page-x #:zero-page-y
            #:absolute #:absolute-x #:absolute-y #:indirect #:indirect-x #:indirect-y #:relative

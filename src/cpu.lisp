@@ -6,6 +6,7 @@
 ;; http://nesdev.parodius.com/6502.txt
 
 (deftype u8 () '(unsigned-byte 8))
+(deftype u16 () '(unsigned-byte 16))
 
 (defun bytevector (size)
   "Return an array of the given SIZE with element-type U8."
@@ -14,7 +15,7 @@
 (declaim (inline make-cpu))
 (defstruct cpu
   "A 6502 CPU with an extra slot for tracking the cycle count/clock ticks."
-  (pc #xfffc :type (unsigned-byte 16))  ;; program counter
+  (pc #xfffc :type u16)                 ;; program counter
   (sp #xfd   :type u8)                  ;; stack pointer
   (sr #x24   :type u8)                  ;; status register
   (xr 0      :type u8)                  ;; x register
@@ -93,12 +94,12 @@ provided."
   (setf (subseq *ram* start (+ start (length bytevector))) bytevector))
 
 (defun wrap-byte (val)
-  "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 8)),
+  "Wrap the given value to ensure it conforms to (typep val 'u16),
 e.g. a Stack Pointer or general purpose register."
   (logand val #xff))
 
 (defun wrap-word (val)
-  "Wrap the given value to ensure it conforms to (typep val '(unsigned-byte 16)),
+  "Wrap the given value to ensure it conforms to (typep val 'u16),
 e.g. a Program Counter address."
   (logand val #xffff))
 
