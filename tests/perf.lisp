@@ -18,6 +18,12 @@ statistical profiler to observe performance while running the test suite."
     (loop until (> (cpu-cc *cpu*) (* 45 (expt 2 21)))
        do (6502-step *cpu* (get-byte (immediate *cpu*))))))
 
+(defun optimize-test ()
+  (reset *cpu*)
+  (klaus-init)
+  (time (loop until (> (cpu-cc *cpu*) (* 1.79 (expt 2 20)))
+           do (6502-step *cpu* (get-byte (immediate *cpu*))))))
+
 (deftest keep-it-fast
     "We should not have deteriorating performance. 24.576 seconds at most."
   ;; NOTE: This test based on 64-bit SBCL 1.1.4 on my Debian Thinkpad X200.
