@@ -1,4 +1,4 @@
-## Changes for 0.9.0 (2013-03-xx):
+## Changes for 0.9.0 (2013-03-16):
 
 * Perfect run on Klaus Dorfmann's test suite aside from decimal mode ADC/SBC.
 * Fix bugs in new symbolic assembler. Indirect and *-x *-y addressing modes
