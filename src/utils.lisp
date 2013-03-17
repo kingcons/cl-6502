@@ -17,9 +17,10 @@ or :done.")
   (:method ((cpu cpu) opcode)
     (setf (cpu-pc cpu) (wrap-word (1+ (cpu-pc cpu))))
     (handler-case
-        (let ((result (funcall (get-instruction opcode) opcode cpu)))
-          (if (zerop opcode)
-              :done
-              result))
+        (destructuring-bind (op &rest args) (aref *opcodes* opcode)
+          (let ((result (apply op cpu args)))
+            (if (zerop opcode)
+                :done
+                result)))
       (undefined-function ()
         (error 'illegal-opcode :opcode opcode)))))
