@@ -1,3 +1,8 @@
+## Changes for 0.9.1 (2013-xx-xx):
+
+* Remove comment and label support from assembler.
+* Fix symbolic disassembly for certain addressing modes.
+
 ## Changes for 0.9.0 (2013-03-16):
 
 * Perfect run on Klaus Dorfmann's test suite aside from decimal mode ADC/SBC.

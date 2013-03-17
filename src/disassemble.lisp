@@ -21,11 +21,17 @@ DISASM-OP for formatting and display, returning the instruction length."
         (docs (documentation name 'function)))
     (format t "$~4,'0x   ~9A  ;; ~14A ~A~%" index byte-str args-str docs)))
 
+(defun transform-str-syntax (bytes mode)
+  (let ((result (arg-formatter (rest bytes) mode)))
+    (flet ((munge-indirect (str)
+             (cl-ppcre:regex-replace "\\(\\$(.*)\\)(.*)?" str "@\\1\\2")))
+      (cl-ppcre:regex-replace ", " (munge-indirect result) "."))))
+
 (defun sexpify-instruction (bytes index name mode)
   "Given BYTES and metadata, return a sexp-format representation of it."
   (declare (ignore index))
   (alexandria:if-let ((args (rest bytes))
-                      (args-str (arg-formatter (rest bytes) mode)))
+                      (args-str (transform-str-syntax bytes mode)))
     (mapcar #'make-keyword (list name args-str))
     (mapcar #'make-keyword (list name))))
 
