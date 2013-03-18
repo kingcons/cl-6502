@@ -19,60 +19,60 @@
 (deftest assemble-implied
     "Implied mode instructions should be assembled correctly."
   (is (equalp (asm "nop") #(#xea)))
-  (is (equalp (asm '((:nop))) #(#xea))))
+  (is (equalp (asm '(:nop)) #(#xea))))
 
 (deftest assemble-accumulator
     "Accumulator mode instructions should be assembled correctly."
   (is (equalp (asm "rol a") #(#x2a)))
-  (is (equalp (asm '((:rol :a))) #(#x2a))))
+  (is (equalp (asm '(:rol :a)) #(#x2a))))
 
 (deftest assemble-immediate
     "Immediate mode instructions should be assembled correctly."
   (let ((expected (bvec a9 00)))
     (is (equalp (asm "lda #$00") expected))
-    (is (equalp (asm '((:lda :#$00))) expected))))
+    (is (equalp (asm '(:lda :#$00)) expected))))
 
 (deftest assemble-zero-page
     "Zero-page mode instructions should be assembled correctly."
   (let ((expected (bvec a5 03)))
     (is (equalp (asm "lda $03") expected))
-    (is (equalp (asm '((:lda :$03))) expected))))
+    (is (equalp (asm '(:lda :$03)) expected))))
 
 (deftest assemble-zero-page-x
     "Zero-page-x mode instructions should be assembled correctly."
   (let ((expected (bvec b5 03)))
     (is (equalp (asm "lda $03, x") expected))
-    (is (equalp (asm '((:lda :$03.x))) expected))))
+    (is (equalp (asm '(:lda :$03.x)) expected))))
 
 (deftest assemble-zero-page-y
     "Zero-page-y mode instructions should be assembled correctly."
   (let ((expected (bvec b6 03)))
     (is (equalp (asm "ldx $03, y") expected))
-    (is (equalp (asm '((:ldx :$03.y))) expected))))
+    (is (equalp (asm '(:ldx :$03.y)) expected))))
 
 (deftest assemble-absolute
     "Absolute mode instructions should be assembled correctly."
   (let ((expected (bvec ed 1 0)))
     (is (equalp (asm "sbc $0001") expected))
-    (is (equalp (asm '((:sbc :$0001))) expected))))
+    (is (equalp (asm '(:sbc :$0001)) expected))))
 
 (deftest assemble-absolute-x
     "Absolute-x mode instructions should be assembled correctly."
   (let ((expected (bvec bd 34 12)))
     (is (equalp (asm "lda $1234, x") expected))
-    (is (equalp (asm '((:lda :$1234.x))) expected))))
+    (is (equalp (asm '(:lda :$1234.x)) expected))))
 
 (deftest assemble-absolute-y
     "Absolute-y mode instructions should be assembled correctly."
   (let ((expected (bvec b9 34 12)))
     (is (equalp (asm "lda $1234, y") expected))
-    (is (equalp (asm '((:lda :$1234.y))) expected))))
+    (is (equalp (asm '(:lda :$1234.y)) expected))))
 
 (deftest assemble-indirect
     "Indirect mode instructions should be assembled correctly."
   (let ((expected (bvec 6c 34 12)))
     (is (equalp (asm "jmp ($1234)") expected))
-    (is (equalp (asm '((:jmp :@1234))) expected))))
+    (is (equalp (asm '(:jmp :@1234)) expected))))
 
 (deftest assemble-indirect-x
     "Indirect-x mode instructions should be assembled correctly."
@@ -84,13 +84,13 @@
     "Indirect-y mode instructions should be assembled correctly."
   (let ((expected (bvec b1 34)))
     (is (equalp (asm "lda ($34), y") expected))
-    (is (equalp (asm '((:lda :@34.y))) expected))))
+    (is (equalp (asm '(:lda :@34.y)) expected))))
 
 (deftest assemble-relative
     "Relative mode instructions should be assembled correctly."
   (let ((expected (bvec d0 fd)))
     (is (equalp (asm "bne &fd") expected))
-    (is (equalp (asm '((:bne :&fd))) expected))))
+    (is (equalp (asm '(:bne :&fd)) expected))))
 
 (deftest assemble-comment
     "Comments (;) should be ignored. Code before comments should not be ignored."
@@ -114,8 +114,8 @@
 
 (deftest assemble-symbolic
     "A sexp-format program should assemble correctly."
-  (is (equalp (asm '((:brk))) #(0)))
-  (is (equalp (asm '((:nop))) #(234))))
+  (is (equalp (asm '(:brk)) #(0)))
+  (is (equalp (asm '(:nop)) #(234))))
 
 (deftest assemble-symbolic-with-args
     "A sexp-format program with args should assemble correctly."

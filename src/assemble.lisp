@@ -17,7 +17,7 @@
   "Given a symbolic assembly STATEMENT, convert it to a list of bytes."
   (destructuring-bind (op &rest args)
       (mapcar (compose 'string-upcase 'symbol-name) statement)
-    (if (> (length args) 1)
+    (if (> (length args) 2)
         (error 'invalid-syntax :line statement)
         (let ((mode (match-mode args)))
           (list* (find-opcode op mode) (process-args args mode))))))

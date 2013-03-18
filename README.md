@@ -34,7 +34,7 @@ In particular, [asm](http://redlinernotes.com/docs/cl-6502.html#asm_func), [disa
 4. ```(reset)``` the CPU as necessary and keep hacking! :)
 
 ### Supported Assembler Syntax
-There are sexp-based and string-based assemblers, both invoked via `asm`. The string-based assembler expects statements to be separated by newlines. The sexp-based assembler expects each statement to be in its own list. Disassembling to both formats is supported via `disasm` and `disasm-to-list`. Comments are supported. ';' is treated as comment to end-of-line in the string assembler.
+There are sexp-based and string-based assemblers, both invoked via `asm`. The string-based assembler expects statements to be separated by newlines. The sexp-based assembler expects each statement to be in its own list. Disassembling to both formats is supported via `disasm` and `disasm-to-list`. Comments are supported. ';' is treated as comment to end-of-line in the string assembler.o
 
 ```
 | Addressing Mode | SEXP-based format | String format  |
