@@ -1,5 +1,6 @@
 ## Changes for 0.9.1 (2013-xx-xx):
 
+* Improve error reporting on incorrect assembly.
 * Remove comment and label support from assembler.
 * Fix symbolic disassembly for certain addressing modes.
 

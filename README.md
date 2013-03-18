@@ -34,24 +34,24 @@ In particular, [asm](http://redlinernotes.com/docs/cl-6502.html#asm_func), [disa
 4. ```(reset)``` the CPU as necessary and keep hacking! :)
 
 ### Supported Assembler Syntax
-There are sexp-based and string-based assemblers, both invoked via `asm`. Disassembling to both formats is supported via `disasm` and `disasm-to-list`. Comments are supported. ';' is treated as comment to end-of-line in the string assembler.
+There are sexp-based and string-based assemblers, both invoked via `asm`. The string-based assembler expects statements to be separated by newlines. The sexp-based assembler expects each statement to be in its own list. Disassembling to both formats is supported via `disasm` and `disasm-to-list`. Comments are supported. ';' is treated as comment to end-of-line in the string assembler.
 
 ```
 | Addressing Mode | SEXP-based format | String format  |
 |-----------------|-------------------|----------------|
-| Implied         | (:brk)            | "brk"          |
-| Immediate       | (:lda :#$00)      | "lda #$00"     |
-| Accumulator     | (:rol :a)         | "rol a"        |
-| Zero-page       | (:lda :$03)       | "lda $03"      |
-| Zero-page, X    | (:lda :$03.x)     | "lda $03, x"   |
-| Zero-page, Y    | (:ldx :$03.y)     | "ldx $03, y"   |
-| Absolute        | (:sbc :$0001)     | "sbc $0001"    |
-| Absolute, X     | (:lda :$1234.x)   | "lda $1234, x" |
-| Absolute, Y     | (:lda :$1234.y)   | "lda $1234, y" |
-| Indirect        | (:jmp :@1234)     | "jmp ($1234)   |
-| Indirect, X     | (:lda :@12.x)     | "lda ($12), x" |
-| Indirect, Y     | (:lda :@34.y)     | "lda ($34), y" |
-| Relative        | (:bne :&fd)       | "bne &fd"      |
+|   Implied       |  (:brk)           | "brk"          |
+|   Immediate     |  (:lda :#$00)     | "lda #$00"     |
+|   Accumulator   |  (:rol :a)        | "rol a"        |
+|   Zero-page     |  (:lda :$03)      | "lda $03"      |
+|   Zero-page, X  |  (:lda :$03.x)    | "lda $03, x"   |
+|   Zero-page, Y  |  (:ldx :$03.y)    | "ldx $03, y"   |
+|   Absolute      |  (:sbc :$0001)    | "sbc $0001"    |
+|   Absolute, X   |  (:lda :$1234.x)  | "lda $1234, x" |
+|   Absolute, Y   |  (:lda :$1234.y)  | "lda $1234, y" |
+|   Indirect      |  (:jmp :@1234)    | "jmp ($1234)   |
+|   Indirect, X   |  (:lda :@12.x)    | "lda ($12), x" |
+|   Indirect, Y   |  (:lda :@34.y)    | "lda ($34), y" |
+|   Relative      |  (:bne :&fd)      | "bne &fd"      |
 ```
 
 ## Hacking

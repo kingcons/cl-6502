@@ -9,14 +9,18 @@
   (:documentation "Assemble SOURCE into a bytevector and return it."))
 
 (defmethod asm ((source list))
-  (apply 'concatenate 'vector (mapcar #'process-statement source)))
+  (if (listp (first source))
+      (apply 'concatenate 'vector (mapcar #'process-statement source))
+      (apply 'vector (process-statement source))))
 
 (defun process-statement (statement)
   "Given a symbolic assembly STATEMENT, convert it to a list of bytes."
   (destructuring-bind (op &rest args)
       (mapcar (compose 'string-upcase 'symbol-name) statement)
-    (let ((mode (match-mode args)))
-      (list* (find-opcode op mode) (process-args args mode)))))
+    (if (> (length args) 1)
+        (error 'invalid-syntax :line statement)
+        (let ((mode (match-mode args)))
+          (list* (find-opcode op mode) (process-args args mode))))))
 
 (defun find-opcode (name mode)
   "Find an opcode matching NAME and MODE, raising ILLEGAL-OPCODE otherwise."

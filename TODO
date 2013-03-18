@@ -1,6 +1,3 @@
-Fix!
--- Disasm-to-list of indirect+x,y code.
--- Can we clean up prefix-of/resolve. Maybe with cl-ppcre?
 Extend!
 -- add support for * insert program counter in assembly/disassembly?
 Optimize!
