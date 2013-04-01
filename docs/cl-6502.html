@@ -99,6 +99,14 @@ or :done.</pre></div></div>
 <pre>Assemble SOURCE into a bytevector and return it.</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
+<a class="symbolname" name="current-instruction_func" href="#current-instruction_func">current-instruction</a>
+<span class="lambdalist">cpu &optional print-p</span>
+<span class="symboltype">function</span></div>
+<div class="documentation">
+<pre>Return a list representing the current instruction. If PRINT-P is non-nil,
+print the current address and instruction and return NIL.</pre></div></div>
+<div class="symboldecl">
+<div class="definition">
 <a class="symbolname" name="disasm_func" href="#disasm_func">disasm</a>
 <span class="lambdalist">start end</span>
 <span class="symboltype">function</span></div>
@@ -110,7 +118,7 @@ or :done.</pre></div></div>
 <span class="lambdalist">start end</span>
 <span class="symboltype">function</span></div>
 <div class="documentation">
-<pre>Disassemble a given region of memory into a SEXP-based format.</pre></div></div>
+<pre>Disassemble a given region of memory into a sexp-based format.</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
 <a class="symbolname" name="disasm-to-str_func" href="#disasm-to-str_func">disasm-to-str</a>
@@ -169,6 +177,20 @@ provided.</pre></div></div>
 <span class="symboltype">function</span></div>
 <div class="documentation">
 <pre>Set ADDRESS and (1+ ADDRESS) in *ram* to NEW-VAL, little endian ordering.</pre></div></div>
+<div class="symboldecl">
+<div class="definition">
+<a class="symbolname" name="jit-execute_func" href="#jit-execute_func">jit-execute</a>
+<span class="lambdalist">cpu</span>
+<span class="symboltype">function</span></div>
+<div class="documentation">
+<pre>Execute the CPU with the dynamic recompiler.</pre></div></div>
+<div class="symboldecl">
+<div class="definition">
+<a class="symbolname" name="jit-step_func" href="#jit-step_func">jit-step</a>
+<span class="lambdalist">cpu pc</span>
+<span class="symboltype">function</span></div>
+<div class="documentation">
+<pre>If the current block has been JIT compiled, run it, otherwise JIT compile it.</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
 <a class="symbolname" name="nmi_func" href="#nmi_func">nmi</a>

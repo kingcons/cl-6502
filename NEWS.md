@@ -1,5 +1,6 @@
-## Changes for 0.9.1 (2013-xx-xx):
+## Changes for 0.9.1 (2013-04-01):
 
+* Add a **very** naive JIT compiler. Don't expect big speedups. Do expect bugs.
 * Improve error reporting on incorrect assembly.
 * Remove comment and label support from assembler.
 * Fix symbolic disassembly for certain addressing modes.
