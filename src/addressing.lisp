@@ -89,12 +89,11 @@ is used as the documentation for the method and setf function when provided."
 
 (defaddress relative (:reader "^&[0-9a-fA-F]{2}$"
                       :printer "&~{~2,'0x~}")
-  (let ((addr (zero-page cpu))
-        (result nil))
+  (let ((addr (zero-page cpu)))
     (incf (cpu-cc cpu))
     (incf (cpu-pc cpu))
-    (if (not (zerop (logand addr #x80)))
-        (setf result (wrap-word (- (cpu-pc cpu) (logxor addr #xff) 1)))
-        (setf result (wrap-word (+ (cpu-pc cpu) addr))))
-    (maybe-update-cycle-count cpu result (cpu-pc cpu))
-    result))
+    (let ((result (if (logbitp 7 addr)
+                      (wrap-word (- (cpu-pc cpu) (- #x100 addr)))
+                      (wrap-word (+ (cpu-pc cpu) addr)))))
+      (maybe-update-cycle-count cpu result (1+ (cpu-pc cpu)))
+      result)))
