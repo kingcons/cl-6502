@@ -216,4 +216,5 @@ will return the byte at the given address."
           collect `(defins (,name ,@mode)
                        (:setf-form (lambda (,x) (setf (,mname cpu) ,x))
                         :track-pc ,track-pc)
+                     (incf (cpu-pc cpu))
                      ,@body))))

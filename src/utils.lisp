@@ -15,7 +15,6 @@ it will be placed at the beginning of *ram* and the PC will be set to 0.")
   (:documentation "Step the CPU through the next instruction, returning the CPU
 or :done.")
   (:method ((cpu cpu) opcode)
-    (setf (cpu-pc cpu) (wrap-word (1+ (cpu-pc cpu))))
     (handler-case
         (let ((result (funcall (get-instruction opcode) opcode cpu)))
           (if (zerop opcode)

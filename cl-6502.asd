@@ -14,6 +14,7 @@
                (:file "disassemble")
                (:file "assemble")
                (:file "opcodes")
+               (:file "jit")
                (:file "utils"))
   :in-order-to ((test-op (load-op cl-6502-tests)))
   :perform (test-op :after (op c)
@@ -30,6 +31,7 @@
                (:file "disassembler")
                (:file "addressing")
                (:file "opcodes")
+               (:file "jit")
                #+sbcl (:file "perf")))
 
 (defmethod operation-done-p ((op test-op)
