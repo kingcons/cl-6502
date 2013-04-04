@@ -89,11 +89,10 @@ is used as the documentation for the method and setf function when provided."
 
 (defaddress relative (:reader "^&[0-9a-fA-F]{2}$"
                       :printer "&~{~2,'0x~}")
-  (let ((addr (zero-page cpu)))
+  (let ((offset (zero-page cpu)))
     (incf (cpu-cc cpu))
-    (incf (cpu-pc cpu))
-    (let ((result (if (logbitp 7 addr)
-                      (wrap-word (- (cpu-pc cpu) (- #x100 addr)))
-                      (wrap-word (+ (cpu-pc cpu) addr)))))
+    (let ((result (if (logbitp 7 offset)
+                      (wrap-word (- (cpu-pc cpu) (- #xff offset)))
+                      (wrap-word (+ (cpu-pc cpu) (1+ offset))))))
       (maybe-update-cycle-count cpu result (1+ (cpu-pc cpu)))
       result)))
