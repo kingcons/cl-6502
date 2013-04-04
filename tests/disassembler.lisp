@@ -13,9 +13,9 @@
 (deftest disasm-to-list
     "We should be able to disassemble code to a sexp-based format."
   (setf (get-byte 0) 0)
-  (is (equalp (6502::disasm-to-list 0 1) '((:brk))))
+  (is (equalp (6502::disasm-to-list 0 0) '((:brk))))
   (setf (get-byte 0) 234)
-  (is (equalp (6502::disasm-to-list 0 1) '((:nop)))))
+  (is (equalp (6502::disasm-to-list 0 0) '((:nop)))))
 
 (deftest disasm-to-list-with-args
     "We should be able to disassemble code with args in a sexp-based format."

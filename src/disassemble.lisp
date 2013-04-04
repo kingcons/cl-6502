@@ -39,7 +39,7 @@ DISASM-OP for formatting and display, returning the instruction length."
   "Loop from START to END, passing each instruction to OP and execute BODY.
 OP is PRINT-INSTRUCTION by default. Within BODY, the return value of OP is
 bound to RESULT and the length of the instruction in bytes is bound to STEP."
-  `(loop with index = ,start while (< index ,end)
+  `(loop with index = ,start while (<= index ,end)
       for (step result) = (disasm-ins index ,@(when op (list op)))
       do (incf index step) ,@body))
 
