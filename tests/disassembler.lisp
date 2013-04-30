@@ -13,18 +13,18 @@
 (deftest disasm-to-list
     "We should be able to disassemble code to a sexp-based format."
   (setf (get-byte 0) 0)
-  (is (equalp (6502::disasm-to-list 0 0) '((:brk))))
+  (is (equalp (disasm-to-list 0 0) '((:brk))))
   (setf (get-byte 0) 234)
-  (is (equalp (6502::disasm-to-list 0 0) '((:nop)))))
+  (is (equalp (disasm-to-list 0 0) '((:nop)))))
 
 (deftest disasm-to-list-with-args
     "We should be able to disassemble code with args in a sexp-based format."
   (setf (get-range 0) #(160 0 200 208 253 237 1 0))
-  (is (equalp (6502::disasm-to-list 0 7)
+  (is (equalp (disasm-to-list 0 7)
               '((:ldy :#$00) (:iny) (:bne :&fd) (:sbc :$0001)))))
 
 (deftest current-instruction
     "We should be able to inspect the current instruction."
   (setf (get-range #x3fa5) #(76 165 63)
         (cpu-pc cpu) #x3fa5)
-  (is (equalp (6502::current-instruction cpu) '(:jmp :$3fa5))))
+  (is (equalp (current-instruction cpu) '(:jmp :$3fa5))))

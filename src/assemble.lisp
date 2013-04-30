@@ -22,6 +22,12 @@
         (let ((mode (match-mode args)))
           (list* (find-opcode op mode) (process-args args mode))))))
 
+(defun match-mode (tokens)
+  "Given a list of args, TOKENS, match them to an addressing mode or return NIL."
+  (let ((line (apply 'concatenate 'string (transform-sexp-syntax tokens))))
+    (loop for mode in (remove-duplicates (map 'list #'fourth *opcodes*))
+       when (cl:and mode (cl-ppcre:scan (reader mode) line)) return mode)))
+
 (defun find-opcode (name mode)
   "Find an opcode matching NAME and MODE, raising ILLEGAL-OPCODE otherwise."
   (let* ((insts (remove-if-not (lambda (x) (eql mode x)) *opcodes* :key #'fourth))
@@ -30,18 +36,16 @@
         (position match *opcodes*)
         (error 'illegal-opcode :opcode (list name mode)))))
 
+(defun process-args (tokens mode)
+  "Take a list of args TOKENS and produce an appropriate 6502 bytevector."
+  (remove nil (flatten (mapcar (lambda (x) (extract-num x mode)) tokens))))
+
 (defun transform-sexp-syntax (tokens)
   "Given a SEXP-token using an indirect, *.x or *.y addressing mode, transform
 it to use the classic string assembly syntax."
   (flet ((munge-indirect (x)
            (cl-ppcre:regex-replace "\@([^.]*)(.*)?" x "($\\1)\\2")))
     (mapcar (lambda (x) (substitute #\, #\. (munge-indirect x))) tokens)))
-
-(defun match-mode (tokens)
-  "Given a list of args, TOKENS, match them to an addressing mode or return NIL."
-  (let ((line (apply 'concatenate 'string (transform-sexp-syntax tokens))))
-    (loop for mode in (remove-duplicates (map 'list #'fourth *opcodes*))
-       when (cl:and mode (cl-ppcre:scan (reader mode) line)) return mode)))
 
 (defun extract-num (str &optional (mode 'implied))
   "Extract a hex number from its containing string, STR."
@@ -52,18 +56,14 @@ it to use the classic string assembly syntax."
             (mapcar #'parse-hex (list (subseq token 2) (subseq token 0 2)))
             (parse-hex token))))))
 
-(defun process-args (tokens mode)
-  "Take a list of args TOKENS and produce an appropriate 6502 bytevector."
-  (remove nil (flatten (mapcar (lambda (x) (extract-num x mode)) tokens))))
-
-(defun trim-whitespace (str)
-  (let ((code (subseq str 0 (position #\; str))))
-    (string-trim '(#\Tab #\Return #\Space) code)))
+(defmethod asm ((source string))
+  (let ((tokenized (mapcar #'tokenize-statement (cl-ppcre:split "\\n" source))))
+    (asm (remove nil tokenized))))
 
 (defun tokenize-statement (str)
   (let ((results (cl-ppcre:split " " (trim-whitespace str))))
     (mapcar (lambda (x) (intern x :keyword)) results)))
 
-(defmethod asm ((source string))
-  (let ((tokenized (mapcar #'tokenize-statement (cl-ppcre:split "\\n" source))))
-    (asm (remove nil tokenized))))
+(defun trim-whitespace (str)
+  (let ((code (subseq str 0 (position #\; str))))
+    (string-trim '(#\Tab #\Return #\Space) code)))

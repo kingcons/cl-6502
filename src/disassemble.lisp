@@ -1,40 +1,5 @@
 (in-package :6502)
 
-(defun disasm-ins (index &optional (disasm-op #'print-instruction))
-    "Lookup the metadata for the instruction at INDEX and pass it to
-DISASM-OP for formatting and display, returning the instruction length."
-  (destructuring-bind (name cycles size mode) (aref *opcodes* (get-byte index))
-    (declare (ignore cycles))
-    (let ((code-block (coerce (get-range index (+ index size)) 'list)))
-      (list size (funcall disasm-op code-block index name mode)))))
-
-(defun arg-formatter (arg mode)
-  "Given an instruction's ARG, format it for display using the MODE's PRINTER."
-  (if (member mode '(absolute absolute-x absolute-y indirect))
-      (format nil (printer mode) (reverse arg))
-      (format nil (printer mode) arg)))
-
-(defun print-instruction (bytes index name mode)
-  "Format the instruction at INDEX and its operands for display."
-  (let ((byte-str (format nil "~{~2,'0x ~}" bytes))
-        (args-str (format nil "~A ~A" name (arg-formatter (rest bytes) mode)))
-        (docs (documentation name 'function)))
-    (format t "$~4,'0x   ~9A  ;; ~14A ~A~%" index byte-str args-str docs)))
-
-(defun transform-str-syntax (bytes mode)
-  (let ((result (arg-formatter (rest bytes) mode)))
-    (flet ((munge-indirect (str)
-             (cl-ppcre:regex-replace "\\(\\$(.*)\\)(.*)?" str "@\\1\\2")))
-      (cl-ppcre:regex-replace ", " (munge-indirect result) "."))))
-
-(defun sexpify-instruction (bytes index name mode)
-  "Given BYTES and metadata, return a sexp-format representation of it."
-  (declare (ignore index))
-  (alexandria:if-let ((args (rest bytes))
-                      (args-str (transform-str-syntax bytes mode)))
-    (mapcar #'make-keyword (list name args-str))
-    (mapcar #'make-keyword (list name))))
-
 (defmacro with-disasm ((start end &key op) &body body)
   "Loop from START to END, passing each instruction to OP and execute BODY.
 OP is PRINT-INSTRUCTION by default. Within BODY, the return value of OP is
@@ -54,6 +19,41 @@ bound to RESULT and the length of the instruction in bytes is bound to STEP."
 (defun disasm-to-str (start end)
   "Call DISASM with the provided args and return its output as a string."
   (with-output-to-string (*standard-output*) (disasm start end)))
+
+(defun disasm-ins (index &optional (disasm-op #'print-instruction))
+    "Lookup the metadata for the instruction at INDEX and pass it to
+DISASM-OP for formatting and display, returning the instruction length."
+  (destructuring-bind (name cycles size mode) (aref *opcodes* (get-byte index))
+    (declare (ignore cycles))
+    (let ((code-block (coerce (get-range index (+ index size)) 'list)))
+      (list size (funcall disasm-op code-block index name mode)))))
+
+(defun print-instruction (bytes index name mode)
+  "Format the instruction at INDEX and its operands for display."
+  (let ((byte-str (format nil "~{~2,'0x ~}" bytes))
+        (args-str (format nil "~A ~A" name (arg-formatter (rest bytes) mode)))
+        (docs (documentation name 'function)))
+    (format t "$~4,'0x   ~9A  ;; ~14A ~A~%" index byte-str args-str docs)))
+
+(defun sexpify-instruction (bytes index name mode)
+  "Given BYTES and metadata, return a sexp-format representation of it."
+  (declare (ignore index))
+  (alexandria:if-let ((args (rest bytes))
+                      (args-str (transform-str-syntax bytes mode)))
+    (mapcar #'make-keyword (list name args-str))
+    (mapcar #'make-keyword (list name))))
+
+(defun arg-formatter (arg mode)
+  "Given an instruction's ARG, format it for display using the MODE's PRINTER."
+  (if (member mode '(absolute absolute-x absolute-y indirect))
+      (format nil (printer mode) (reverse arg))
+      (format nil (printer mode) arg)))
+
+(defun transform-str-syntax (bytes mode)
+  (let ((result (arg-formatter (rest bytes) mode)))
+    (flet ((munge-indirect (str)
+             (cl-ppcre:regex-replace "\\(\\$(.*)\\)(.*)?" str "@\\1\\2")))
+      (cl-ppcre:regex-replace ", " (munge-indirect result) "."))))
 
 (defun current-instruction (cpu &optional print-p)
   "Return a list representing the current instruction. If PRINT-P is non-nil,
