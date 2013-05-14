@@ -6,7 +6,7 @@ it will be placed at the beginning of *ram* and the PC will be set to 0.")
   (:method ((cpu cpu) &optional program)
     (when program
       (setf (get-range 0) program (cpu-pc cpu) 0))
-    (loop for result = (6502-step cpu (get-byte (immediate cpu)))
+    (loop for result = (6502-step cpu (getter 'immediate nil cpu))
        until (eql :done result)
        finally (print result))
     cpu))
@@ -16,9 +16,10 @@ it will be placed at the beginning of *ram* and the PC will be set to 0.")
 or :done.")
   (:method ((cpu cpu) opcode)
     (handler-case
-        (let ((result (funcall (get-instruction opcode) opcode cpu)))
-          (if (zerop opcode)
-              :done
-              result))
+        (destructuring-bind (name &rest args) (aref *opcodes* opcode)
+          (let ((result (apply name cpu args)))
+            (if (zerop opcode)
+                :done
+                result)))
       (undefined-function ()
         (error 'illegal-opcode :opcode opcode)))))

@@ -23,8 +23,9 @@ bound to RESULT and the length of the instruction in bytes is bound to STEP."
 (defun disasm-ins (index &optional (disasm-op #'print-instruction))
     "Lookup the metadata for the instruction at INDEX and pass it to
 DISASM-OP for formatting and display, returning the instruction length."
-  (destructuring-bind (name cycles size mode) (aref *opcodes* (get-byte index))
-    (declare (ignore cycles))
+  (destructuring-bind (name cycles size mode raw-p)
+      (aref *opcodes* (get-byte index))
+    (declare (ignore cycles raw-p))
     (let ((code-block (coerce (get-range index (+ index size)) 'list)))
       (list size (funcall disasm-op code-block index name mode)))))
 
@@ -44,10 +45,10 @@ DISASM-OP for formatting and display, returning the instruction length."
     (mapcar #'make-keyword (list name))))
 
 (defun arg-formatter (arg mode)
-  "Given an instruction's ARG, format it for display using the MODE's PRINTER."
+  "Given an instruction's ARG, format it for display using the MODE's WRITER."
   (if (member mode '(absolute absolute-x absolute-y indirect))
-      (format nil (printer mode) (reverse arg))
-      (format nil (printer mode) arg)))
+      (format nil (writer mode) (reverse arg))
+      (format nil (writer mode) arg)))
 
 (defun transform-str-syntax (bytes mode)
   (let ((result (arg-formatter (rest bytes) mode)))

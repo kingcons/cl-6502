@@ -13,7 +13,9 @@
 
 (defun jit-block (opcodes)
   "Given a list of opcodes, JIT compile an equivalent function."
-  (flet ((jit-op (x) `(,(get-instruction x) ,x cpu)))
+  (flet ((jit-op (x)
+           (destructuring-bind (name c b mode s) (aref *opcodes* x)
+             `(,name cpu ,c ,b ',mode ,s))))
     (compile nil `(lambda (cpu) ,@(mapcar #'jit-op opcodes)))))
 
 (defun jit-step (cpu pc)

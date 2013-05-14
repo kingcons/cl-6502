@@ -34,7 +34,7 @@
 (defparameter *cpu* (make-cpu)
   "The 6502 instance used by opcodes in the package.")
 
-(defparameter *opcodes* (make-array #x100 :element-type 'cons :initial-element nil)
+(defparameter *opcodes* (make-array #x100 :initial-element nil)
   "A mapping of opcodes to instruction mnemonic/metadata conses.")
 
 ;;; Helpers
@@ -156,14 +156,14 @@ It will set each flag to 1 if its predicate is true, otherwise 0."
 (defun maybe-update-cycle-count (cpu address &optional start)
   "If ADDRESS crosses a page boundary, add an extra cycle to CPU's count. If
 START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
-  (when (not (= (logand (or start (absolute cpu)) #xff00)
+  (when (not (= (logand (or start (getter 'absolute t cpu)) #xff00)
                 (logand address #xff00)))
     (incf (cpu-cc cpu))))
 
 (defmacro branch-if (predicate cpu)
   "Take a Relative branch if PREDICATE is true, otherwise increment the PC."
   `(if ,predicate
-       (setf (cpu-pc ,cpu) (relative ,cpu))
+       (setf (cpu-pc ,cpu) (getter 'relative t ,cpu))
        (incf (cpu-pc ,cpu))))
 
 (defun rotate-byte (integer count cpu)
@@ -177,44 +177,23 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
 
 ;;; Opcode Macrology
 
-(defmacro defins ((name opcode cycle-count byte-count mode)
-                  (&key setf-form (track-pc t)) &body body)
-  "Define an EQL-Specialized method on OPCODE named NAME. MODE must return an
-address or byte at an address if funcalled with a cpu. SETF-FORM is a lambda
-that may be funcalled with a value to set the address computed by MODE. If
-TRACK-PC is t, the default, the program counter will be incremented to just
-past the instruction's operands. Otherwise, BODY is responsible for the PC."
-  `(defmethod ,name ((,(intern "OPCODE") (eql ,opcode)) ,(intern "CPU") &key
-                     (,(intern "MODE") ,mode) (,(intern "SETF-FORM") ,setf-form))
-     ,@body
-     ,@(when (cl:and track-pc (> byte-count 1))
-         `((incf (cpu-pc cpu) ,(1- byte-count))))
-     (incf (cpu-cc cpu) ,cycle-count)
-     cpu))
-
-(defmacro defopcode (name (&key (docs "") addr-style (track-pc t))
-                     modes &body body)
-  "Define a Generic Function NAME with DOCS if provided and instructions,
-i.e. methods, via DEFINS for each addressing mode listed in MODES. If ADDR-STYLE
-is :raw, MODE can be funcalled with a cpu in BODY to retrieve MODE's address. If
-ADDR-STYLE is :mixed, accumulator addressing returns the accumulator value while
-others return the byte at MODE's address. If ADDR-STYLE is nil, funcalling MODE
-will return the byte at the given address."
+(defmacro defasm (name (&key (docs "") raw (track-pc t))
+                  modes &body body)
+  "Define a function NAME, with DOCS if provided, that executes BODY.
+TRACK-PC can be passed nil to disable program counter updates for branching/jump
+operations. If RAW is non-nil, the addressing mode's GETTER will return the
+address directly, otherwise it will return the byte at that address. Finally,
+MODES is a list of opcode metadata lists: (opcode cycles bytes mode)."
   `(progn
      (eval-when (:compile-toplevel :load-toplevel)
        ,@(loop for (op cycles bytes mode) in modes
-            collect `(setf (aref *opcodes* ,op) '(,name ,cycles ,bytes ,mode))))
-     (defgeneric ,name (,(intern "OPCODE") ,(intern "CPU") &key
-                         ,(intern "MODE") ,(intern "SETF-FORM"))
-       (:documentation ,docs))
-     ,@(loop for mode in modes for mname = (fourth mode) with x = (intern "X")
-          do (setf (fourth mode)
-                   (cond ((cl:and (eql addr-style :mixed)
-                                  (eql mname 'accumulator)) `',mname)
-                         ((eql addr-style :raw) `',mname)
-                         (t `(lambda (cpu) (get-byte (,mname cpu))))))
-          collect `(defins (,name ,@mode)
-                       (:setf-form (lambda (,x) (setf (,mname cpu) ,x))
-                        :track-pc ,track-pc)
-                     (incf (cpu-pc cpu))
-                     ,@body))))
+            collect `(setf (aref *opcodes* ,op) ',(list name cycles bytes mode raw))))
+     (defun ,name (,(intern "CPU") ,(intern "CYCLES") ,(intern "BYTES")
+                   ,(intern "MODE") ,(intern "STYLE"))
+       ,docs
+       (incf (cpu-pc cpu))
+       ,@body
+       (when (cl:and ,track-pc (> bytes 1))
+         (incf (cpu-pc cpu) (1- bytes)))
+       (incf (cpu-cc cpu) cycles)
+       cpu)))

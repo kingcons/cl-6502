@@ -11,7 +11,7 @@
 (defun klaus-test ()
   (let ((cycles (* 45 (expt 2 21))))
     (loop until (> (cpu-cc *cpu*) cycles)
-       do (6502-step *cpu* (get-byte (immediate *cpu*))))))
+       do (6502-step *cpu* (6502::getter 'immediate nil *cpu*)))))
 
 (deftest pass-klaus-test-suite
     "We should pass Klaus Dorfmann's test suite."
