@@ -65,6 +65,22 @@ index of KEY. KEYS should be scalar values."
   "Get the mnemonic for OPCODE. Returns a symbol to be funcalled or nil."
   (first (aref *opcodes* opcode)))
 
+(declaim (inline wrap-byte wrap-word wrap-page))
+(defun wrap-byte (val)
+  "Wrap the given value to ensure it conforms to (typep val 'u16),
+e.g. a Stack Pointer or general purpose register."
+  (logand val #xff))
+
+(defun wrap-word (val)
+  "Wrap the given value to ensure it conforms to (typep val 'u16),
+e.g. a Program Counter address."
+  (logand val #xffff))
+
+(defun wrap-page (address)
+  "Wrap the given ADDRESS, ensuring that we don't cross a page boundary.
+e.g. When the last two bytes of ADDRESS are #xff."
+  (+ (logand address #xff00) (logand (1+ address) #xff)))
+
 (defun get-byte (address)
   "Get a byte from RAM at the given address."
   (aref *ram* address))
@@ -92,21 +108,7 @@ provided."
   "Replace the contents of RAM, starting from START with BYTEVECTOR."
   (setf (subseq *ram* start (+ start (length bytevector))) bytevector))
 
-(defun wrap-byte (val)
-  "Wrap the given value to ensure it conforms to (typep val 'u16),
-e.g. a Stack Pointer or general purpose register."
-  (logand val #xff))
-
-(defun wrap-word (val)
-  "Wrap the given value to ensure it conforms to (typep val 'u16),
-e.g. a Program Counter address."
-  (logand val #xffff))
-
-(defun wrap-page (address)
-  "Wrap the given ADDRESS, ensuring that we don't cross a page boundary.
-e.g. When the last two bytes of ADDRESS are #xff."
-  (+ (logand address #xff00) (logand (1+ address) #xff)))
-
+(declaim (inline stack-push stack-pop))
 (defun stack-push (value cpu)
   "Push the given VALUE on the stack and decrement the SP."
   (setf (get-byte (+ (cpu-sp cpu) #x100)) (wrap-byte value))
