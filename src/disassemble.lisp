@@ -23,8 +23,7 @@ bound to RESULT and the length of the instruction in bytes is bound to STEP."
 (defun disasm-ins (index &optional (disasm-op #'print-instruction))
     "Lookup the metadata for the instruction at INDEX and pass it to
 DISASM-OP for formatting and display, returning the instruction length."
-  (destructuring-bind (name cycles size mode raw-p)
-      (aref *opcodes* (get-byte index))
+  (destructuring-bind (name cycles size mode raw-p) (aref *opcodes* (get-byte index))
     (declare (ignore cycles raw-p))
     (let ((code-block (coerce (get-range index (+ index size)) 'list)))
       (list size (funcall disasm-op code-block index name mode)))))

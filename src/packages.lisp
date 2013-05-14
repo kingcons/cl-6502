@@ -11,6 +11,7 @@
            ;; Addr modes
            #:implied #:accumulator #:immediate #:zero-page #:zero-page-x #:zero-page-y
            #:absolute #:absolute-x #:absolute-y #:indirect #:indirect-x #:indirect-y #:relative
+           #:reader #:writer #:getter #:setter
            ;; Helpers
            #:wrap-byte #:wrap-word #:status-bit #:get-instruction #:defenum #:bytevector))
 
