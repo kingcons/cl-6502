@@ -40,16 +40,15 @@
 ;;; Helpers
 
 (defmacro defenum (name (&rest keys))
-  "Define a function named %NAME, that takes args (KEY &OPTIONAL NEXT). If NEXT is
-non-nil, return the successor to KEY. Othewrise, return the index of KEY. KEYS may
-consist of scalar values or lists that start with a scalar value."
-  `(defun ,(intern (format nil "%~:@(~A~)" name)) (key &optional next)
-     (let* ((enum ',keys)
-            (val (position key enum ,@(when (typep (car keys) 'list)
-                                            '(:key #'first)))))
-       (if next
-           (nth (mod (1+ val) ,(length keys)) enum)
-           val))))
+  "Define a function named %NAME, that takes KEY as an arg and returns the
+index of KEY. KEYS should be scalar values."
+  (let ((enum (make-hash-table)))
+    (loop for i = 0 then (1+ i)
+       for key in keys
+       do (setf (gethash key enum) i))
+    `(defun ,(intern (format nil "%~:@(~A~)" name)) (key)
+       (let ((enum ,enum))
+         (gethash key enum)))))
 
 (defgeneric reset (obj)
   (:documentation "Reset the OBJ to an initial state.")
@@ -196,6 +195,7 @@ MODES is a list of opcode metadata lists: (opcode cycles bytes mode)."
        (incf (cpu-pc cpu))
        ,@body
        (when (cl:and ,track-pc (> bytes 1))
+
          (incf (cpu-pc cpu) (1- bytes)))
        (incf (cpu-cc cpu) cycles)
        cpu)))
