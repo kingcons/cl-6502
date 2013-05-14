@@ -24,7 +24,7 @@
   (cc 0      :type fixnum))             ;; cycle counter
 
 (defmethod initialize-instance :after ((cpu cpu) &key)
-  (setf (cpu-pc cpu) (absolute cpu)))
+  (setf (cpu-pc cpu) (getter 'absolute nil cpu)))
 
 ;;; Tasty Globals
 
@@ -149,9 +149,11 @@ It will set each flag to 1 if its predicate is true, otherwise 0."
   "Set the zero and negative bits of CPU's staus-register based on VALUE."
   (set-flags-if cpu :zero (zerop value) :negative (logbitp 7 value)))
 
-(defun overflow-p (result &rest args)
-  "Checks whether the sign of RESULT is found in the signs of the ARGS."
-  (not (member (logbitp 7 result) (mapcar (lambda (x) (logbitp 7 x)) args))))
+(defun overflow-p (result reg mem)
+  "Checks whether the sign of RESULT is found in the signs of REG or MEM."
+  (flet ((sign-of (x) (logbitp 7 x)))
+    (not (or (eql (sign-of result) (sign-of reg))
+             (eql (sign-of result) (sign-of mem))))))
 
 (defun maybe-update-cycle-count (cpu address &optional start)
   "If ADDRESS crosses a page boundary, add an extra cycle to CPU's count. If
