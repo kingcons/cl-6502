@@ -1,3 +1,13 @@
+## Changes for 0.9.2 (2013-05-14):
+
+* Substantial performance improvements from rewriting:
+  overflow handling for arithmetic ops (overflow-p),
+  storage handling for %status-bit (defenum).
+  Results in a 33% reduction in runtime and an over 90%
+  reduction in garbage generated for Klaus' testsuite.
+* Greatly simplified defasm macro replaces defopcode+defins.
+* New Addressing Modes implementation.
+
 ## Changes for 0.9.1 (2013-04-01):
 
 * Add a **very** naive JIT compiler. Don't expect big speedups. Do expect bugs.
