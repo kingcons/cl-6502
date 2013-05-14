@@ -6,27 +6,26 @@
 (deftest implied
     "The implied addressing mode is basically just a stub to remove style
 warnings during macroexpansion of defopcode and friends."
-  (is (null (implied cpu))))
+  (is (null (getter 'implied t cpu))))
 
 (deftest accumulator
     "The accumulator mode is just a setf-able wrapper of the AR field in the
 CPU structure."
-  (setf (accumulator cpu) #x20)
-  (is (= (cpu-ar cpu) (accumulator cpu) #x20)))
+  (setter 'accumulator #x20 cpu)
+  (is (= (cpu-ar cpu) (getter 'accumulator t cpu) #x20)))
 
 (deftest immediate
     "The immediate mode is just a setf-able wrapper of the PC field in the
 CPU structure."
-  (setf (immediate cpu) #x80)
-  (is (= (cpu-pc cpu) (immediate cpu) #x80)))
+  (setter 'immediate #x80 cpu)
+  (is (= (cpu-pc cpu) (getter 'immediate t cpu) #x80)))
 
 (deftest zero-page
     "The zero-page mode should always return the (unsigned-byte 8) pointed to
 by the Program Counter."
   (for-all ((pc-addr (gen-integer :min 0 :max #xffff)))
     (setf (cpu-pc cpu) pc-addr)
-    (is (typep (zero-page cpu) '(unsigned-byte 8)))
-    (is (= (get-byte pc-addr) (zero-page cpu)))))
+    (is (= (get-byte pc-addr) (getter 'zero-page t cpu)))))
 
 (deftest zero-page-x
     "The zero-page-x mode should always return the (unsigned-byte 8) pointed
@@ -34,8 +33,8 @@ to by the Program Counter, summed with the X register and wrapped."
   (for-all ((pc-addr (gen-integer :min 0 :max #xffff))
             (x-reg (gen-integer :min 0 :max #xff)))
     (setf (cpu-pc cpu) pc-addr (cpu-xr cpu) x-reg)
-    (is (typep (zero-page-x cpu) '(unsigned-byte 8)))
-    (is (= (wrap-byte (+ x-reg (get-byte pc-addr))) (zero-page-x cpu)))))
+    (is (= (wrap-byte (+ x-reg (get-byte pc-addr)))
+           (getter 'zero-page-x t cpu)))))
 
 (deftest zero-page-y
     "The zero-page-x mode should always return the (unsigned-byte 8) pointed
@@ -43,16 +42,15 @@ to by the Program Counter, summed with the Y register and wrapped."
   (for-all ((pc-addr (gen-integer :min 0 :max #xffff))
             (y-reg (gen-integer :min 0 :max #xff)))
     (setf (cpu-pc cpu) pc-addr (cpu-yr cpu) y-reg)
-    (is (typep (zero-page-y cpu) '(unsigned-byte 8)))
-    (is (= (wrap-byte (+ y-reg (get-byte pc-addr))) (zero-page-y cpu)))))
+    (is (= (wrap-byte (+ y-reg (get-byte pc-addr)))
+           (getter 'zero-page-y t cpu)))))
 
 (deftest absolute
     "The absolute mode should always return the (unsigned-byte 16) pointed to
 by the Program Counter."
   (for-all ((pc-addr (gen-integer :min 0 :max #xffff)))
     (setf (cpu-pc cpu) pc-addr)
-    (is (typep (absolute cpu) '(unsigned-byte 16)))
-    (is (= (get-word pc-addr) (absolute cpu)))))
+    (is (= (get-word pc-addr) (getter 'absolute t cpu)))))
 
 (deftest absolute-x
     "The absolute mode should always return the (unsigned-byte 16) pointed to
@@ -60,8 +58,8 @@ by the Program Counter, summed with the X register and wrapped."
   (for-all ((pc-addr (gen-integer :min 0 :max #xffff))
             (x-reg (gen-integer :min 0 :max #xff)))
     (setf (cpu-pc cpu) pc-addr (cpu-xr cpu) x-reg)
-    (is (typep (absolute-x cpu) '(unsigned-byte 16)))
-    (is (= (absolute-x cpu) (wrap-word (+ (get-word pc-addr) x-reg))))))
+    (is (= (wrap-word (+ (get-word pc-addr) x-reg))
+           (getter 'absolute-x t cpu)))))
 
 (deftest absolute-y
     "The absolute mode should always return the (unsigned-byte 16) pointed to
@@ -69,16 +67,15 @@ by the Program Counter, summed with the Y register and wrapped."
   (for-all ((pc-addr (gen-integer :min 0 :max #xffff))
             (y-reg (gen-integer :min 0 :max #xff)))
     (setf (cpu-pc cpu) pc-addr (cpu-yr cpu) y-reg)
-    (is (typep (absolute-y cpu) '(unsigned-byte 16)))
-    (is (= (absolute-y cpu) (wrap-word (+ (get-word pc-addr) y-reg))))))
+    (is (= (wrap-word (+ (get-word pc-addr) y-reg))
+           (getter 'absolute-y t cpu)))))
 
 (deftest indirect
     "The indirect mode should always return the (unsigned-byte 16) pointed to
 by the word pointed to by the Program Counter."
   (for-all ((pc-addr (gen-integer :min 0 :max #xffff)))
     (setf (cpu-pc cpu) pc-addr)
-    (is (typep (indirect cpu) '(unsigned-byte 16)))
-    (is (= (indirect cpu) (get-word (get-word pc-addr))))))
+    (is (= (get-word (get-word pc-addr)) (getter 'indirect t cpu)))))
 
 (deftest indirect-x
     ""
@@ -97,8 +94,9 @@ by the word pointed to by the Program Counter."
 and name described."
   (6502::defaddress xreg (:cpu-reg t) (cpu-xr cpu))
   (6502::defaddress foo () 256)
-  (setf (foo cpu) 8)
-  (setf (xreg cpu) 9)
+  (setter 'foo 8 cpu)
+  (setter 'xreg 9 cpu)
   (is (= 8 (get-byte 256)))
   (is (= 9 (cpu-xr cpu)))
-  (is (= 17 (+ (xreg cpu) (get-byte (foo cpu))))))
+  (is (= 17 (+ (getter 'xreg t cpu)
+               (get-byte (getter 'foo t cpu))))))
