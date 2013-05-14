@@ -100,3 +100,9 @@ wrapped in a get-byte for setf."
                       (wrap-word (+ (cpu-pc cpu) (1+ offset))))))
       (maybe-update-cycle-count cpu result (1+ (cpu-pc cpu)))
       result)))
+
+(defmacro getter-mixed ()
+  "Special-case the handling of accumulator mode in ASL/LSR/ROL/ROR."
+  `(if (eql mode 'accumulator)
+       (getter mode style cpu)
+       (get-byte (getter mode style cpu))))
