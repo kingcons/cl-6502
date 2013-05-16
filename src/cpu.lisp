@@ -24,7 +24,7 @@
   (cc 0      :type fixnum))             ;; cycle counter
 
 (defmethod initialize-instance :after ((cpu cpu) &key)
-  (setf (cpu-pc cpu) (getter 'absolute nil cpu)))
+  (setf (cpu-pc cpu) (getter 'absolute t cpu)))
 
 ;;; Tasty Globals
 
