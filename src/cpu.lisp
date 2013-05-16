@@ -39,17 +39,6 @@
 
 ;;; Helpers
 
-(defmacro defenum (name (&rest keys))
-  "Define a function named %NAME, that takes KEY as an arg and returns the
-index of KEY. KEYS should be scalar values."
-  (let ((enum (make-hash-table)))
-    (loop for i = 0 then (1+ i)
-       for key in keys
-       do (setf (gethash key enum) i))
-    `(defun ,(intern (format nil "%~:@(~A~)" name)) (key)
-       (let ((enum ,enum))
-         (gethash key enum)))))
-
 (defgeneric reset (obj)
   (:documentation "Reset the OBJ to an initial state.")
   (:method (obj) (initialize-instance obj)))
@@ -128,6 +117,17 @@ provided."
   "Pop a 16-bit word off the stack."
   (+ (stack-pop cpu) (ash (stack-pop cpu) 8)))
 
+(defmacro defenum (name (&rest keys))
+  "Define a function named %NAME, that takes KEY as an arg and returns the
+index of KEY. KEYS should be scalar values."
+  (let ((enum (make-hash-table)))
+    (loop for i = 0 then (1+ i)
+       for key in keys
+       do (setf (gethash key enum) i))
+    `(defun ,(intern (format nil "%~:@(~A~)" name)) (key)
+       (let ((enum ,enum))
+         (gethash key enum)))))
+
 (defenum status-bit (:carry :zero :interrupt :decimal
                      :break :unused :overflow :negative))
 
@@ -189,8 +189,8 @@ address directly, otherwise it will return the byte at that address. Finally,
 MODES is a list of opcode metadata lists: (opcode cycles bytes mode)."
   `(progn
      (eval-when (:compile-toplevel :load-toplevel)
-       ,@(loop for (op cycles bytes mode) in modes
-            collect `(setf (aref *opcodes* ,op) ',(list name cycles bytes mode raw))))
+       ,@(loop for (op cycles bytes mode) in modes collect
+           `(setf (aref *opcodes* ,op) ',(list name cycles bytes mode raw))))
      (defun ,name (cpu cycles bytes mode style)
        ,docs
        (incf (cpu-pc cpu))
