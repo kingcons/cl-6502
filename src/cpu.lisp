@@ -146,6 +146,7 @@ It will set each flag to 1 if its predicate is true, otherwise 0."
   `(setf ,@(loop for (flag pred . nil) on flag-preds by #'cddr
               appending `((status-bit ,flag cpu) (if ,pred 1 0)))))
 
+(declaim (inline set-flags-nz))
 (defun set-flags-nz (cpu value)
   "Set the zero and negative bits of CPU's staus-register based on VALUE."
   (set-flags-if cpu :zero (zerop value) :negative (logbitp 7 value)))
@@ -180,23 +181,22 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
 
 ;;; Opcode Macrology
 
-(defmacro defasm (name (&key (docs "") raw (track-pc t))
+(defmacro defasm (name (&key (docs "") raw-p (track-pc t))
                   modes &body body)
   "Define a function NAME, with DOCS if provided, that executes BODY.
 TRACK-PC can be passed nil to disable program counter updates for branching/jump
-operations. If RAW is non-nil, the addressing mode's GETTER will return the
+operations. If RAW-P is non-nil, the addressing mode's GETTER will return the
 address directly, otherwise it will return the byte at that address. Finally,
 MODES is a list of opcode metadata lists: (opcode cycles bytes mode)."
   `(progn
      (eval-when (:compile-toplevel :load-toplevel)
        ,@(loop for (op cycles bytes mode) in modes collect
-           `(setf (aref *opcodes* ,op) ',(list name cycles bytes mode raw))))
-     (defun ,name (cpu cycles bytes mode style)
+           `(setf (aref *opcodes* ,op) ',(list name cycles bytes mode raw-p))))
+     (defun ,name (cpu cycles bytes mode raw-p)
        ,docs
        (incf (cpu-pc cpu))
        ,@body
        (when (cl:and ,track-pc (> bytes 1))
-
          (incf (cpu-pc cpu) (1- bytes)))
        (incf (cpu-cc cpu) cycles)
        cpu)))

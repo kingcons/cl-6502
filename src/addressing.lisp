@@ -104,5 +104,5 @@ wrapped in a get-byte for setf."
 (defmacro getter-mixed ()
   "Special-case the handling of accumulator mode in ASL/LSR/ROL/ROR."
   `(if (eql mode 'accumulator)
-       (getter mode style cpu)
-       (get-byte (getter mode style cpu))))
+       (getter mode raw-p cpu)
+       (get-byte (getter mode raw-p cpu))))
