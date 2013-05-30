@@ -1,9 +1,11 @@
-(in-package :6502)
+;;; ### References:
+;;; * [Opcodes](http://www.obelisk.demon.co.uk/6502/reference.html)
+;;; * [General](http://nesdev.parodius.com/6502.txt)
+;;; * [Py65](https://github.com/mnaberez/py65/blob/master/src/py65/devices/mpu6502.py)
 
-;;;; REFERENCES:
-;; http://www.obelisk.demon.co.uk/6502/reference.html
-;; https://github.com/mnaberez/py65/blob/master/src/py65/devices/mpu6502.py
-;; http://nesdev.parodius.com/6502.txt
+;;; ## `opcodes.lisp`: Enter Defopcode
+
+(in-package :6502)
 
 ; TODO: Add support for Decimal mode. (not supported on NES)
 (defasm adc (:docs "Add to Accumulator with Carry")

@@ -1,3 +1,5 @@
+;;; ## `utils.lisp`: Bringing it all Together
+
 (in-package :6502)
 
 (defgeneric execute (cpu &optional program)

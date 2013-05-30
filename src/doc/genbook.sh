@@ -15,33 +15,30 @@ cat <<EOF
 
 # CPU
 $(cat ../cpu.md)
-## \`cpu.lisp\`: The 6502 VM
 $(cat obj/cpu.lisp.md)
 
 # Addressing Modes
 $(cat ../addressing.md)
-## \`addressing.lisp\`: The Addressing Mode Protocol
 $(cat obj/addressing.lisp.md)
 
 # Opcode Emulation
 $(cat ../opcodes.md)
-## \`opcodes.lisp\`: Enter Defopcode
 $(cat obj/opcodes.lisp.md)
 
 # Exceptional Conditions
-## \`conditions.lisp\`: Just in Case
+$(cat ../conditions.lisp.md)
 $(cat obj/conditions.lisp.md)
 
 # Stepping and Execution
-## \`utils.lisp\`: Bringing it all Together
+$(cat ../utils.md)
 $(cat obj/utils.lisp.md)
 
 # Taking Apart Old Code
-## \`disassemble.lisp\`: When one is Lost
+$(cat ../disassemble.lisp.md)
 $(cat obj/disassemble.lisp.md)
 
 # Creating New Code
-## \`assemble.lisp\`: Only the Beginning
+$(cat ../assemble.lisp.md)
 $(cat obj/assemble.lisp.md)
 
 EOF

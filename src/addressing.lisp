@@ -1,6 +1,9 @@
-(in-package :6502)
+;;; ### References:
+;;; * [Addressing Modes](http://www.obelisk.demon.co.uk/6502/addressing.html)
 
-;;; http://www.obelisk.demon.co.uk/6502/addressing.html
+;;; ## `addressing.lisp`: The Addressing Mode Protocol
+
+(in-package :6502)
 
 (defgeneric getter (mode raw-p cpu)
   (:documentation "Get the value at MODE based on RAW-P.")

@@ -1,9 +1,11 @@
-(in-package :6502)
+;;; ### References:
+;;; * [A port of Henry Baker's comfy-6502](http://josephoswald.nfshost.com/comfy/summary.html)
+;;; * [Fun with Lisp: Programming the NES](http://ahefner.livejournal.com/20528.html)
+;;; * [Py65](https://github.com/mnaberez/py65/blob/master/src/py65/assembler.py)
 
-;;;; REFERENCES:
-;; http://josephoswald.nfshost.com/comfy/summary.html
-;; http://ahefner.livejournal.com/20528.html
-;; https://github.com/mnaberez/py65/blob/master/src/py65/assembler.py
+;;; ## `assemble.lisp`: This is only the Beginning
+
+(in-package :6502)
 
 (defgeneric asm (source)
   (:documentation "Assemble SOURCE into a bytevector and return it."))
