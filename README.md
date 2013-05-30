@@ -54,6 +54,10 @@ There are sexp-based and string-based assemblers, both invoked via `asm`. The st
 |   Relative      |  (:bne :&fd)      | "bne &fd"      |
 ```
 
+## Reading
+
+Inspired by Luke Gorrie's [SnabbSwitch](https://github.com/SnabbCo/snabbswitch), I've adapted the code to a more literate style and it should be pretty pleasant to read straight through. Just check out the repo and run `cd repo/src && ./genbook.sh` or [grab the pdf](http://redlinernotes.com/docs/cl-6502.pdf)!
+
 ## Hacking
 
 * Using Quicklisp: For local development, git clone this repository into the ```local-projects``` subdirectory of quicklisp.
