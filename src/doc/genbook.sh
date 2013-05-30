@@ -13,6 +13,9 @@ cat <<EOF
         sort | uniq -c | sort -nr | sed 's/^[0-9 ]*//' | \
         awk 'NR > 1 { printf("; ") } { printf("%s", $0) } END { print("") }')
 
+# Introduction
+$(cat ../intro.md)
+
 # CPU
 $(cat ../cpu.md)
 $(cat obj/cpu.lisp.md)
@@ -38,7 +41,13 @@ $(cat ../disassemble.lisp.md)
 $(cat obj/disassemble.lisp.md)
 
 # Creating New Code
-$(cat ../assemble.lisp.md)
+p$(cat ../assemble.lisp.md)
 $(cat obj/assemble.lisp.md)
+
+# Wrapping things up...
+$(cat obj/packages.lisp.md)
+
+# Conclusion
+$(cat ../conclusion.md)
 
 EOF

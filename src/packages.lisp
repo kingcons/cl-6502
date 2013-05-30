@@ -1,3 +1,5 @@
+;;; ## `packages.lisp`: Exposed Functionality
+
 (defpackage :6502
   (:use :cl)
   (:import-from :alexandria #:compose #:emptyp #:flatten #:make-keyword)

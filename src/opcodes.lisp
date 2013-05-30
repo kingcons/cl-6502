@@ -1,6 +1,5 @@
 ;;; ### References:
 ;;; * [Opcodes](http://www.obelisk.demon.co.uk/6502/reference.html)
-;;; * [General](http://nesdev.parodius.com/6502.txt)
 ;;; * [Py65](https://github.com/mnaberez/py65/blob/master/src/py65/devices/mpu6502.py)
 
 ;;; ## `opcodes.lisp`: Enter Defopcode
