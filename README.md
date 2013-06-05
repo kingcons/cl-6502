@@ -12,7 +12,9 @@ In case that sounds weird to you, the MOS 6502 is famous for its use in...
 
 I gave a talk on cl-6502 and related ideas which is online [here](http://vimeo.com/47364930). The slides are available separately [here](http://redlinernotes.com/docs/talks/opa.html). A few notes on why I'm writing it are [here](http://blog.redlinernotes.com/posts/On-Interactive-Retrocomputing.html) and minor notes on the design are [here](http://blog.redlinernotes.com/posts/An-Emulator-Design-Pattern.html).
 
-In keeping with Luke Gorrie's call for [Readable Programs](http://blog.lukego.com/blog/2012/10/24/readable-programs/), there is a readable [PDF book])(http://redlinernotes.com/docs/cl-6502.pdf). You can also produce it from the git repo (if `make`, `pandoc` and the appropriate `latex` packages are in place) with: `cd repo/src && make book`.
+## Reading
+
+Inspired by Luke Gorrie's call for [Readable Programs](http://blog.lukego.com/blog/2012/10/24/readable-programs/), there is a readable [PDF book])(http://redlinernotes.com/docs/cl-6502.pdf) of the source. You can also produce it from the git repo with: `cd repo/src && make book`. You'll need make, pandox, and some latex packages (texlive-latex-extra on debian) installed to build it yourself.
 
 ## Install
 You are strongly encouraged to use this library via [Quicklisp](http://quicklisp.org/). Simply start your lisp and run: ```(ql:quickload 'cl-6502)```.
@@ -55,10 +57,6 @@ There are sexp-based and string-based assemblers, both invoked via `asm`. The st
 |   Indirect, Y   |  (:lda :@34.y)    | "lda ($34), y" |
 |   Relative      |  (:bne :&fd)      | "bne &fd"      |
 ```
-
-## Reading
-
-Inspired by Luke Gorrie's [SnabbSwitch](https://github.com/SnabbCo/snabbswitch), I've adapted the code to a more literate style and it should be pretty pleasant to read straight through. Just check out the repo and run `cd repo/src && ./genbook.sh` or [grab the pdf](http://redlinernotes.com/docs/cl-6502.pdf)!
 
 ## Hacking
 
