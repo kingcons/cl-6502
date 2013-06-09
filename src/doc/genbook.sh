@@ -29,7 +29,7 @@ $(cat ../opcodes.md)
 $(cat obj/opcodes.lisp.md)
 
 # Exceptional Conditions
-$(cat ../conditions.lisp.md)
+$(cat ../conditions.md)
 $(cat obj/conditions.lisp.md)
 
 # Stepping and Execution

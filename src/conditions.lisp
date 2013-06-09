@@ -1,14 +1,4 @@
-;;; ## `conditions.lisp`: Just in Case
-
 (in-package :6502)
-
-;;; ### Abstract Conditions
-
-(define-condition 6502-error (error)
-  ()
-  (:documentation "The base condition for all errors in 6502."))
-
-;;; ### Concrete Conditions
 
 (define-condition illegal-opcode (6502-error)
   ((opcode :initarg :opcode :reader opcode))

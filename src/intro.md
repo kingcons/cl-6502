@@ -31,7 +31,7 @@ relative to the complex x86 assembly that is prevalent today.
 **cl-6502** does have some explicit technical goals:
 
 * Code size excluding tests, including assembly and disassembly should be < 800 loc.
-* Cycle-accurate emulation suitable for use in a full Apple II, C64, or NES emulator.
+* Cycle-accurate emulation suitable for use in a full NES emulator.
 * Able to run > 8 million cycles/second using a single core on an Intel Core CPU.
 * Readable as a 6502 introduction for someone with or without a copy of [CLHS](http://www.lispworks.com/documentation/HyperSpec/).
 
@@ -77,5 +77,6 @@ These are the current major design decisions in **cl-6502**:
 * Opcodes as functions that take an addressing mode method and their metadata.
 * Storage of Opcode metadata in an array for assembly/disassembly/dispatch.
 * A naive interpreter loop rather than Context-Threaded Dispatch, etc.
+* Ignore decimal mode support in ADC/SBC since the NES didn't have it.
 
 With all that out of the way, let's dive in!
