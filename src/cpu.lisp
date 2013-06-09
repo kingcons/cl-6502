@@ -1,8 +1,4 @@
-;;; ### References:
-;;; * [General](http://nesdev.parodius.com/6502.txt)
-;;; * [Registers](http://www.obelisk.demon.co.uk/6502/registers.html)
-
-;;; ## `cpu.lisp`: The 6502 VM
+;;; ### Core Data Types
 
 (in-package :6502)
 

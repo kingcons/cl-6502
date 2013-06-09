@@ -41,13 +41,13 @@ $(cat ../disassemble.lisp.md)
 $(cat obj/disassemble.lisp.md)
 
 # Creating New Code
-p$(cat ../assemble.lisp.md)
+$(cat ../assemble.lisp.md)
 $(cat obj/assemble.lisp.md)
 
 # Wrapping things up...
 $(cat obj/packages.lisp.md)
 
 # Conclusion
-$(cat ../conclusion.md)
+$(cat ../outro.md)
 
 EOF

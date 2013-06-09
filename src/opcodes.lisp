@@ -1,9 +1,3 @@
-;;; ### References:
-;;; * [Opcodes](http://www.obelisk.demon.co.uk/6502/reference.html)
-;;; * [Py65](https://github.com/mnaberez/py65/blob/master/src/py65/devices/mpu6502.py)
-
-;;; ## `opcodes.lisp`: Enter Defopcode
-
 (in-package :6502)
 
 ; TODO: Add support for Decimal mode. (not supported on NES)

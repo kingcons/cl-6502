@@ -1,7 +1,4 @@
-;;; ### References:
-;;; * [Addressing Modes](http://www.obelisk.demon.co.uk/6502/addressing.html)
-
-;;; ## `addressing.lisp`: The Addressing Mode Protocol
+;;; ### The Protocol
 
 (in-package :6502)
 
@@ -36,6 +33,8 @@ wrapped in a get-byte for setf."
        ,(if cpu-reg
             `(setf ,@body value)
             `(setf (get-byte ,@body) value)))))
+
+;;; ### Addressing Modes
 
 (defaddress implied (:reader "^$"
                      :writer "")
