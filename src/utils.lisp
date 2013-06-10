@@ -1,11 +1,8 @@
 (in-package :6502)
 
-(defgeneric execute (cpu &optional program)
-  (:documentation "Step the CPU until a BRK. If a PROGRAM bytevector is supplied,
-it will be placed at the beginning of *ram* and the PC will be set to 0.")
-  (:method ((cpu cpu) &optional program)
-    (when program
-      (setf (get-range 0) program (cpu-pc cpu) 0))
+(defgeneric execute (cpu)
+  (:documentation "Step the CPU until a BRK.")
+  (:method ((cpu cpu))
     (loop for result = (6502-step cpu (getter 'immediate nil cpu))
        until (eql :done result)
        finally (print result))

@@ -1,3 +1,7 @@
+## Changes for 0.9.3 (2013-06-10):
+
+* Code written in a more literate style with a [readable book](http://redlinernotes.com/docs/cl-6502.pdf)!
+
 ## Changes for 0.9.2 (2013-05-14):
 
 * Substantial performance improvements from rewriting:

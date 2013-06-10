@@ -1,10 +1,5 @@
 (in-package :6502)
 
-;;;; REFERENCES:
-;; http://josephoswald.nfshost.com/comfy/summary.html
-;; http://ahefner.livejournal.com/20528.html
-;; https://github.com/mnaberez/py65/blob/master/src/py65/assembler.py
-
 (defgeneric asm (source)
   (:documentation "Assemble SOURCE into a bytevector and return it."))
 

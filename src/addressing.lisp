@@ -1,6 +1,6 @@
-(in-package :6502)
+;;; ### The Protocol
 
-;;; http://www.obelisk.demon.co.uk/6502/addressing.html
+(in-package :6502)
 
 (defgeneric getter (mode raw-p cpu)
   (:documentation "Get the value at MODE based on RAW-P.")
@@ -33,6 +33,8 @@ wrapped in a get-byte for setf."
        ,(if cpu-reg
             `(setf ,@body value)
             `(setf (get-byte ,@body) value)))))
+
+;;; ### Addressing Modes
 
 (defaddress implied (:reader "^$"
                      :writer "")
