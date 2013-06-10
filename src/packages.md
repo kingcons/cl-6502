@@ -6,9 +6,9 @@ emulator in Lisp with a function to single-step instructions. :)
 
 The `6502` package is for use by emulator writers, the test suite, etc. It
 exposes all the types and interesting high-level functionality. It also shadows
-Common Lisp's built-in **AND** and **BIT** symbols since they name 6502 opcodes.
+Common Lisp's built-in `and` and `bit` symbols since they name 6502 opcodes.
 If you were reading *very* closely, you probably noticed we had a `cl:` package
-prefix hiding in the `defasm` macro.
+prefix hiding on `and` in the `defasm` macro.
 
 The `cl-6502` package is more limited and designed for public consumption,
 hiding the Addressing Modes and their protocol, the CPU slot accessors, and
