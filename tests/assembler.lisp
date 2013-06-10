@@ -102,14 +102,16 @@
   (let ((code (format nil "CLC~% LDA #$00~% LDY #$00~%
                            INY~% bne &fd~% sbc $0001~% brk")))
     (is (equalp (asm code) #(24 169 0 160 0 200 208 253 237 1 0 0)))
-    (cl-6502:execute cpu (asm code))
+    (setf (get-range 0) (asm code) (cpu-pc cpu) 0)
+    (cl-6502:execute cpu)
     (is (eql (cpu-ar cpu) 86))))
 
 (deftest assemble-forward-relative
     "A program with a forward relative jump should assemble correctly."
   (let ((code (format nil "CLC~% LDA #$00~% LDY #$00~% bne &02~% nop~%
                            nop~% INY~% bne &fd~% sbc $0001~% brk")))
-    (cl-6502:execute cpu (asm code))
+    (setf (get-range 0) (asm code) (cpu-pc cpu) 0)
+    (cl-6502:execute cpu)
     (is (eql (cpu-ar cpu) 86))))
 
 (deftest assemble-symbolic
