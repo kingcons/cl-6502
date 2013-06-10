@@ -1,5 +1,3 @@
-;;; ## `disassemble.lisp`: When one is Lost
-
 (in-package :6502)
 
 (defmacro with-disasm ((start end &key op) &body body)

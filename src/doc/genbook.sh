@@ -5,6 +5,7 @@
 #
 # The authors list is automatically generated from Git history,
 # ordered from most to least commits.
+# TODO: Add jit.lisp later?
 
 cat <<EOF
 % cl-6502
@@ -37,14 +38,15 @@ $(cat ../utils.md)
 $(cat obj/utils.lisp.md)
 
 # Taking Apart Old Code
-$(cat ../disassemble.lisp.md)
+$(cat ../disassemble.md)
 $(cat obj/disassemble.lisp.md)
 
 # Creating New Code
-$(cat ../assemble.lisp.md)
+$(cat ../assemble.md)
 $(cat obj/assemble.lisp.md)
 
 # Wrapping things up...
+$(cat ../packages.md)
 $(cat obj/packages.lisp.md)
 
 # Conclusion
