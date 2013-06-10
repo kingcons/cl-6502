@@ -1,11 +1,5 @@
 (in-package :6502)
 
-;;;; REFERENCES:
-;; http://www.obelisk.demon.co.uk/6502/reference.html
-;; https://github.com/mnaberez/py65/blob/master/src/py65/devices/mpu6502.py
-;; http://nesdev.parodius.com/6502.txt
-
-; TODO: Add support for Decimal mode. (not supported on NES)
 (defasm adc (:docs "Add to Accumulator with Carry")
     ((#x61 6 2 indirect-x)
      (#x65 3 2 zero-page)
@@ -309,7 +303,6 @@
     ((#x60 6 1 implied))
   (setf (cpu-pc cpu) (1+ (stack-pop-word cpu))))
 
-; TODO: Add support for Decimal mode. (not supported on NES)
 (defasm sbc (:docs "Subtract from Accumulator with Carry")
     ((#xe1 6 2 indirect-x)
      (#xe5 3 2 zero-page)

@@ -1,16 +1,9 @@
-(in-package :6502)
+;;; ### Core Data Types
 
-;;;; REFERENCES:
-;; http://www.obelisk.demon.co.uk/6502/registers.html
-;; http://www.obelisk.demon.co.uk/6502/addressing.html
-;; http://nesdev.parodius.com/6502.txt
+(in-package :6502)
 
 (deftype u8 () '(unsigned-byte 8))
 (deftype u16 () '(unsigned-byte 16))
-
-(defun bytevector (size)
-  "Return an array of the given SIZE with element-type U8."
-  (make-array size :element-type 'u8))
 
 (declaim (inline make-cpu))
 (defstruct cpu
@@ -26,7 +19,11 @@
 (defmethod initialize-instance :after ((cpu cpu) &key)
   (setf (cpu-pc cpu) (getter 'absolute t cpu)))
 
-;;; Tasty Globals
+(defun bytevector (size)
+  "Return an array of the given SIZE with element-type U8."
+  (make-array size :element-type 'u8))
+
+;;; ### Tasty Globals
 
 (defparameter *ram* (bytevector #x10000)
   "A lovely hunk of bytes.")
@@ -37,7 +34,7 @@
 (defparameter *opcodes* (make-array #x100 :initial-element nil)
   "A mapping of opcodes to instruction mnemonic/metadata conses.")
 
-;;; Helpers
+;;; ### Helpers
 
 (defgeneric reset (obj)
   (:documentation "Reset the OBJ to an initial state.")
@@ -179,7 +176,7 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
           (-1 (logior result #x80)))
         result)))
 
-;;; Opcode Macrology
+;;; ### Opcode Macrology
 
 (defmacro defasm (name (&key (docs "") raw-p (track-pc t))
                   modes &body body)
