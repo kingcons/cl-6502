@@ -189,14 +189,16 @@ operations. If RAW-P is non-nil, the addressing mode's GETTER will return the
 address directly, otherwise it will return the byte at that address. Finally,
 MODES is a list of opcode metadata lists: (opcode cycles bytes mode)."
   `(progn
-     (eval-when (:compile-toplevel :load-toplevel)
+     (eval-when (:compile-toplevel :load-toplevel :execute)
        ,@(loop for (op cycles bytes mode) in modes collect
-           `(setf (aref *opcode-meta* ,op) ',(list name cycles bytes mode))))
-     (defun ,name (cpu cycles bytes mode raw-p)
-       ,docs
-       (incf (cpu-pc cpu))
-       ,@body
-       (when (cl:and ,track-pc (> bytes 1))
-         (incf (cpu-pc cpu) (1- bytes)))
-       (incf (cpu-cc cpu) cycles)
-       cpu)))
+           `(setf (aref *opcode-meta* ,op) ',(list name cycles bytes mode raw-p))))
+     (eval-when (:load-toplevel :execute)
+       ,@(loop for (op cycles bytes mode) in modes collect
+           `(setf (aref *opcode-funs* ,op)
+                  (lambda (cpu &optional (mode ',mode) (raw-p ,raw-p))
+                    (incf (cpu-pc cpu))
+                    ,@body
+                    ,@(when track-pc
+                        `((incf (cpu-pc cpu) (1- ,bytes))))
+                    (incf (cpu-cc cpu) ,cycles)
+                    cpu))))))

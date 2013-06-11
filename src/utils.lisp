@@ -10,11 +10,9 @@
 
 (defun step-cpu (cpu opcode)
   "Step the CPU through the next OPCODE."
-  (destructuring-bind (name &rest args) (aref *opcode-meta* opcode)
-    (apply name cpu args)))
+  (funcall (aref *opcode-funs* opcode) cpu))
 
 (defun run (cpu)
   (loop for op = (get-byte (cpu-pc cpu))
-     for (name cycles bytes mode raw-p) = (aref *opcode-meta* op)
-     do (funcall name cpu cycles bytes mode raw-p)
+     do (funcall (aref *opcode-funs* op) cpu)
      until (zerop op)))
