@@ -31,7 +31,10 @@
 (defparameter *cpu* (make-cpu)
   "The 6502 instance used by opcodes in the package.")
 
-(defparameter *opcodes* (make-array #x100 :initial-element nil)
+(defparameter *opcode-funs* (make-array #x100 :element-type '(or function null))
+  "The opcode lambdas used during emulation.")
+
+(defparameter *opcode-meta* (make-array #x100 :initial-element nil)
   "A mapping of opcodes to instruction mnemonic/metadata conses.")
 
 ;;; ### Helpers
@@ -49,7 +52,7 @@
 
 (defun get-instruction (opcode)
   "Get the mnemonic for OPCODE. Returns a symbol to be funcalled or nil."
-  (first (aref *opcodes* opcode)))
+  (first (aref *opcode-meta* opcode)))
 
 (declaim (inline wrap-byte wrap-word wrap-page))
 (defun wrap-byte (val)
@@ -188,7 +191,7 @@ MODES is a list of opcode metadata lists: (opcode cycles bytes mode)."
   `(progn
      (eval-when (:compile-toplevel :load-toplevel)
        ,@(loop for (op cycles bytes mode) in modes collect
-           `(setf (aref *opcodes* ,op) ',(list name cycles bytes mode raw-p))))
+           `(setf (aref *opcode-meta* ,op) ',(list name cycles bytes mode))))
      (defun ,name (cpu cycles bytes mode raw-p)
        ,docs
        (incf (cpu-pc cpu))
