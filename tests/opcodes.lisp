@@ -3,16 +3,20 @@
 (def-suite opcodes :in 6502-tests)
 (in-suite opcodes)
 
-(defun klaus-init ()
-  (let ((test-rom (read-file-into-byte-vector (app-path "tests/test.bin"))))
+(defun klaus-init (&optional (file "tests/test.bin"))
+  (let ((test-rom (read-file-into-byte-vector (app-path file))))
     (setf (get-range #x0a) test-rom
           (cpu-pc *cpu*) #x1000)))
 
 (defun klaus-test ()
-  (let ((cycles (* 45 (expt 2 21))))
+  (let ((cycles (* 78 (expt 2 20))))
     (loop until (> (cpu-cc *cpu*) cycles)
        for opcode = (get-byte (cpu-pc *cpu*))
        do (step-cpu *cpu* opcode))))
+
+(defun speedrun ()
+  (klaus-init "tests/test-brk.bin")
+  (time (6502::run *cpu*)))
 
 (deftest pass-klaus-test-suite
     "We should pass Klaus Dorfmann's test suite."
