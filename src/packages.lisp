@@ -3,7 +3,7 @@
   (:import-from :alexandria #:compose #:emptyp #:flatten #:make-keyword)
   (:shadow #:bit #:and)
   (:export ;; Public API
-           #:execute #:6502-step #:asm #:disasm #:disasm-to-str #:disasm-to-list
+           #:execute #:step-cpu #:asm #:disasm #:disasm-to-str #:disasm-to-list
            #:current-instruction #:get-byte #:get-word #:get-range #:*cpu* #:cpu
            #:nmi #:reset #:jit-step #:jit-execute
            ;; CPU struct
@@ -18,9 +18,9 @@
 (defpackage :cl-6502
   (:documentation "Homepage: <a href=\"http://github.com/redline6561/cl-6502\">Github</a>")
   (:use :cl)
-  (:import-from :6502 #:execute #:6502-step #:asm #:disasm #:disasm-to-str #:disasm-to-list
+  (:import-from :6502 #:execute #:step-cpu #:asm #:disasm #:disasm-to-str #:disasm-to-list
                       #:current-instruction #:get-byte #:get-word #:get-range #:*cpu* #:cpu
                       #:nmi #:reset #:jit-step #:jit-execute)
-  (:export #:execute #:6502-step #:asm #:disasm #:disasm-to-str #:disasm-to-list
+  (:export #:execute #:step-cpu #:asm #:disasm #:disasm-to-str #:disasm-to-list
            #:current-instruction #:get-byte #:get-word #:get-range #:*cpu* #:cpu
            #:nmi #:reset #:jit-step #:jit-execute))

@@ -25,17 +25,16 @@ You are strongly encouraged to use this library via [Quicklisp](http://quicklisp
 * Use it to create your own wacky code artifacts.
 * There is also a lower-level *6502* package if you really want to get your hands dirty. NOTE: The 6502 package shadows `BIT` and `AND` so you likely don't want to `:use` it in your own packages.
 
-In particular, [asm](http://redlinernotes.com/docs/cl-6502.html#asm_func), [disasm](http://redlinernotes.com/docs/cl-6502.html#disasm_func), [execute](http://redlinernotes.com/docs/cl-6502.html#execute_func), [6502-step](http://redlinernotes.com/docs/cl-6502.html#6502-step_func), and [reset](http://redlinernotes.com/docs/cl-6502.html#reset_func) are likely of interest.
+In particular, [asm](http://redlinernotes.com/docs/cl-6502.html#asm_func), [disasm](http://redlinernotes.com/docs/cl-6502.html#disasm_func), [execute](http://redlinernotes.com/docs/cl-6502.html#execute_func), [step-cpu](http://redlinernotes.com/docs/cl-6502.html#step-cpu_func), and [reset](http://redlinernotes.com/docs/cl-6502.html#reset_func) are likely of interest.
 
 ### A simple example:
 
 1. Load cl-6502 and switch to the `cl-6502` package.
 2. Write some 6502 code and run it through ```asm``` (e.g. ```(asm "brk")```) to get a bytevector to execute.
-3. Load it into memory and run it with ```(execute *cpu* *my-bytevector*)``` OR
- 1. Load it with ```(setf (get-range 0) *my-bytevector*)```
- 2. Set the program counter to 0 with ```(setf (6502:cpu-pc *cpu*) 0)```
- 3. Manually step through it with ```(6502-step *cpu* (get-byte (6502:immediate *cpu*)))```
-4. ```(reset)``` the CPU as necessary and keep hacking! :)
+3. Load it into memory with ```(setf (get-range 0) *my-bytevector*)```.
+4. Set the program counter to 0 with ```(setf (6502:cpu-pc *cpu*) 0)```.
+5. Run it with ```(run *cpu*)``` or manually step through it with ```(step-cpu *cpu* (6502:getter 'immediate nil *cpu*))```.
+6. ```(reset)``` the CPU as necessary and keep hacking! :)
 
 ### Supported Assembler Syntax
 There are sexp-based and string-based assemblers, both invoked via `asm`. The string-based assembler expects statements to be separated by newlines. The sexp-based assembler expects each statement to be in its own list. Disassembling to both formats is supported via `disasm` and `disasm-to-list`. Semicolons are treated as "comment to end-of-line" in the string assembler.
