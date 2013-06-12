@@ -23,22 +23,21 @@ bound to RESULT and the length of the instruction in bytes is bound to STEP."
 (defun disasm-ins (index &optional (disasm-op #'print-instruction))
     "Lookup the metadata for the instruction at INDEX and pass it to
 DISASM-OP for formatting and display, returning the instruction length."
-  (destructuring-bind (name cycles size mode raw-p)
+  (destructuring-bind (name docs cycles bytes mode raw-p)
       (aref *opcode-meta* (get-byte index))
     (declare (ignore cycles raw-p))
-    (let ((code-block (coerce (get-range index (+ index size)) 'list)))
-      (list size (funcall disasm-op code-block index name mode)))))
+    (let ((code-block (coerce (get-range index (+ index bytes)) 'list)))
+      (list bytes (funcall disasm-op code-block index name docs mode)))))
 
-(defun print-instruction (bytes index name mode)
+(defun print-instruction (bytes index name docs mode)
   "Format the instruction at INDEX and its operands for display."
   (let ((byte-str (format nil "~{~2,'0x ~}" bytes))
-        (args-str (format nil "~A ~A" name (arg-formatter (rest bytes) mode)))
-        (docs (documentation name 'function)))
+        (args-str (format nil "~A ~A" name (arg-formatter (rest bytes) mode))))
     (format t "$~4,'0x   ~9A  ;; ~14A ~A~%" index byte-str args-str docs)))
 
-(defun sexpify-instruction (bytes index name mode)
+(defun sexpify-instruction (bytes index name docs mode)
   "Given BYTES and metadata, return a sexp-format representation of it."
-  (declare (ignore index))
+  (declare (ignore index docs))
   (alexandria:if-let ((args (rest bytes))
                       (args-str (transform-str-syntax bytes mode)))
     (mapcar #'make-keyword (list name args-str))

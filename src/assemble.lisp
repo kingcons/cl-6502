@@ -20,12 +20,12 @@
 (defun match-mode (tokens)
   "Given a list of args, TOKENS, match them to an addressing mode or return NIL."
   (let ((line (apply 'concatenate 'string (transform-sexp-syntax tokens))))
-    (loop for mode in (remove-duplicates (map 'list #'fourth *opcode-meta*))
+    (loop for mode in (remove-duplicates (map 'list #'fifth *opcode-meta*))
        when (cl:and mode (cl-ppcre:scan (reader mode) line)) return mode)))
 
 (defun find-opcode (name mode)
   "Find an opcode matching NAME and MODE, raising ILLEGAL-OPCODE otherwise."
-  (let* ((insts (remove-if-not (lambda (x) (eql mode x)) *opcode-meta* :key #'fourth))
+  (let* ((insts (remove-if-not (lambda (x) (eql mode x)) *opcode-meta* :key #'fifth))
          (match (find (intern (string-upcase name) :6502) insts :key #'first)))
     (if match
         (position match *opcode-meta*)
