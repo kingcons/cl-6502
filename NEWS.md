@@ -1,3 +1,8 @@
+## Changes for 0.9.4 (2013-xx-xx):
+
+* Major performance improvements.
+* Renamed 6502-STEP to STEP-CPU.
+
 ## Changes for 0.9.3 (2013-06-10):
 
 * Code written in a more literate style with a [readable book](http://redlinernotes.com/docs/cl-6502.pdf)!

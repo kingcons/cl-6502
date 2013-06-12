@@ -16,7 +16,7 @@
 
 (defun speedrun ()
   (klaus-init "tests/test-brk.bin")
-  (time (6502::run *cpu*)))
+  (time (6502::execute *cpu*)))
 
 (deftest pass-klaus-test-suite
     "We should pass Klaus Dorfmann's test suite."

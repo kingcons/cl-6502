@@ -11,8 +11,3 @@
 (defun step-cpu (cpu opcode)
   "Step the CPU through the next OPCODE."
   (funcall (aref *opcode-funs* opcode) cpu))
-
-(defun run (cpu)
-  (loop for op = (get-byte (cpu-pc cpu))
-     do (funcall (aref *opcode-funs* op) cpu)
-     until (zerop op)))
