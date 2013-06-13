@@ -9,8 +9,8 @@
   :serial t
   :components ((:file "packages")
                (:file "conditions")
-               (:file "cpu")
                (:file "addressing")
+               (:file "cpu")
                (:file "disassemble")
                (:file "assemble")
                (:file "opcodes")
