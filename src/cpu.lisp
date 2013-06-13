@@ -191,8 +191,7 @@ MODES is a list of opcode metadata lists: (opcode cycles bytes mode)."
   `(progn
      (eval-when (:compile-toplevel :load-toplevel :execute)
        ,@(loop for (op cycles bytes mode) in modes collect
-           `(setf (aref *opcode-meta* ,op)
-                  ',(list name docs cycles bytes mode raw-p))))
+           `(setf (aref *opcode-meta* ,op) ',(list name docs cycles bytes mode))))
      (eval-when (:load-toplevel :execute)
        ,@(loop for (op cycles bytes mode) in modes collect
            `(setf (aref *opcode-funs* ,op)
