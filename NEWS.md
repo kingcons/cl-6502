@@ -1,6 +1,8 @@
-## Changes for 0.9.4 (2013-xx-xx):
+## Changes for 0.9.4 (2013-06-24):
 
-* Major performance improvements.
+* Major performance improvements from rewriting:
+  DEFADDRESS, DEFASM, and status-bit handling, again.
+  Results in a 53% reduction in runtime on Klaus' testsuite.
 * Renamed 6502-STEP to STEP-CPU.
 
 ## Changes for 0.9.3 (2013-06-10):

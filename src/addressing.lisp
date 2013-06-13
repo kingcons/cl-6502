@@ -2,13 +2,15 @@
 
 (in-package :6502)
 
-(defgeneric getter (mode raw-p cpu)
-  (:documentation "Get the value at MODE based on RAW-P.")
-  (:method (mode raw-p cpu) (error 'invalid-mode :mode mode)))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defparameter *mode-clauses* nil
+    "A list of ecase clauses for each mode used by the GETTER/SETTER macros."))
 
-(defgeneric setter (mode value cpu)
-  (:documentation "Set the memory at MODE to VALUE.")
-  (:method (mode value cpu) (error 'invalid-mode :mode mode)))
+(defun mode-body (mode)
+  "Return the &BODY for a given addressing mode."
+  (alexandria:if-let (body (rest (find mode *mode-clauses* :key #'first)))
+    body
+    (error 'invalid-mode :mode mode)))
 
 (defgeneric reader (mode)
   (:documentation "Return a Perl-compatible regex suitable for parsing MODE.")
@@ -18,21 +20,33 @@
   (:documentation "Return a format string suitable for printing MODE.")
   (:method (mode) (error 'invalid-mode :mode mode)))
 
-(defmacro defaddress (name (&key cpu-reg reader writer) &body body)
+(defmacro defaddress (name (&key reader writer) &body body)
   "Define an Addressing Mode that implements the protocol of GETTER,
-SETTER, READER, and WRITER. If CPU-REG is non-nil, BODY will be
-wrapped in a get-byte for setf."
+SETTER, READER, and WRITER."
   `(progn
      (defmethod reader ((mode (eql ',name))) ,reader)
      (defmethod writer ((mode (eql ',name))) ,writer)
-     (defmethod getter ((mode (eql ',name)) raw-p cpu)
-       (if raw-p
-           ,@body
-           (get-byte ,@body)))
-     (defmethod setter ((mode (eql ',name)) value cpu)
-       ,(if cpu-reg
-            `(setf ,@body value)
-            `(setf (get-byte ,@body) value)))))
+     (pushnew '(,name ,@body) *mode-clauses* :key #'first)))
+
+(defun %getter (mode raw-p)
+  "Get the value at MODE based on RAW-P."
+  (let ((body (mode-body mode)))
+    (if raw-p
+        (first body)
+        `(get-byte ,@body))))
+
+(defun %getter-mixed (mode)
+  "Special-case the handling of accumulator mode in ASL/LSR/ROL/ROR."
+  (if (eql mode 'accumulator)
+      (%getter mode t)
+      (%getter mode nil)))
+
+(defun %setter (mode value)
+  "Set the memory at MODE to VALUE."
+  (let ((body (mode-body mode)))
+    (if (member mode '(immediate accumulator))
+        `(setf ,@body ,value)
+        `(setf (get-byte ,@body) ,value))))
 
 ;;; ### Addressing Modes
 
@@ -41,13 +55,11 @@ wrapped in a get-byte for setf."
   nil)
 
 (defaddress accumulator (:reader "^[aA]$"
-                         :writer "A"
-                         :cpu-reg t)
+                         :writer "A")
   (cpu-ar cpu))
 
 (defaddress immediate (:reader "^#\\$[0-9a-fA-F]{2}$"
-                       :writer "~{#$~2,'0x~}"
-                       :cpu-reg t)
+                       :writer "~{#$~2,'0x~}")
   (cpu-pc cpu))
 
 (defaddress zero-page (:reader "^\\$[0-9a-fA-F]{2}$"
@@ -102,9 +114,3 @@ wrapped in a get-byte for setf."
                       (wrap-word (+ (cpu-pc cpu) (1+ offset))))))
       (maybe-update-cycle-count cpu result (1+ (cpu-pc cpu)))
       result)))
-
-(defmacro getter-mixed ()
-  "Special-case the handling of accumulator mode in ASL/LSR/ROL/ROR."
-  `(if (eql mode 'accumulator)
-       (getter mode raw-p cpu)
-       (get-byte (getter mode raw-p cpu))))

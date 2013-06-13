@@ -17,7 +17,7 @@
   (cc 0      :type fixnum))             ;; cycle counter
 
 (defmethod initialize-instance :after ((cpu cpu) &key)
-  (setf (cpu-pc cpu) (getter 'absolute t cpu)))
+  (setf (cpu-pc cpu) (get-word (cpu-pc cpu))))
 
 (defun bytevector (size)
   "Return an array of the given SIZE with element-type U8."
@@ -160,14 +160,14 @@ It will set each flag to 1 if its predicate is true, otherwise 0."
 (defun maybe-update-cycle-count (cpu address &optional start)
   "If ADDRESS crosses a page boundary, add an extra cycle to CPU's count. If
 START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
-  (when (not (= (logand (or start (getter 'absolute t cpu)) #xff00)
+  (when (not (= (logand (or start (get-word (cpu-pc cpu))) #xff00)
                 (logand address #xff00)))
     (incf (cpu-cc cpu))))
 
 (defmacro branch-if (predicate cpu)
   "Take a Relative branch if PREDICATE is true, otherwise increment the PC."
   `(if ,predicate
-       (setf (cpu-pc ,cpu) (getter 'relative t ,cpu))
+       (setf (cpu-pc ,cpu) ,(%getter 'relative t))
        (incf (cpu-pc ,cpu))))
 
 (defun rotate-byte (integer count cpu)
@@ -195,9 +195,12 @@ MODES is a list of opcode metadata lists: (opcode cycles bytes mode)."
      (eval-when (:load-toplevel :execute)
        ,@(loop for (op cycles bytes mode) in modes collect
            `(setf (aref *opcode-funs* ,op)
-                  (lambda (cpu &optional (mode ',mode) (raw-p ,raw-p))
+                  (lambda (cpu)
                     (incf (cpu-pc cpu))
-                    ,@body
+                    (flet ((getter () ,(%getter mode raw-p))
+                           (getter-mixed () ,(%getter-mixed mode))
+                           (setter (x) ,(%setter mode 'x)))
+                      ,@body)
                     ,@(when track-pc
                         `((incf (cpu-pc cpu) (1- ,bytes))))
                     (incf (cpu-cc cpu) ,cycles)

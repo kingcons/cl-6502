@@ -16,7 +16,7 @@ statistical profiler to observe performance while running the test suite."
                             :mode mode
                             :reset t)
     (loop until (> (cpu-cc *cpu*) (* 45 (expt 2 21)))
-       do (step-cpu *cpu* (getter 'immediate nil *cpu*)))))
+       do (step-cpu *cpu* (get-byte (cpu-pc *cpu*))))))
 
 (deftest keep-it-fast
     "We should not have deteriorating performance. 24.576 seconds at most."
