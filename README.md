@@ -33,7 +33,7 @@ In particular, [asm](http://redlinernotes.com/docs/cl-6502.html#asm_func), [disa
 2. Write some 6502 code and run it through ```asm``` (e.g. ```(asm "brk")```) to get a bytevector to execute.
 3. Load it into memory with ```(setf (get-range 0) *my-bytevector*)```.
 4. Set the program counter to 0 with ```(setf (6502:cpu-pc *cpu*) 0)```.
-5. Run it with ```(run *cpu*)``` or manually step through it with ```(step-cpu *cpu* (6502:getter 'immediate nil *cpu*))```.
+5. Run it with ```(run *cpu*)``` or manually step through it with ```(step-cpu *cpu* (get-byte (cpu-pc *cpu*)))```.
 6. ```(reset)``` the CPU as necessary and keep hacking! :)
 
 ### Supported Assembler Syntax
