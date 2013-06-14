@@ -7,3 +7,22 @@ Write a high-level macro-assembler! (using defmacro and sexps, of course)
 Define restarts for step?
 -- Define the instruction.
 -- Hand over a lambda to funcall/form to eval.
+
+PERF NOTES:
+Grow by 2 lines of code: 12.8 seconds -> 8.0 seconds.
+37.5% reduction in runtime. Why? Simplified two things: dispatch and opcodes.
+Dispatch has less indirection, grab a lambda, run it.
+Opcodes are a bit less clever, only need CPU arg, optional mode raw-p.
+
+Non-statistical profiling seems to indicate we spend a gratuitous amount of time
+in GET-BYTE. What can I do about that? Not much...and it seems *very* unlikely.
+
+CCL says status-bit access happens a lot and could be faster. I believe them.
+What does lib6502 do? Can we clean it up?
+
+Also, the defaddress rewrite is close. Might be good speedups there.
+How do we get it across the finish line?
+
+6502 -> 00.1 seconds
+sbcl -> 08.0 seconds
+ccl  -> 11.5 seconds
