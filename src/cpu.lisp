@@ -128,28 +128,25 @@ index of KEY. KEYS should be scalar values."
        (let ((enum ,enum))
          (gethash key enum)))))
 
-(defenum status-bit (:carry :zero :interrupt :decimal
-                     :break :unused :overflow :negative))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defenum status-bit (:carry :zero :interrupt :decimal
+                       :break :unused :overflow :negative)))
 
-(defun status-bit (key cpu)
-  "Retrieve bit KEY from the status register of CPU. KEY should be a keyword."
-  (ldb (byte 1 (%status-bit key)) (cpu-sr cpu)))
+(defmacro status-bit (key)
+  "Test if KEY is set in the status register. KEY should be a keyword."
+  `(logand (cpu-sr cpu) ,(ash 1 (%status-bit key))))
 
-(defun (setf status-bit) (new-val key cpu)
-  "Set bit KEY in the status reg of CPU to NEW-VAL. KEY should be a keyword."
-  (setf (ldb (byte 1 (%status-bit key)) (cpu-sr cpu)) new-val))
+(defmacro set-status-bit (key new-val)
+  "Set bit KEY in the status reg to NEW-VAL. KEY should be a keyword."
+  `(setf (ldb (byte 1 ,(%status-bit key)) (cpu-sr cpu)) ,new-val))
 
-(defmacro set-flags-if (cpu &rest flag-preds)
+(defmacro set-flags-if (&rest flag-preds)
   "Takes any even number of arguments where the first is a keyword denoting a
 status bit and the second is a funcallable predicate that takes no arguments.
 It will set each flag to 1 if its predicate is true, otherwise 0."
-  `(setf ,@(loop for (flag pred . nil) on flag-preds by #'cddr
-              appending `((status-bit ,flag cpu) (if ,pred 1 0)))))
-
-(declaim (inline set-flags-nz))
-(defun set-flags-nz (cpu value)
-  "Set the zero and negative bits of CPU's staus-register based on VALUE."
-  (set-flags-if cpu :zero (zerop value) :negative (logbitp 7 value)))
+  `(progn
+     ,@(loop for (flag pred . nil) on flag-preds by #'cddr
+          collecting `(set-status-bit ,flag (if ,pred 1 0)))))
 
 (defun overflow-p (result reg mem)
   "Checks whether the sign of RESULT is found in the signs of REG or MEM."
@@ -173,7 +170,7 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
 (defun rotate-byte (integer count cpu)
   "Rotate the bits of INTEGER by COUNT. If COUNT is negative, rotate right."
   (let ((result (ash integer count)))
-    (if (plusp (status-bit :carry cpu))
+    (if (plusp (status-bit :carry))
         (ecase count
           (01 (logior result #x01))
           (-1 (logior result #x80)))
