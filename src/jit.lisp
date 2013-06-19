@@ -23,9 +23,3 @@
     (let ((code (jit-block (get-basic-block cpu))))
       (setf (gethash pc *jit-cache*) code)
       (funcall code cpu))))
-
-(defun jit-execute (cpu)
-  "Execute the CPU with the dynamic recompiler."
-  (clrhash *jit-cache*)
-  (loop for result = (jit-step cpu (cpu-pc cpu))
-     until (eql :done result)))

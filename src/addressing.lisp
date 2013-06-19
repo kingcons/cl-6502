@@ -3,12 +3,12 @@
 (in-package :6502)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter *mode-clauses* nil
-    "A list of ecase clauses for each mode used by the GETTER/SETTER macros."))
+  (defparameter *mode-bodies* nil
+    "A list of &BODYs for each mode used by the %getter and %setter functions."))
 
 (defun mode-body (mode)
   "Return the &BODY for a given addressing mode."
-  (alexandria:if-let (body (rest (find mode *mode-clauses* :key #'first)))
+  (alexandria:if-let (body (rest (find mode *mode-bodies* :key #'first)))
     body
     (error 'invalid-mode :mode mode)))
 
@@ -26,14 +26,14 @@ SETTER, READER, and WRITER."
   `(progn
      (defmethod reader ((mode (eql ',name))) ,reader)
      (defmethod writer ((mode (eql ',name))) ,writer)
-     (pushnew '(,name ,@body) *mode-clauses* :key #'first)))
+     (pushnew '(,name ,@body) *mode-bodies* :key #'first)))
 
 (defun %getter (mode raw-p)
-  "Get the value at MODE based on RAW-P."
-  (let ((body (mode-body mode)))
+  "Return code that gets the value at MODE based on RAW-P."
+  (let ((body (first (mode-body mode))))
     (if raw-p
-        (first body)
-        `(get-byte ,@body))))
+        body
+        `(get-byte ,body))))
 
 (defun %getter-mixed (mode)
   "Special-case the handling of accumulator mode in ASL/LSR/ROL/ROR."
@@ -42,7 +42,7 @@ SETTER, READER, and WRITER."
       (%getter mode nil)))
 
 (defun %setter (mode value)
-  "Set the memory at MODE to VALUE."
+  "Return code that sets the memory at MODE to VALUE."
   (let ((body (mode-body mode)))
     (if (member mode '(immediate accumulator))
         `(setf ,@body ,value)

@@ -20,7 +20,7 @@
   (setf (cpu-pc cpu) (get-word (cpu-pc cpu))))
 
 (defun bytevector (size)
-  "Return an array of the given SIZE with element-type U8."
+  "Return an array of the given SIZE with element-type u8."
   (make-array size :element-type 'u8))
 
 ;;; ### Tasty Globals
@@ -29,13 +29,13 @@
   "A lovely hunk of bytes.")
 
 (defparameter *cpu* (make-cpu)
-  "The 6502 instance used by opcodes in the package.")
+  "The 6502 instance used by default during execution.")
 
 (defparameter *opcode-funs* (make-array #x100 :element-type '(or function null))
   "The opcode lambdas used during emulation.")
 
 (defparameter *opcode-meta* (make-array #x100 :initial-element nil)
-  "A mapping of opcodes to instruction mnemonic/metadata conses.")
+  "A mapping of opcodes to metadata lists.")
 
 ;;; ### Helpers
 
@@ -55,23 +55,21 @@
   (first (aref *opcode-meta* opcode)))
 
 (declaim (inline wrap-byte wrap-word wrap-page))
-(defun wrap-byte (val)
-  "Wrap the given value to ensure it conforms to (typep val 'u16),
-e.g. a Stack Pointer or general purpose register."
-  (logand val #xff))
+(defun wrap-byte (value)
+  "Wrap VALUE so it conforms to (typep value 'u8), i.e. a single byte."
+  (logand value #xff))
 
-(defun wrap-word (val)
-  "Wrap the given value to ensure it conforms to (typep val 'u16),
-e.g. a Program Counter address."
-  (logand val #xffff))
+(defun wrap-word (value)
+  "Wrap VALUE so it conforms to (typep value 'u16), i.e. a machine word."
+  (logand value #xffff))
 
 (defun wrap-page (address)
   "Wrap the given ADDRESS, ensuring that we don't cross a page boundary.
-e.g. When the last two bytes of ADDRESS are #xff."
+e.g. If we (get-word address)."
   (+ (logand address #xff00) (logand (1+ address) #xff)))
 
 (defun get-byte (address)
-  "Get a byte from RAM at the given address."
+  "Get a byte from RAM at the given ADDRESS."
   (aref *ram* address))
 
 (defun (setf get-byte) (new-val address)
@@ -79,7 +77,7 @@ e.g. When the last two bytes of ADDRESS are #xff."
   (setf (aref *ram* address) new-val))
 
 (defun get-word (address &optional wrap-p)
-  "Get a word from RAM starting at the given address."
+  "Get a word from RAM starting at the given ADDRESS."
   (+ (get-byte address)
      (ash (get-byte (if wrap-p (wrap-page address) (1+ address))) 8)))
 
@@ -99,7 +97,7 @@ provided."
 
 (declaim (inline stack-push stack-pop))
 (defun stack-push (value cpu)
-  "Push the given VALUE on the stack and decrement the SP."
+  "Push the byte VALUE on the stack and decrement the SP."
   (setf (get-byte (+ (cpu-sp cpu) #x100)) (wrap-byte value))
   (setf (cpu-sp cpu) (wrap-byte (1- (cpu-sp cpu)))))
 
@@ -156,16 +154,16 @@ It will set each flag to 1 if its predicate is true, otherwise 0."
 
 (defun maybe-update-cycle-count (cpu address &optional start)
   "If ADDRESS crosses a page boundary, add an extra cycle to CPU's count. If
-START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
+START is provided, test that against ADDRESS. Otherwise, use the absolute address."
   (when (not (= (logand (or start (get-word (cpu-pc cpu))) #xff00)
                 (logand address #xff00)))
     (incf (cpu-cc cpu))))
 
-(defmacro branch-if (predicate cpu)
+(defmacro branch-if (predicate)
   "Take a Relative branch if PREDICATE is true, otherwise increment the PC."
   `(if ,predicate
-       (setf (cpu-pc ,cpu) ,(%getter 'relative t))
-       (incf (cpu-pc ,cpu))))
+       (setf (cpu-pc cpu) ,(%getter 'relative t))
+       (incf (cpu-pc cpu))))
 
 (defun rotate-byte (integer count cpu)
   "Rotate the bits of INTEGER by COUNT. If COUNT is negative, rotate right."
@@ -180,11 +178,13 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
 
 (defmacro defasm (name (&key (docs "") raw-p (track-pc t))
                   modes &body body)
-  "Define a function NAME, with DOCS if provided, that executes BODY.
-TRACK-PC can be passed nil to disable program counter updates for branching/jump
-operations. If RAW-P is non-nil, the addressing mode's GETTER will return the
-address directly, otherwise it will return the byte at that address. Finally,
-MODES is a list of opcode metadata lists: (opcode cycles bytes mode)."
+  "Define a 6502 instruction NAME, storing its DOCS and metadata in *opcode-meta*,
+and a lambda that executes BODY in *opcode-funs*. Within BODY, (getter) and
+(setter x) can be used to get and set values for the current addressing mode,
+respectively. TRACK-PC can be passed nil to disable program counter updates for
+branching/jump operations. If RAW-P is true, (getter) will return the mode's
+address directly, otherwise it will return the byte at that address. MODES is a
+list of opcode metadata lists: (opcode cycles bytes mode)."
   `(progn
      ,@(loop for (op cycles bytes mode) in modes collect
             `(setf (aref *opcode-meta* ,op) ',(list name docs cycles bytes mode)))

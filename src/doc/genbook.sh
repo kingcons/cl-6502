@@ -37,6 +37,10 @@ $(cat obj/conditions.lisp.md)
 $(cat ../utils.md)
 $(cat obj/utils.lisp.md)
 
+# A Naive JIT
+$(cat ../jit.md)
+$(cat obj/jit.lisp.md)
+
 # Taking Apart Old Code
 $(cat ../disassemble.md)
 $(cat obj/disassemble.lisp.md)
@@ -45,16 +49,11 @@ $(cat obj/disassemble.lisp.md)
 $(cat ../assemble.md)
 $(cat obj/assemble.lisp.md)
 
-# A Naive JIT
-$(cat ../jit.md)
-$(cat obj/jit.lisp.md)
-
 # Wrap it with a Bow
 $(cat ../packages.md)
 $(cat obj/packages.lisp.md)
 
 $(cat ../lessons.md)
-$(cat obj/lessons.lisp.md)
 
 # Conclusion
 $(cat ../outro.md)
