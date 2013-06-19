@@ -200,5 +200,4 @@ MODES is a list of opcode metadata lists: (opcode cycles bytes mode)."
                       ,@body)
                     ,@(when track-pc
                         `((incf (cpu-pc cpu) (1- ,bytes))))
-                    (incf (cpu-cc cpu) ,cycles)
-                    cpu))))))
+                    (incf (cpu-cc cpu) ,cycles)))))))
