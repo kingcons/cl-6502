@@ -10,5 +10,4 @@
 
 (defun step-cpu (cpu opcode)
   "Step the CPU through the next OPCODE."
-  (destructuring-bind (name &rest args) (aref *opcodes* opcode)
-    (apply name cpu args)))
+  (funcall (aref *opcode-funs* opcode) cpu))

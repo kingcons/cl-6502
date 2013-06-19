@@ -1,3 +1,12 @@
+## Changes for 0.9.4 (2013-06-19):
+
+* Major performance improvements from rewriting:
+  DEFADDRESS, DEFASM, and status-bit handling, again.
+  Results in a 75% reduction in runtime on Klaus' testsuite!
+* Two new chapters in the book: Lessons Learned and A Naive JIT.
+* *Incompatible change*: Renamed 6502-STEP to STEP-CPU.
+* *Incompatible change*: JIT-EXECUTE was removed.
+
 ## Changes for 0.9.3 (2013-06-10):
 
 * Code written in a more literate style with a [readable book](http://redlinernotes.com/docs/cl-6502.pdf)!

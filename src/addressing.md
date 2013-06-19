@@ -11,11 +11,12 @@ just pass any address to any CPU instruction.
 
 Each CPU instruction supports a limited number of Addressing Modes. Different
 Addressing Modes get data from different places in memory. Each Addressing Mode
-has a different syntax which we'll want to define readers and writers for to aid
-with assembly and disassembly. You'll note when we start defining opcodes that
-certain addressing modes take more CPU time than others. On many older systems,
-a large part of writing fast assembly is figuring out how to store your
-program's data so you can use the fastest Addressing Mode possible to get it.
+has a different assembly syntax which we'll want to define readers and writers
+for to aid with assembly and disassembly. You'll note when we start defining
+opcodes that certain addressing modes take more CPU time than others. On many
+older systems, a large part of writing fast assembly code is figuring out how to
+store your program's data so you can use the fastest Addressing Mode possible to
+get it.
 
 The 6502 has 13 Addressing Modes that can be roughly divided into 5 groups based
 on what part of memory they access:
@@ -26,13 +27,15 @@ on what part of memory they access:
 4. Indirect: The address stored at another address - indirect, indirect-x, indirect-y
 5. Relative: Conditionally go forwards or backwards - relative
 
-We'll implement the Addressing Modes through a protocol on unique symbols rather
-than custom classes. We can define methods on specific symbols using Lisp's
-fantastic [EQL Specialized Methods](http://cl-cookbook.sourceforge.net/clos-tutorial/#section-4.5).
-We need to know how to parse, print, get, and set each mode. The parser will be
-a simple regular expression to extract a number, the printer is a lisp format
-string that effectively inverts the process. Since the getter and setter will
-be working on the same address in memory, we'll use a `defaddress` macro so they
-can share as much code as possible.
+We'll implement the Addressing Modes through a protocol on unique symbols. We
+can define methods on specific symbols using Lisp's fantastic
+[EQL Specialized Methods](http://cl-cookbook.sourceforge.net/clos-tutorial/#section-4.5).
+We need to know how to parse, print, get, and set for each mode. **cl-6502** uses
+methods for parsing and printing, and macros for getting and setting. The parser
+will be a simple regular expression to extract a number, the printer is a lisp
+format string that effectively inverts the process. Since the getter and setter
+will be working on the same address in memory, we'll use a `defaddress` macro
+to store their shared BODY in `*mode-bodies*` and access it later with `%getter`
+and `%setter`.
 
 ## Source Code

@@ -17,10 +17,10 @@
   (cc 0      :type fixnum))             ;; cycle counter
 
 (defmethod initialize-instance :after ((cpu cpu) &key)
-  (setf (cpu-pc cpu) (getter 'absolute t cpu)))
+  (setf (cpu-pc cpu) (get-word (cpu-pc cpu))))
 
 (defun bytevector (size)
-  "Return an array of the given SIZE with element-type U8."
+  "Return an array of the given SIZE with element-type u8."
   (make-array size :element-type 'u8))
 
 ;;; ### Tasty Globals
@@ -29,10 +29,13 @@
   "A lovely hunk of bytes.")
 
 (defparameter *cpu* (make-cpu)
-  "The 6502 instance used by opcodes in the package.")
+  "The 6502 instance used by default during execution.")
 
-(defparameter *opcodes* (make-array #x100 :initial-element nil)
-  "A mapping of opcodes to instruction mnemonic/metadata conses.")
+(defparameter *opcode-funs* (make-array #x100 :element-type '(or function null))
+  "The opcode lambdas used during emulation.")
+
+(defparameter *opcode-meta* (make-array #x100 :initial-element nil)
+  "A mapping of opcodes to metadata lists.")
 
 ;;; ### Helpers
 
@@ -49,26 +52,24 @@
 
 (defun get-instruction (opcode)
   "Get the mnemonic for OPCODE. Returns a symbol to be funcalled or nil."
-  (first (aref *opcodes* opcode)))
+  (first (aref *opcode-meta* opcode)))
 
 (declaim (inline wrap-byte wrap-word wrap-page))
-(defun wrap-byte (val)
-  "Wrap the given value to ensure it conforms to (typep val 'u16),
-e.g. a Stack Pointer or general purpose register."
-  (logand val #xff))
+(defun wrap-byte (value)
+  "Wrap VALUE so it conforms to (typep value 'u8), i.e. a single byte."
+  (logand value #xff))
 
-(defun wrap-word (val)
-  "Wrap the given value to ensure it conforms to (typep val 'u16),
-e.g. a Program Counter address."
-  (logand val #xffff))
+(defun wrap-word (value)
+  "Wrap VALUE so it conforms to (typep value 'u16), i.e. a machine word."
+  (logand value #xffff))
 
 (defun wrap-page (address)
   "Wrap the given ADDRESS, ensuring that we don't cross a page boundary.
-e.g. When the last two bytes of ADDRESS are #xff."
+e.g. If we (get-word address)."
   (+ (logand address #xff00) (logand (1+ address) #xff)))
 
 (defun get-byte (address)
-  "Get a byte from RAM at the given address."
+  "Get a byte from RAM at the given ADDRESS."
   (aref *ram* address))
 
 (defun (setf get-byte) (new-val address)
@@ -76,7 +77,7 @@ e.g. When the last two bytes of ADDRESS are #xff."
   (setf (aref *ram* address) new-val))
 
 (defun get-word (address &optional wrap-p)
-  "Get a word from RAM starting at the given address."
+  "Get a word from RAM starting at the given ADDRESS."
   (+ (get-byte address)
      (ash (get-byte (if wrap-p (wrap-page address) (1+ address))) 8)))
 
@@ -96,7 +97,7 @@ provided."
 
 (declaim (inline stack-push stack-pop))
 (defun stack-push (value cpu)
-  "Push the given VALUE on the stack and decrement the SP."
+  "Push the byte VALUE on the stack and decrement the SP."
   (setf (get-byte (+ (cpu-sp cpu) #x100)) (wrap-byte value))
   (setf (cpu-sp cpu) (wrap-byte (1- (cpu-sp cpu)))))
 
@@ -125,28 +126,25 @@ index of KEY. KEYS should be scalar values."
        (let ((enum ,enum))
          (gethash key enum)))))
 
-(defenum status-bit (:carry :zero :interrupt :decimal
-                     :break :unused :overflow :negative))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defenum status-bit (:carry :zero :interrupt :decimal
+                       :break :unused :overflow :negative)))
 
-(defun status-bit (key cpu)
-  "Retrieve bit KEY from the status register of CPU. KEY should be a keyword."
-  (ldb (byte 1 (%status-bit key)) (cpu-sr cpu)))
+(defmacro status-bit (key)
+  "Test if KEY is set in the status register. KEY should be a keyword."
+  `(logand (cpu-sr cpu) ,(ash 1 (%status-bit key))))
 
-(defun (setf status-bit) (new-val key cpu)
-  "Set bit KEY in the status reg of CPU to NEW-VAL. KEY should be a keyword."
-  (setf (ldb (byte 1 (%status-bit key)) (cpu-sr cpu)) new-val))
+(defmacro set-status-bit (key new-val)
+  "Set bit KEY in the status reg to NEW-VAL. KEY should be a keyword."
+  `(setf (ldb (byte 1 ,(%status-bit key)) (cpu-sr cpu)) ,new-val))
 
-(defmacro set-flags-if (cpu &rest flag-preds)
+(defmacro set-flags-if (&rest flag-preds)
   "Takes any even number of arguments where the first is a keyword denoting a
 status bit and the second is a funcallable predicate that takes no arguments.
 It will set each flag to 1 if its predicate is true, otherwise 0."
-  `(setf ,@(loop for (flag pred . nil) on flag-preds by #'cddr
-              appending `((status-bit ,flag cpu) (if ,pred 1 0)))))
-
-(declaim (inline set-flags-nz))
-(defun set-flags-nz (cpu value)
-  "Set the zero and negative bits of CPU's staus-register based on VALUE."
-  (set-flags-if cpu :zero (zerop value) :negative (logbitp 7 value)))
+  `(progn
+     ,@(loop for (flag pred . nil) on flag-preds by #'cddr
+          collecting `(set-status-bit ,flag (if ,pred 1 0)))))
 
 (defun overflow-p (result reg mem)
   "Checks whether the sign of RESULT is found in the signs of REG or MEM."
@@ -156,21 +154,21 @@ It will set each flag to 1 if its predicate is true, otherwise 0."
 
 (defun maybe-update-cycle-count (cpu address &optional start)
   "If ADDRESS crosses a page boundary, add an extra cycle to CPU's count. If
-START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
-  (when (not (= (logand (or start (getter 'absolute t cpu)) #xff00)
+START is provided, test that against ADDRESS. Otherwise, use the absolute address."
+  (when (not (= (logand (or start (get-word (cpu-pc cpu))) #xff00)
                 (logand address #xff00)))
     (incf (cpu-cc cpu))))
 
-(defmacro branch-if (predicate cpu)
+(defmacro branch-if (predicate)
   "Take a Relative branch if PREDICATE is true, otherwise increment the PC."
   `(if ,predicate
-       (setf (cpu-pc ,cpu) (getter 'relative t ,cpu))
-       (incf (cpu-pc ,cpu))))
+       (setf (cpu-pc cpu) ,(%getter 'relative t))
+       (incf (cpu-pc cpu))))
 
 (defun rotate-byte (integer count cpu)
   "Rotate the bits of INTEGER by COUNT. If COUNT is negative, rotate right."
   (let ((result (ash integer count)))
-    (if (plusp (status-bit :carry cpu))
+    (if (plusp (status-bit :carry))
         (ecase count
           (01 (logior result #x01))
           (-1 (logior result #x80)))
@@ -180,20 +178,24 @@ START is provided, test that against ADDRESS. Otherwise, use (absolute cpu)."
 
 (defmacro defasm (name (&key (docs "") raw-p (track-pc t))
                   modes &body body)
-  "Define a function NAME, with DOCS if provided, that executes BODY.
-TRACK-PC can be passed nil to disable program counter updates for branching/jump
-operations. If RAW-P is non-nil, the addressing mode's GETTER will return the
-address directly, otherwise it will return the byte at that address. Finally,
-MODES is a list of opcode metadata lists: (opcode cycles bytes mode)."
+  "Define a 6502 instruction NAME, storing its DOCS and metadata in *opcode-meta*,
+and a lambda that executes BODY in *opcode-funs*. Within BODY, (getter) and
+(setter x) can be used to get and set values for the current addressing mode,
+respectively. TRACK-PC can be passed nil to disable program counter updates for
+branching/jump operations. If RAW-P is true, (getter) will return the mode's
+address directly, otherwise it will return the byte at that address. MODES is a
+list of opcode metadata lists: (opcode cycles bytes mode)."
   `(progn
-     (eval-when (:compile-toplevel :load-toplevel)
-       ,@(loop for (op cycles bytes mode) in modes collect
-           `(setf (aref *opcodes* ,op) ',(list name cycles bytes mode raw-p))))
-     (defun ,name (cpu cycles bytes mode raw-p)
-       ,docs
-       (incf (cpu-pc cpu))
-       ,@body
-       (when (cl:and ,track-pc (> bytes 1))
-         (incf (cpu-pc cpu) (1- bytes)))
-       (incf (cpu-cc cpu) cycles)
-       cpu)))
+     ,@(loop for (op cycles bytes mode) in modes collect
+            `(setf (aref *opcode-meta* ,op) ',(list name docs cycles bytes mode)))
+     ,@(loop for (op cycles bytes mode) in modes collect
+            `(setf (aref *opcode-funs* ,op)
+                   (lambda (cpu)
+                     (incf (cpu-pc cpu))
+                     (flet ((getter () ,(%getter mode raw-p))
+                            (getter-mixed () ,(%getter-mixed mode))
+                            (setter (x) ,(%setter mode 'x)))
+                       ,@body)
+                     ,@(when track-pc
+                         `((incf (cpu-pc cpu) (1- ,bytes))))
+                     (incf (cpu-cc cpu) ,cycles))))))

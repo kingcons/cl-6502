@@ -9,8 +9,8 @@
   :serial t
   :components ((:file "packages")
                (:file "conditions")
-               (:file "cpu")
                (:file "addressing")
+               (:file "cpu")
                (:file "disassemble")
                (:file "assemble")
                (:file "opcodes")
@@ -29,7 +29,6 @@
                (:file "fixtures")
                (:file "assembler")
                (:file "disassembler")
-               (:file "addressing")
                (:file "opcodes")
                (:file "jit")
                #+sbcl (:file "perf")))
