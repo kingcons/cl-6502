@@ -38,7 +38,7 @@ relative to the complex x86 assembly that is prevalent today.
 ## A Word on Performance
 
 Performance is **not** an explicit goal of the **cl-6502** project. Currently,
-it is *roughly* 100x slower than lib6502 and 10x faster than py65. This has less
+it is *roughly* 30x slower than lib6502 and 45x faster than py65. This has less
 to do with the choice of language than with my naivete about emulation techniques
 and the emphasis on readable code. That said, I plan to get performance more in
 line with lib6502 and believe it can be done without damaging the pedagogical
@@ -73,10 +73,11 @@ can be found in Victor Moya del Barrio's excellent
 
 These are the current major design decisions in **cl-6502**:
 
-* Addressing Modes as Generic Functions (methods) on distinct symbols.
-* Opcodes as functions that take an addressing mode method and their metadata.
-* Storage of Opcode metadata in an array for assembly/disassembly/dispatch.
-* A naive interpreter loop rather than Context-Threaded Dispatch, etc.
+* Compile-time macros for status register handling and addressing mode dispatch.
+* Storage of opcode metadata and opcode lambdas in separate arrays.
+* A naive interpreter loop rather than Context-Threaded Dispatch, JIT, etc.
 * Ignore decimal mode support in ADC/SBC since the NES didn't have it.
+
+If you get stumped by a macro, I'd encourage you to macroexpand one of its callsites. Don't be afraid to skim something and come back to it later, either.
 
 With all that out of the way, let's dive in!

@@ -6,14 +6,34 @@
 
 Now comes the core of the project, the CPU opcode definitions. The 6502 has 56
 instructions, each with several addressing modes. We'll use our `defasm` macro
-to define each instruction with all its variants in one place. When the function
-is called it will be passed the symbol naming its addressing mode, so the getter
-and setter calls will dispatch properly. The variants for each instruction are
-given in a list of lists where each variant is specified like so:
+to define each instruction with all its variants in one place. The variants are
+given as a list of lists where each variant is specified like so:
+
 `(opcode-byte cycles bytes addressing-mode)`
 
 The `opcode-byte` is the how the opcode is stored in memory, the `cycles` are
 how long it takes the CPU to execute, and the `bytes` are how many bytes in RAM
 the opcode *and* its arguments use.
+
+You might have wondered why in `defasm` we increment the Program Counter by 1,
+then *later* check `track-pc` before incrementing the rest. Imagining the opcode's
+execution makes it obvious. The PC points at the opcode, then we increment the
+program counter to point at the first argument. The instruction BODY can run
+without worrying about argument offsets. Afterwards, if there were no arguments,
+we're already pointing at the next instruction. Otherwise, we just bump the PC
+past the arguments.
+
+If you were reading carefully earlier, you noticed that we wrap the body of
+`defasm` in a FLET that defines the `getter`, `setter`, and `getter-mixed`
+functions to access memory for the opcode's addressing mode. It's advantageous
+for performance to compute as much as possible at compile-time, so we have
+`defaddress` store the BODY for an addressing mode and let `defasm`
+construct each lambda's FLET on the fly with `%getter` and `%setter`.
+
+Getter-mixed is there only because, unlike **all** the other instructions,
+shifts and rotations (i.e. ASL, LSR, ROL, and ROR), use "raw" addressing in
+their accumulator mode but normal addressing everywhere else. Consequently,
+those instructions are the only place it is used. Aren't you glad I already
+hunted those bugs down?
 
 ## Source Code

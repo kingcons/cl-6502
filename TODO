@@ -7,3 +7,14 @@ Write a high-level macro-assembler! (using defmacro and sexps, of course)
 Define restarts for step?
 -- Define the instruction.
 -- Hand over a lambda to funcall/form to eval.
+
+PERF NOTES:
+6502 -> 00.1 seconds
+sbcl -> 03.0 seconds
+ccl  -> 04.5 seconds
+
+; Or from 3.5x to >14x the speed of the NES.
+94b49f - 06.5 mhz (0.9.3, the book)
+fb29da - 10.0 mhz (defasm  rewrite)
+53e3ee - 11.5 mhz (+new defaddress)
+b729e8 - 28.0 mhz (+new status-bit)

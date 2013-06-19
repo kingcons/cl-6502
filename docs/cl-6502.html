@@ -66,7 +66,7 @@ else
 <span class="value">#S(|6502|:CPU :PC 65532 :SP 253 :SR 36 :XR 0 :YR 0 :AR 0 :CC 0)</span>
 <span class="symboltype">variable</span></div>
 <div class="documentation">
-<pre>The 6502 instance used by opcodes in the package.</pre></div></div></div></div>
+<pre>The 6502 instance used by default during execution.</pre></div></div></div></div>
 <div class="frame">
 <div class="labeltitle">
 <span class="expander" onclick="expand(this, 'conditions');">-</span>Conditions</div>
@@ -131,7 +131,7 @@ print the current address and instruction and return NIL.</pre></div></div>
 <span class="lambdalist">address</span>
 <span class="symboltype">function</span></div>
 <div class="documentation">
-<pre>Get a byte from RAM at the given address.</pre></div></div>
+<pre>Get a byte from RAM at the given ADDRESS.</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
 <a class="symbolname" name="(setf get-byte)_func" href="#(setf get-byte)_func">(setf get-byte)</a>
@@ -160,7 +160,7 @@ provided.</pre></div></div>
 <span class="lambdalist">address &optional wrap-p</span>
 <span class="symboltype">function</span></div>
 <div class="documentation">
-<pre>Get a word from RAM starting at the given address.</pre></div></div>
+<pre>Get a word from RAM starting at the given ADDRESS.</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
 <a class="symbolname" name="(setf get-word)_func" href="#(setf get-word)_func">(setf get-word)</a>
@@ -168,13 +168,6 @@ provided.</pre></div></div>
 <span class="symboltype">function</span></div>
 <div class="documentation">
 <pre>Set ADDRESS and (1+ ADDRESS) in *ram* to NEW-VAL, little endian ordering.</pre></div></div>
-<div class="symboldecl">
-<div class="definition">
-<a class="symbolname" name="jit-execute_func" href="#jit-execute_func">jit-execute</a>
-<span class="lambdalist">cpu</span>
-<span class="symboltype">function</span></div>
-<div class="documentation">
-<pre>Execute the CPU with the dynamic recompiler.</pre></div></div>
 <div class="symboldecl">
 <div class="definition">
 <a class="symbolname" name="jit-step_func" href="#jit-step_func">jit-step</a>
