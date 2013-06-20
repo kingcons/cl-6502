@@ -10,7 +10,7 @@ In case that sounds weird to you, the MOS 6502 is famous for its use in...
 * the [BBC Micro](http://en.wikipedia.org/wiki/BBC_Micro),
 * and [Michael Steil's phenomenal talk](http://media.ccc.de/browse/congress/2010/27c3-4159-en-reverse_engineering_mos_6502.html) at 27C3.
 
-I gave a talk on cl-6502 called 'On Programmer Archaeology'. You can watch it on Vimeo [here](http://vimeo.com/47364930) or grab the slides from [my site](http://redlinernotes.com/docs/talks/opa.html). A few notes on why I'm writing it are [here](http://blog.redlinernotes.com/posts/On-Interactive-Retrocomputing.html) and minor notes on the design are [here](http://blog.redlinernotes.com/posts/An-Emulator-Design-Pattern.html).
+I gave a talk on cl-6502 called 'On Programmer Archaeology'. You can watch it [on Vimeo](http://vimeo.com/47364930) or grab [the slides](http://redlinernotes.com/docs/talks/opa.html). A few notes on why I'm writing it are [here](http://blog.redlinernotes.com/posts/On-Interactive-Retrocomputing.html) and minor notes on the design are [here](http://blog.redlinernotes.com/posts/An-Emulator-Design-Pattern.html).
 
 ## Reading
 
