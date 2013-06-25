@@ -340,7 +340,7 @@
     ((#x78 2 1 implied))
   (set-status-bit :interrupt 1))
 
-(defasm sta (:docs "Store Accumulator" :raw-p t)
+(defasm sta (:docs "Store Accumulator")
     ((#x81 6 2 indirect-x)
      (#x85 3 2 zero-page)
      (#x8d 4 3 absolute)
@@ -350,13 +350,13 @@
      (#x9d 5 3 absolute-x))
   (setter (cpu-ar cpu)))
 
-(defasm stx (:docs "Store X register" :raw-p t)
+(defasm stx (:docs "Store X register")
     ((#x86 3 2 zero-page)
      (#x8e 4 3 absolute)
      (#x96 4 2 zero-page-y))
   (setter (cpu-xr cpu)))
 
-(defasm sty (:docs "Store Y register" :raw-p t)
+(defasm sty (:docs "Store Y register")
     ((#x84 3 2 zero-page)
      (#x8c 4 3 absolute)
      (#x94 4 2 zero-page-x))
