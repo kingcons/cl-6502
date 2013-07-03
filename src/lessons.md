@@ -42,7 +42,8 @@ the `*mode-bodies*` variable was bound in time for `defaddress`. Regardless,
 ## Structures can be preferable to classes
 
 Structures are much more static than classes. They also enforce their slot types.
-When you have a solid idea of the layout of your data and really need speed, they're ideal.
+When you have a solid idea of the layout of your data and really need speed,
+they're ideal.
 
 ## CLOS is fast enough
 
@@ -53,7 +54,7 @@ reasons, performance was only a minor factor.
 
 ## Apply is more expensive than you might think
 
-My second big speedup came from storing function objects (i.e. lambdas) instead
-of symbols to pass to apply. We avoid the indirection of looking up a function
-in the current package and the indirection of packing and unpacking the function
-arguments in a list.
+My second big speedup came from storing function objects (i.e. lambdas) to
+pass to funcall instead of symbols to pass to apply. We avoid the indirection of
+looking up a function in the current package and the indirection of packing and
+unpacking the function arguments in a list.

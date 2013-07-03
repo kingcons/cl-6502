@@ -14,6 +14,7 @@ sbcl -> 03.0 seconds
 ccl  -> 04.5 seconds
 
 ; Or from 3.5x to >14x the speed of the NES.
+eecfe7 - 03.8 mhz (0.9.1, baseline)
 94b49f - 06.5 mhz (0.9.3, the book)
 fb29da - 10.0 mhz (defasm  rewrite)
 53e3ee - 11.5 mhz (+new defaddress)
