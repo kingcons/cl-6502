@@ -2,7 +2,7 @@
 
 (defun execute (cpu)
   "Step the CPU until a BRK instruction."
-  (loop for opcode = (get-byte (cpu-pc cpu))
+  (loop for opcode of-type u8 = (get-byte (cpu-pc cpu))
      do (handler-case (step-cpu cpu opcode)
           (undefined-function ()
             (error 'illegal-opcode :opcode opcode)))

@@ -32,6 +32,7 @@
 (defparameter *cpu* (make-cpu)
   "The 6502 instance used by default during execution.")
 
+(declaim (type (simple-vector 256) *opcode-funs*))
 (defparameter *opcode-funs* (make-array #x100 :element-type '(or function null))
   "The opcode lambdas used during emulation.")
 
