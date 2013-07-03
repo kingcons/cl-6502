@@ -50,10 +50,6 @@
     (stack-push (cpu-sr obj) obj)
     (setf (cpu-pc obj) (get-word #xfffa))))
 
-(defun get-instruction (opcode)
-  "Get the mnemonic for OPCODE. Returns a symbol to be funcalled or nil."
-  (first (aref *opcode-meta* opcode)))
-
 (declaim (inline wrap-byte wrap-word wrap-page))
 (defun wrap-byte (value)
   "Wrap VALUE so it conforms to (typep value 'u8), i.e. a single byte."
