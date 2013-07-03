@@ -25,6 +25,7 @@
 
 ;;; ### Tasty Globals
 
+(declaim (type (simple-array u8 (#x10000)) *ram*))
 (defparameter *ram* (bytevector #x10000)
   "A lovely hunk of bytes.")
 
