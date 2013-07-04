@@ -38,7 +38,7 @@ relative to the complex x86 assembly that is prevalent today.
 ## A Word on Performance
 
 Performance is **not** an explicit goal of the **cl-6502** project. Currently,
-it is *roughly* 30x slower than lib6502 and 45x faster than py65. This has less
+it is *roughly* 15x slower than lib6502 and 100x faster than py65. This has less
 to do with the choice of language than with my naivete about emulation techniques
 and the emphasis on readable code. That said, I plan to get performance more in
 line with lib6502 and believe it can be done without damaging the pedagogical

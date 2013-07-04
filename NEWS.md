@@ -1,3 +1,8 @@
+## Changes for 0.9.5 (2013-07-04):
+
+* Further performance improvements from type hints:
+  Emulates the 6502 at ~48 mhz with SBCL 1.1.4.debian on my old Thinkpad X200.
+
 ## Changes for 0.9.4 (2013-06-19):
 
 * Major performance improvements from rewriting:
