@@ -10,8 +10,8 @@ Define restarts for step?
 
 PERF NOTES:
 6502 -> 00.1 seconds
-sbcl -> 03.0 seconds
-ccl  -> 04.5 seconds
+sbcl -> 01.7 seconds
+ccl  -> 05.0 seconds
 
 ; Or from 3.5x to >14x the speed of the NES.
 eecfe7 - 03.8 mhz (0.9.1, baseline)

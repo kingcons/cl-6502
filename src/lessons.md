@@ -62,7 +62,7 @@ the `*mode-bodies*` variable was bound in time for `defaddress`. Regardless,
 ## Use DECLAIM (and DECLARE) wisely
 
 *DECLAIM* is for global declarations and *DECLARE* is for local ones. Once you've
-eeked out as many algorithmic gains as possible and figured out your hotspots with
+eked out as many algorithmic gains as possible and figured out your hotspots with
 the profiler, recompile your code with `(declaim (optimize speed))` to see what
 notes the compiler gives you. Letting the compiler know the *FTYPE* of your most
-called functions and inlining a few things can make a **big** difference.
+called functions and inlining a few things can make a big difference.
