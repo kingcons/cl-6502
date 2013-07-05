@@ -13,7 +13,7 @@
            #:absolute #:absolute-x #:absolute-y #:indirect #:indirect-x #:indirect-y #:relative
            #:reader #:writer #:%getter #:%setter
            ;; Helpers
-           #:wrap-byte #:wrap-word #:status-bit #:get-instruction #:defenum #:bytevector))
+           #:wrap-byte #:wrap-word #:status-bit #:defenum #:bytevector))
 
 (defpackage :cl-6502
   (:documentation "Homepage: <a href=\"http://github.com/redline6561/cl-6502\">Github</a>")

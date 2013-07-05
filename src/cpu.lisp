@@ -25,12 +25,14 @@
 
 ;;; ### Tasty Globals
 
+(declaim (type (simple-array u8 (#x10000)) *ram*))
 (defparameter *ram* (bytevector #x10000)
   "A lovely hunk of bytes.")
 
 (defparameter *cpu* (make-cpu)
   "The 6502 instance used by default during execution.")
 
+(declaim (type (simple-vector 256) *opcode-funs*))
 (defparameter *opcode-funs* (make-array #x100 :element-type '(or function null))
   "The opcode lambdas used during emulation.")
 
@@ -50,10 +52,6 @@
     (stack-push (cpu-sr obj) obj)
     (setf (cpu-pc obj) (get-word #xfffa))))
 
-(defun get-instruction (opcode)
-  "Get the mnemonic for OPCODE. Returns a symbol to be funcalled or nil."
-  (first (aref *opcode-meta* opcode)))
-
 (declaim (inline wrap-byte wrap-word wrap-page))
 (defun wrap-byte (value)
   "Wrap VALUE so it conforms to (typep value 'u8), i.e. a single byte."
@@ -68,6 +66,8 @@
 e.g. If we (get-word address)."
   (+ (logand address #xff00) (logand (1+ address) #xff)))
 
+(declaim (ftype (function (u16) u8) get-byte)
+         (inline get-byte))
 (defun get-byte (address)
   "Get a byte from RAM at the given ADDRESS."
   (aref *ram* address))

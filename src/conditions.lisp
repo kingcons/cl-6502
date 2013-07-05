@@ -3,7 +3,7 @@
 (define-condition illegal-opcode ()
   ((opcode :initarg :opcode :reader opcode))
   (:report (lambda (condition stream)
-             (format stream "~A is not a legal opcode." (opcode condition))))
+             (format stream "~X is not a legal opcode." (opcode condition))))
   (:documentation "Illegal opcodes are not currently implemented."))
 
 (define-condition invalid-syntax ()
@@ -15,6 +15,5 @@
 (define-condition invalid-mode ()
   ((mode :initarg :mode :reader mode))
   (:report (lambda (condition stream)
-             (format stream "~S is not a valid addressing mode."
-                     (mode condition))))
+             (format stream "~A is not a valid addressing mode." (mode condition))))
   (:documentation "Only the 6502 addressing modes have readers and printers."))
