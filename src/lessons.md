@@ -31,18 +31,11 @@ representations or execution strategies to achieve good performance.
 
 # Lessons Learned - Common Lisp
 
-## Eval-when is about *data* more than code
-
-That is, the times I found myself using it always involved computing data at
-compile-time that would be stored or accessed at load-time or later. E.g. I used
-it to ensure that the status-bit enum was created for use by `set-flags-if` and
-the `*mode-bodies*` variable was bound in time for `defaddress`. Regardless,
-[try to go without it](http://fare.livejournal.com/146698.html) if possible.
-
 ## Structures can be preferable to classes
 
 Structures are much more static than classes. They also enforce their slot types.
-When you have a solid idea of the layout of your data and really need speed, they're ideal.
+When you have a solid idea of the layout of your data and really need speed,
+they're ideal.
 
 ## CLOS is fast enough
 
@@ -51,9 +44,25 @@ emulator to avoid a method call for every memory read/write, my benchmark only
 ran ~10% faster. I eventually chose to stick with the new scheme for several
 reasons, performance was only a minor factor.
 
-## Apply is more expensive than you might think
+## Apply may be more expensive than you think
 
-My second big speedup came from storing function objects (i.e. lambdas) instead
-of symbols to pass to apply. We avoid the indirection of looking up a function
-in the current package and the indirection of packing and unpacking the function
-arguments in a list.
+My second big speedup came from storing function objects (i.e. lambdas) to
+pass to funcall instead of symbols to pass to apply. We avoid the indirection of
+looking up a function in the current package and the indirection of packing and
+unpacking the function arguments in a list.
+
+## Eval-when is about *data* more than code
+
+That is, the times I found myself using it always involved computing data at
+compile-time that would be stored or accessed at load-time or later. E.g. I used
+it to ensure that the status-bit enum was created for use by `set-flags-if` and
+the `*mode-bodies*` variable was bound in time for `defaddress`. Regardless,
+[try to go without it](http://fare.livejournal.com/146698.html) if possible.
+
+## Use DECLAIM (and DECLARE) wisely
+
+*DECLAIM* is for global declarations and *DECLARE* is for local ones. Once you've
+eked out as many algorithmic gains as possible and figured out your hotspots with
+the profiler, recompile your code with `(declaim (optimize speed))` to see what
+notes the compiler gives you. Letting the compiler know the *FTYPE* of your most
+called functions and inlining a few things can make a big difference.
