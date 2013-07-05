@@ -1,5 +1,4 @@
-# cl-6502, or The 6502...IBM 704 edition ;)
-
+# cl-6502 - A Readable CPU Emulator
 cl-6502 is a Common Lisp emulator, assembler and disassembler for the
 [MOS 6502 processor](http://en.wikipedia.org/wiki/MOS_Technology_6502).
 In case that sounds weird to you, the MOS 6502 is famous for its use in...
