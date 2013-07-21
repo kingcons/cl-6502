@@ -44,12 +44,12 @@ emulator to avoid a method call for every memory read/write, my benchmark only
 ran ~10% faster. I eventually chose to stick with the new scheme for several
 reasons, performance was only a minor factor.
 
-## Apply may be more expensive than you think
+## Destructuring is more expensive than you think
 
-My second big speedup came from storing function objects (i.e. lambdas) to
-pass to funcall instead of symbols to pass to apply. We avoid the indirection of
-looking up a function in the current package and the indirection of packing and
-unpacking the function arguments in a list.
+My second big speedup came, indirectly, from changing the arguments to the
+opcode lambdas. By having the opcode only take a single argument, the CPU, I
+avoided the need to destructure the opcode metadata in `step-cpu`. You **don't**
+want to destructure a list in your inner loop, no matter how readable it is!
 
 ## Eval-when is about *data* more than code
 
