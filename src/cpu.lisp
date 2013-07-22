@@ -154,9 +154,13 @@ It will set each flag to 1 if its predicate is true, otherwise 0."
 (defun maybe-update-cycle-count (cpu address &optional start)
   "If ADDRESS crosses a page boundary, add an extra cycle to CPU's count. If
 START is provided, test that against ADDRESS. Otherwise, use the absolute address."
-  (when (not (= (logand (or start (get-word (cpu-pc cpu))) #xff00)
-                (logand address #xff00)))
-    (incf (cpu-cc cpu))))
+  (let ((operand (or start (get-word (cpu-pc cpu)))))
+    (declare (type u16 operand)
+             (type u16 address)
+             (type (or null u16) start))
+    (when (not (= (logand operand #xff00)
+                  (logand address #xff00)))
+      (incf (cpu-cc cpu)))))
 
 (defmacro branch-if (predicate)
   "Take a Relative branch if PREDICATE is true, otherwise increment the PC."
@@ -189,7 +193,7 @@ list of opcode metadata lists: (opcode cycles bytes mode)."
             `(setf (aref *opcode-meta* ,op) ',(list name docs cycles bytes mode)))
      ,@(loop for (op cycles bytes mode) in modes collect
             `(setf (aref *opcode-funs* ,op)
-                   (lambda (cpu)
+                   (named-lambda ,(intern (format nil "~:@(~A~)-~X" name op)) (cpu)
                      (incf (cpu-pc cpu))
                      (flet ((getter () ,(%getter mode raw-p))
                             (getter-mixed () ,(%getter-mixed mode))

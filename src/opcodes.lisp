@@ -1,5 +1,7 @@
 (in-package :6502)
 
+(declaim (optimize speed))
+
 (defasm adc (:docs "Add to Accumulator with Carry")
     ((#x61 6 2 indirect-x)
      (#x65 3 2 zero-page)
@@ -320,8 +322,10 @@
      (#xf9 4 3 absolute-y)
      (#xfd 4 3 absolute-x))
   (flet ((flip-bit (position x) (logxor (expt 2 position) x)))
+    (declare (ftype (function ((integer 0 7) fixnum) u8) flip-bit))
     (let* ((operand (getter))
-           (result (- (cpu-ar cpu) operand (flip-bit 0 (status-bit :carry)))))
+           (carry-bit (flip-bit 0 (status-bit :carry)))
+           (result (- (cpu-ar cpu) operand carry-bit)))
       (set-flags-if :zero (zerop (wrap-byte result))
                     :overflow (overflow-p result (cpu-ar cpu) (flip-bit 7 operand))
                     :negative (logbitp 7 result)

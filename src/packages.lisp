@@ -1,6 +1,6 @@
 (defpackage :6502
   (:use :cl)
-  (:import-from :alexandria #:compose #:emptyp #:flatten #:make-keyword)
+  (:import-from :alexandria #:compose #:emptyp #:flatten #:make-keyword #:named-lambda)
   (:shadow #:bit #:and)
   (:export ;; Public API
            #:execute #:step-cpu #:asm #:disasm #:disasm-to-str #:disasm-to-list
