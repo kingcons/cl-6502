@@ -5,7 +5,6 @@
 (deftype u8 () '(unsigned-byte 8))
 (deftype u16 () '(unsigned-byte 16))
 
-(declaim (inline make-cpu))
 (defstruct cpu
   "A 6502 CPU with an extra slot for tracking the cycle count/clock ticks."
   (pc #xfffc :type u16)                 ;; program counter
