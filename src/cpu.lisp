@@ -65,8 +65,7 @@
 e.g. If we (get-word address)."
   (+ (logand address #xff00) (logand (1+ address) #xff)))
 
-(declaim (ftype (function (u16) u8) get-byte)
-         (inline get-byte))
+(declaim (ftype (function (u16) u8) get-byte))
 (defun get-byte (address)
   "Get a byte from RAM at the given ADDRESS."
   (aref *ram* address))
