@@ -16,7 +16,7 @@
   (cc 0      :type fixnum))             ;; cycle counter
 
 (defmethod initialize-instance :after ((cpu cpu) &key)
-  (setf (cpu-pc cpu) (get-word (cpu-pc cpu))))
+  (setf (cpu-pc cpu) (absolute cpu t)))
 
 (defun bytevector (size)
   "Return an array of the given SIZE with element-type u8."
@@ -153,7 +153,7 @@ It will set each flag to 1 if its predicate is true, otherwise 0."
 (defun maybe-update-cycle-count (cpu address &optional start)
   "If ADDRESS crosses a page boundary, add an extra cycle to CPU's count. If
 START is provided, test that against ADDRESS. Otherwise, use the absolute address."
-  (let ((operand (or start (get-word (cpu-pc cpu)))))
+  (let ((operand (or start (absolute cpu t))))
     (declare (type u16 operand)
              (type u16 address)
              (type (or null u16) start))
@@ -164,7 +164,7 @@ START is provided, test that against ADDRESS. Otherwise, use the absolute addres
 (defmacro branch-if (predicate)
   "Take a Relative branch if PREDICATE is true, otherwise increment the PC."
   `(if ,predicate
-       (setf (cpu-pc cpu) ,(%getter 'relative t))
+       (setf (cpu-pc cpu) (relative cpu t))
        (incf (cpu-pc cpu))))
 
 (defun rotate-byte (integer count cpu)
@@ -181,10 +181,10 @@ START is provided, test that against ADDRESS. Otherwise, use the absolute addres
 (defmacro defasm (name (&key (docs "") raw-p (track-pc t))
                   modes &body body)
   "Define a 6502 instruction NAME, storing its DOCS and metadata in *opcode-meta*,
-and a lambda that executes BODY in *opcode-funs*. Within BODY, (getter) and
-(setter x) can be used to get and set values for the current addressing mode,
+and a lambda that executes BODY in *opcode-funs*. Within BODY, the macros
+GETTER and SETTER can be used to get and set values for the current addressing mode,
 respectively. TRACK-PC can be passed nil to disable program counter updates for
-branching/jump operations. If RAW-P is true, (getter) will return the mode's
+branching/jump operations. If RAW-P is true, GETTER will return the mode's
 address directly, otherwise it will return the byte at that address. MODES is a
 list of opcode metadata lists: (opcode cycles bytes mode)."
   `(progn
@@ -194,9 +194,14 @@ list of opcode metadata lists: (opcode cycles bytes mode)."
             `(setf (aref *opcode-funs* ,op)
                    (named-lambda ,(intern (format nil "~A-~X" name op)) (cpu)
                      (incf (cpu-pc cpu))
-                     (flet ((getter () ,(%getter mode raw-p))
-                            (getter-mixed () ,(%getter-mixed mode))
-                            (setter (x) ,(%setter mode 'x)))
+                     (macrolet ((getter ()
+                                  `(,mode cpu ,raw-p))
+                                (getter-mixed ()
+                                  ,(if (eql mode 'accumulator)
+                                       `(,mode cpu t)
+                                       `(,mode cpu nil)))
+                                (setter (new-val)
+                                  `(setf (,mode cpu ,raw-p) new-val)))
                        ,@body)
                      ,@(when track-pc
                          `((incf (cpu-pc cpu) (1- ,bytes))))

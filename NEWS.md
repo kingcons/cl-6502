@@ -1,3 +1,12 @@
+## Changes for 0.9.6 (2013-11-11):
+
+* Rewrite DEFADDRESS again and stop inlining get-byte. The new implementation
+  is easier to read. It is also slightly slower but allows emulators
+  to monkey patch get-byte to use a given platform's memory map.
+* Reduce consing on SBCL > 1.1.8 due to modarith/type checking changes.
+* Make debugging easier by using named-lambdas for the opcodes.
+* Minor code cleanups and book clarifications.
+
 ## Changes for 0.9.5 (2013-07-05):
 
 * Further performance improvements from type hints:
