@@ -23,6 +23,15 @@ SETTER, READER, and WRITER."
             `(setf ,@body value)
             `(setf (get-byte ,@body) value)))))
 
+(defun make-getter (name mode raw-p)
+  "Generate an appropriate GETTER for NAME based on RAW-P
+and whether or not it is a register shift operation."
+  (let ((register-shift-op-p (cl:and (member name '(asl lsr rol ror))
+                                     (eql mode 'accumulator))))
+    (if (or raw-p register-shift-op-p)
+        `(,mode cpu)
+        `(get-byte (,mode cpu)))))
+
 ;;; ### Addressing Modes
 
 (defaddress implied (:reader "^$"

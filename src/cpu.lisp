@@ -16,7 +16,7 @@
   (cc 0      :type fixnum))             ;; cycle counter
 
 (defmethod initialize-instance :after ((cpu cpu) &key)
-  (setf (cpu-pc cpu) (absolute cpu t)))
+  (setf (cpu-pc cpu) (absolute cpu)))
 
 (defun bytevector (size)
   "Return an array of the given SIZE with element-type u8."
@@ -153,7 +153,7 @@ It will set each flag to 1 if its predicate is true, otherwise 0."
 (defun maybe-update-cycle-count (cpu address &optional start)
   "If ADDRESS crosses a page boundary, add an extra cycle to CPU's count. If
 START is provided, test that against ADDRESS. Otherwise, use the absolute address."
-  (let ((operand (or start (absolute cpu t))))
+  (let ((operand (or start (absolute cpu))))
     (declare (type u16 operand)
              (type u16 address)
              (type (or null u16) start))
@@ -164,7 +164,7 @@ START is provided, test that against ADDRESS. Otherwise, use the absolute addres
 (defmacro branch-if (predicate)
   "Take a Relative branch if PREDICATE is true, otherwise increment the PC."
   `(if ,predicate
-       (setf (cpu-pc cpu) (relative cpu t))
+       (setf (cpu-pc cpu) (relative cpu))
        (incf (cpu-pc cpu))))
 
 (defun rotate-byte (integer count cpu)
@@ -194,14 +194,10 @@ list of opcode metadata lists: (opcode cycles bytes mode)."
             `(setf (aref *opcode-funs* ,op)
                    (named-lambda ,(intern (format nil "~A-~X" name op)) (cpu)
                      (incf (cpu-pc cpu))
-                     (macrolet ((getter ()
-                                  `(,mode cpu ,raw-p))
-                                (getter-mixed ()
-                                  ,(if (eql mode 'accumulator)
-                                       `(,mode cpu t)
-                                       `(,mode cpu nil)))
-                                (setter (new-val)
-                                  `(setf (,mode cpu ,raw-p) new-val)))
+                     (flet ((getter ()
+                              ,(make-getter name mode raw-p))
+                            (setter (x)
+                              (setf (,mode cpu) x)))
                        ,@body)
                      ,@(when track-pc
                          `((incf (cpu-pc cpu) (1- ,bytes))))
