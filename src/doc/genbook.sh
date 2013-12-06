@@ -5,7 +5,6 @@
 #
 # The authors list is automatically generated from Git history,
 # ordered from most to least commits.
-# TODO: Add jit.lisp later?
 
 cat <<EOF
 % cl-6502

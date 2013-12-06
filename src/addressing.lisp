@@ -2,16 +2,6 @@
 
 (in-package :6502)
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter *mode-bodies* nil
-    "A list of &BODYs for each mode used by the %getter and %setter functions."))
-
-(defun mode-body (mode)
-  "Return the &BODY for a given addressing mode."
-  (alexandria:if-let (body (rest (find mode *mode-bodies* :key #'first)))
-    body
-    (error 'invalid-mode :mode mode)))
-
 (defgeneric reader (mode)
   (:documentation "Return a Perl-compatible regex suitable for parsing MODE.")
   (:method (mode) (error 'invalid-mode :mode mode)))
@@ -20,33 +10,27 @@
   (:documentation "Return a format string suitable for printing MODE.")
   (:method (mode) (error 'invalid-mode :mode mode)))
 
-(defmacro defaddress (name (&key reader writer) &body body)
+(defmacro defaddress (name (&key reader writer cpu-reg) &body body)
+  ;; TODO: Update docstring, book. Test!
   "Define an Addressing Mode that implements the protocol of GETTER,
 SETTER, READER, and WRITER."
   `(progn
      (defmethod reader ((mode (eql ',name))) ,reader)
      (defmethod writer ((mode (eql ',name))) ,writer)
-     (pushnew '(,name ,@body) *mode-bodies* :key #'first)))
+     (defun ,name (cpu) ,@body)
+     (defun (setf ,name) (value cpu)
+       ,(if cpu-reg
+            `(setf ,@body value)
+            `(setf (get-byte ,@body) value)))))
 
-(defun %getter (mode raw-p)
-  "Return code that gets the value at MODE based on RAW-P."
-  (let ((body (first (mode-body mode))))
-    (if raw-p
-        body
-        `(get-byte ,body))))
-
-(defun %getter-mixed (mode)
-  "Special-case the handling of accumulator mode in ASL/LSR/ROL/ROR."
-  (if (eql mode 'accumulator)
-      (%getter mode t)
-      (%getter mode nil)))
-
-(defun %setter (mode value)
-  "Return code that sets the memory at MODE to VALUE."
-  (let ((body (mode-body mode)))
-    (if (member mode '(immediate accumulator))
-        `(setf ,@body ,value)
-        `(setf (get-byte ,@body) ,value))))
+(defun make-getter (name mode raw-p)
+  "Generate an appropriate GETTER for NAME based on RAW-P
+and whether or not it is a register shift operation."
+  (let ((register-shift-op-p (cl:and (member name '(asl lsr rol ror))
+                                     (eql mode 'accumulator))))
+    (if (or raw-p register-shift-op-p)
+        `(,mode cpu)
+        `(get-byte (,mode cpu)))))
 
 ;;; ### Addressing Modes
 
@@ -55,11 +39,13 @@ SETTER, READER, and WRITER."
   nil)
 
 (defaddress accumulator (:reader "^[aA]$"
-                         :writer "A")
+                         :writer "A"
+                         :cpu-reg t)
   (cpu-ar cpu))
 
 (defaddress immediate (:reader "^#\\$[0-9a-fA-F]{2}$"
-                       :writer "~{#$~2,'0x~}")
+                       :writer "~{#$~2,'0x~}"
+                       :cpu-reg t)
   (cpu-pc cpu))
 
 (defaddress zero-page (:reader "^\\$[0-9a-fA-F]{2}$"
