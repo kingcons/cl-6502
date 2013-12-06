@@ -1,4 +1,4 @@
-## Changes for 0.9.6 (2013-11-11):
+## Changes for 0.9.6 (2013-12-12):
 
 * Rewrite DEFADDRESS again and stop inlining get-byte. The new implementation
   is easier to read. It is also slightly slower but allows emulators

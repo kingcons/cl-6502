@@ -9,14 +9,15 @@ Define restarts for step?
 -- Hand over a lambda to funcall/form to eval.
 
 PERF NOTES:
-6502 -> 00.1 seconds
-sbcl -> 01.7 seconds
-ccl  -> 05.0 seconds
+lib6502  -> 00.1 seconds
+sbcl     -> 02.2 seconds
+ccl      -> 05.0 seconds
 
-; Or from 3.5x to >14x the speed of the NES.
+; Or from 3.5x to >20x the speed of the NES.
 eecfe7 - 03.8 mhz (0.9.1, baseline)
 94b49f - 06.5 mhz (0.9.3, the book)
 fb29da - 10.0 mhz (defasm  rewrite)
 53e3ee - 11.5 mhz (+new defaddress)
 b729e8 - 28.0 mhz (+new status-bit)
-b40300 - 48.1 mhz (+declaim things)
+b40300 - 48.1 mhz (0.9.5, +declaim)
+?????? - 36.0 mhz (0.9.6, rewrites)
