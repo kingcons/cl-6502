@@ -51,11 +51,13 @@
     (stack-push (cpu-sr obj) obj)
     (setf (cpu-pc obj) (get-word #xfffa))))
 
-(declaim (inline wrap-byte wrap-word wrap-page))
+(declaim (inline wrap-byte wrap-word wrap-page)
+         (ftype (function (fixnum) u8) wrap-byte))
 (defun wrap-byte (value)
   "Wrap VALUE so it conforms to (typep value 'u8), i.e. a single byte."
   (logand value #xff))
 
+(declaim (ftype (function (fixnum) u16) wrap-word))
 (defun wrap-word (value)
   "Wrap VALUE so it conforms to (typep value 'u16), i.e. a machine word."
   (logand value #xffff))
