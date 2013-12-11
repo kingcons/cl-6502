@@ -5,7 +5,7 @@ and how CPUs work. The project has evolved into a highly correct, concise 6502
 emulator. Its nearest neighbors, and inspirations, are
 [lib6502](http://piumarta.com/software/lib6502/) and
 [py65](https://github.com/mnaberez/py65) which also make for pretty good
-reading if you prefer Python or C to Lisp. :)
+reading if you prefer C or Python to Lisp. :)
 
 ## The MOS 6502
 
@@ -30,19 +30,20 @@ relative to the complex x86 assembly that is prevalent today.
 
 **cl-6502** does have some explicit technical goals:
 
-* Code size excluding tests should be < 800 loc. (**0.9.5**: 762 lines)
-* Able to run at 8 mhz or faster using a single core on an Intel Core CPU. (**0.9.5**: ~50 mhz)
+* Code size excluding tests should be < 800 loc. (**0.9.6**: 762 lines)
+* Able to run at 8 mhz or faster using a single core on an Intel Core CPU. (**0.9.6**: ~50 mhz)
 * Cycle-accurate emulation suitable for use in a full NES emulator.
 * Readable as a 6502 introduction for someone with or without a copy of [CLHS](http://www.lispworks.com/documentation/HyperSpec/).
 
 ## A Word on Performance
 
 Performance is **not** an explicit goal of the **cl-6502** project. Currently,
-it is *roughly* 15x slower than lib6502 and 100x faster than py65. This has less
-to do with the choice of language than with my naivete about emulation techniques
-and the emphasis on readable, safe code. For example, **cl-6502** raises an
-exception upon encountering illegal opcodes while lib6502 prints a message and
-continues.
+it is about 15-20x slower than lib6502, a very fast C implementation by
+[Ian Piumarta](http://piumarta.com/cv/bio.html).
+This has less to do with the choice of language than with my naivete about
+emulation techniques and the emphasis on readable, safe code. For example,
+**cl-6502** raises an exception upon encountering illegal opcodes while
+lib6502 prints a message and continues.
 
 ## Why Lisp?
 
@@ -76,8 +77,8 @@ These are the current major design decisions in **cl-6502**:
 * Compile-time macros for status register handling and addressing mode dispatch.
 * Storage of opcode metadata and opcode lambdas in separate arrays.
 * A naive interpreter loop rather than Context-Threaded Dispatch, JIT, etc.
-* Ignore decimal mode support in ADC/SBC since the NES didn't have it.
+* Ignore decimal mode support in ADC/SBC since the NES doesn't require it.
 
-If you get stumped by a macro, I'd encourage you to macroexpand one of its callsites. Don't be afraid to skim something and come back to it later, either.
+If you get stumped by a macro, I'd encourage you to macroexpand one of its callsites. Don't be afraid to skim something and come back to it later, either. Most importantly, I am _very open_ to feedback of any kind on this text or the code itself. If you find something confusing, feel free to email and ask why I wrote it that way or suggest alternatives. Patches welcome!
 
 With all that out of the way, let's dive in!

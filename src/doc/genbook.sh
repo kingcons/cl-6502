@@ -16,13 +16,13 @@ cat <<EOF
 # Introduction
 $(cat ../intro.md)
 
-# CPU
-$(cat ../cpu.md)
-$(cat obj/cpu.lisp.md)
-
 # Addressing Modes
 $(cat ../addressing.md)
 $(cat obj/addressing.lisp.md)
+
+# CPU
+$(cat ../cpu.md)
+$(cat obj/cpu.lisp.md)
 
 # Opcode Emulation
 $(cat ../opcodes.md)

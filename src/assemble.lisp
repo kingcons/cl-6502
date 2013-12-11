@@ -56,9 +56,11 @@ it to use the classic string assembly syntax."
     (asm (remove nil tokenized))))
 
 (defun tokenize-statement (str)
+  "TODO"
   (let ((results (cl-ppcre:split " " (trim-whitespace str))))
     (mapcar (lambda (x) (intern x :keyword)) results)))
 
 (defun trim-whitespace (str)
+  "TODO"
   (let ((code (subseq str 0 (position #\; str))))
     (string-trim '(#\Tab #\Return #\Space) code)))
