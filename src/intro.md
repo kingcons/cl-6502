@@ -38,12 +38,12 @@ relative to the complex x86 assembly that is prevalent today.
 ## A Word on Performance
 
 Performance is **not** an explicit goal of the **cl-6502** project. Currently,
-it is about 15-20x slower than lib6502, a very fast C implementation by
-[Ian Piumarta](http://piumarta.com/cv/bio.html).
-This has less to do with the choice of language than with my naivete about
-emulation techniques and the emphasis on readable, safe code. For example,
-**cl-6502** raises an exception upon encountering illegal opcodes while
-lib6502 prints a message and continues.
+it emulates about 15-20x slower than lib6502, a very fast C implementation by
+[Ian Piumarta](http://piumarta.com/cv/bio.html), and is 25x faster than the
+original NES. This has less to do with the choice of language than with my
+naivete about emulation techniques and the emphasis on readable, safe code.
+For example, **cl-6502** raises an exception upon encountering illegal
+opcodes while lib6502 prints a message and continues.
 
 ## Why Lisp?
 
@@ -74,7 +74,8 @@ can be found in Victor Moya del Barrio's excellent
 
 These are the current major design decisions in **cl-6502**:
 
-* Compile-time macros for status register handling and addressing mode dispatch.
+* Compile-time macros for all status register handling.
+* Type declarations for core data structures and memory access functions.
 * Storage of opcode metadata and opcode lambdas in separate arrays.
 * A naive interpreter loop rather than Context-Threaded Dispatch, JIT, etc.
 * Ignore decimal mode support in ADC/SBC since the NES doesn't require it.

@@ -11,9 +11,9 @@
   (:method (mode) (error 'invalid-mode :mode mode)))
 
 (defmacro defaddress (name (&key reader writer cpu-reg) &body body)
-  ;; TODO: Update docstring, book. Test!
-  "Define an Addressing Mode that implements the protocol of GETTER,
-SETTER, READER, and WRITER."
+  "Define an Addressing Mode, NAME, with READER and WRITER methods that take NAME
+as a symbol and return a regex or format expression, respectively, and a function
+and setf function to get and set the data pointed to by the given mode."
   `(progn
      (defmethod reader ((mode (eql ',name))) ,reader)
      (defmethod writer ((mode (eql ',name))) ,writer)

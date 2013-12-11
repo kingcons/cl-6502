@@ -50,7 +50,7 @@ DISASM-OP for formatting and display, returning the instruction length."
       (format nil (writer mode) arg)))
 
 (defun transform-str-syntax (bytes mode)
-  "TODO"
+  "Take BYTES and a MODE and return the assembly representation of the arguments."
   (let ((result (arg-formatter (rest bytes) mode)))
     (flet ((munge-indirect (str)
              (cl-ppcre:regex-replace "\\(\\$(.*)\\)(.*)?" str "@\\1\\2")))

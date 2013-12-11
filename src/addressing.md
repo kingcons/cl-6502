@@ -27,15 +27,13 @@ on what part of memory they access:
 4. Indirect: The address stored at another address - indirect, indirect-x, indirect-y
 5. Relative: Conditionally go forwards or backwards - relative
 
-We'll implement the Addressing Modes through a protocol on unique symbols. We
-can define methods on specific symbols using Lisp's fantastic
-[EQL Specialized Methods](http://cl-cookbook.sourceforge.net/clos-tutorial/#section-4.5).
-We need to know how to parse, print, get, and set for each mode. **cl-6502** uses
-methods for parsing and printing, and macros for getting and setting. The parser
+A functioning emulator needs to know how to parse assembly, print disassebly, get data,
+and set data for each addressing mode. **cl-6502** uses
+[methods on unique symbols](http://cl-cookbook.sourceforge.net/clos-tutorial/#section-4.5)
+for parsing and printing, and functions for getting and setting. The parser
 will be a simple regular expression to extract a number, the printer is a lisp
 format string that effectively inverts the process. Since the getter and setter
-will be working on the same address in memory, we'll use a `defaddress` macro
-to store their shared BODY in `*mode-bodies*` and access it later with `%getter`
-and `%setter`.
+will compute the address in memory to work on the same way, we'll use a
+`defaddress` macro to factor out their shared code.
 
 ## Source Code

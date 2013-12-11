@@ -24,15 +24,14 @@ we're already pointing at the next instruction. Otherwise, we just bump the PC
 past the arguments.
 
 If you were reading carefully earlier, you noticed that we wrap the body of
-`defasm` in a FLET that defines the `getter`, `setter`, and `getter-mixed`
-functions to access memory for the opcode's addressing mode. It's advantageous
-for performance to compute as much as possible at compile-time, so we have
-`defaddress` store the BODY for an addressing mode and let `defasm`
-construct each lambda's FLET on the fly with `%getter` and `%setter`.
+`defasm` in a FLET that defines the `getter` and `setter` functions to access
+memory for the opcode's addressing mode. It's advantageous for performance to
+compute as much as possible at compile-time, so we have `make-getter` compute
+a custom body for the GETTER in `defasm`.
 
-Getter-mixed is there only because, unlike **all** the other instructions,
+`make-getter` is there only because, unlike **all** the other instructions,
 shifts and rotations (i.e. ASL, LSR, ROL, and ROR), use "raw" addressing in
-their accumulator mode but normal addressing everywhere else. Consequently,
+their accumulator mode but "normal" addressing everywhere else. Consequently,
 those instructions are the only place it is used. Aren't you glad I already
 hunted those bugs down?
 
