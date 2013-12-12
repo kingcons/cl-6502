@@ -31,8 +31,8 @@ a custom body for the GETTER in `defasm`.
 
 `make-getter` is there only because, unlike **all** the other instructions,
 shifts and rotations (i.e. ASL, LSR, ROL, and ROR), use "raw" addressing in
-their accumulator mode but "normal" addressing everywhere else. Consequently,
-those instructions are the only place it is used. Aren't you glad I already
-hunted those bugs down?
+their accumulator mode but "normal" addressing everywhere else. `make-getter`
+takes the instruction mnemonic and addressing mode and factors out the special
+casing. Aren't you glad I already hunted those bugs down?
 
 ## Source Code
