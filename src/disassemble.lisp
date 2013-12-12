@@ -39,7 +39,7 @@ DISASM-OP for formatting and display, returning the instruction length."
   "Given BYTES and metadata, return a sexp-format representation of it."
   (declare (ignore index docs))
   (alexandria:if-let ((args (rest bytes))
-                      (args-str (transform-str-syntax bytes mode)))
+                      (args-str (bytes-to-keyword-syntax bytes mode)))
     (mapcar #'make-keyword (list name args-str))
     (mapcar #'make-keyword (list name))))
 
@@ -49,7 +49,8 @@ DISASM-OP for formatting and display, returning the instruction length."
       (format nil (writer mode) (reverse arg))
       (format nil (writer mode) arg)))
 
-(defun transform-str-syntax (bytes mode)
+(defun bytes-to-keyword-syntax (bytes mode)
+  "Take BYTES and a MODE and return our assembly representation of the arguments."
   (let ((result (arg-formatter (rest bytes) mode)))
     (flet ((munge-indirect (str)
              (cl-ppcre:regex-replace "\\(\\$(.*)\\)(.*)?" str "@\\1\\2")))

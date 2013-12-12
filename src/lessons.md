@@ -55,9 +55,8 @@ want to destructure a list in your inner loop, no matter how readable it is!
 
 That is, the times I found myself using it always involved computing data at
 compile-time that would be stored or accessed at load-time or later. E.g. I used
-it to ensure that the status-bit enum was created for use by `set-flags-if` and
-the `*mode-bodies*` variable was bound in time for `defaddress`. Regardless,
-[try to go without it](http://fare.livejournal.com/146698.html) if possible.
+it to ensure that the status-bit enum was created for use by later macros like
+`set-flags-if`. Regardless, [try to go without it](http://fare.livejournal.com/146698.html) if possible.
 
 ## Use DECLAIM (and DECLARE) wisely
 
