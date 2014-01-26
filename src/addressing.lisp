@@ -43,7 +43,7 @@ and whether or not it is a register shift operation."
                          :cpu-reg t)
   (cpu-ar cpu))
 
-(defaddress immediate (:reader "^#\\$[0-9a-fA-F]{2}$"
+(defaddress immediate (:reader "^#\\$?[0-9a-fA-F]{2}$"
                        :writer "~{#$~2,'0x~}"
                        :cpu-reg t)
   (cpu-pc cpu))
