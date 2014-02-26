@@ -95,7 +95,7 @@
 (deftest assemble-relative
     "Relative mode instructions should be assembled correctly."
   (let ((expected (bvec d0 fd)))
-    (is (equalp (asm "bne $fd") expected))
+    (is (equalp (asm "bne &fd") expected))
     (is (equalp (asm '(:bne :&fd)) expected))))
 
 (deftest assemble-comment
@@ -106,7 +106,7 @@
 (deftest assemble-program
     "A basic program should assemble correctly."
   (let ((code (format nil "CLC~% LDA #$00~% LDY #$00~%
-                           INY~% bne $fd~% sbc $0001~% brk")))
+                           INY~% bne &fd~% sbc $0001~% brk")))
     (is (equalp (asm code) #(24 169 0 160 0 200 208 253 229 1 0)))
     (setf (get-range 0) (asm code) (cpu-pc cpu) 0)
     (cl-6502:execute cpu)
@@ -114,8 +114,8 @@
 
 (deftest assemble-forward-relative
     "A program with a forward relative jump should assemble correctly."
-  (let ((code (format nil "CLC~% LDA #$00~% LDY #$00~% bne $02~% nop~%
-                           nop~% INY~% bne $fd~% sbc $0001~% brk")))
+  (let ((code (format nil "CLC~% LDA #$00~% LDY #$00~% bne &02~% nop~%
+                           nop~% INY~% bne &fd~% sbc $0001~% brk")))
     (setf (get-range 0) (asm code) (cpu-pc cpu) 0)
     (cl-6502:execute cpu)
     (is (eql (cpu-ar cpu) 86))))
@@ -130,8 +130,8 @@
   (let ((code '((:ldy :#$00)
                 (:iny)
                 (:bne :&fd)
-                (:sbc :$0001))))
-    (is (equalp (asm code) #(160 0 200 208 253 237 1 0)))))
+                (:sbc :$0123))))
+    (is (equalp (asm code) #(160 0 200 208 253 237 35 1)))))
 
 (deftest assemble-back-label-absolute
     "A program with a back reference label in an absolute jump should

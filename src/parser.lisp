@@ -1,145 +1,118 @@
 (in-package :6502)
 
-(defun make-alist (&rest rest)
-  "Creates an alist with the given keys and values."
-  (loop for (key val) on rest by #'cddr when val collect (cons key val)))
+(defun make-stream (text)
+  "Make a string displaced onto the given text."
+  (make-array (length text) :element-type 'character
+              :displaced-to text :displaced-index-offset 0))
 
-(defmacro try-fetch (stream regex)
+(defun try-fetch (stream regex)
   "If the stream begins with a regex match, returns the matched text and move
    the stream past it. Otherwise, returns nil."
-  (let ((text (gensym))
-        (result (gensym)))
-    `(let* ((,text (first ,stream))
-            (,result (cl-ppcre:scan-to-strings ,regex ,text)))
-       (when ,result
-         (setf (first ,stream) (subseq ,text (length ,result)))
-         ,result))))
+  (let ((result (cl-ppcre:scan-to-strings regex stream)))
+    (when result
+      (multiple-value-bind (original index-offset) (array-displacement stream)
+        (adjust-array stream (- (length stream) (length result))
+                      :displaced-to original
+                      :displaced-index-offset (+ index-offset (length result))))
+      result)))
 
-(defun try-get-label (stream)
+(defun substream-advance (stream start end)
+  "Set the stream to a substream at START positions ahead and finishing
+   at END position."
+  (multiple-value-bind (original index-offset) (array-displacement stream)
+    (unless original
+      (error "substream-advance called with a string, not a stream"))
+    (adjust-array stream (- end start) :displaced-to original
+                  :displaced-index-offset (+ index-offset start))))
+
+(defun skip-white-space (stream)
+  "Fetches white space from the stream, ignores it and returns the stream."
+  (try-fetch stream "^\\s+")
+  stream)
+
+(defun fetch-label (stream)
   "Fetches a label from the stream, or returns nil."
   (let ((result (try-fetch stream "^[a-zA-Z][a-zA-Z0-9_]*:")))
     (when result (string-right-trim ":" result))))
 
-(defun try-get-white-space (stream)
-  "Fetches white space from the stream, or returns nil."
-  (try-fetch stream "^\\s+"))
-
-(defun try-get-opcode (stream)
+(defun fetch-opcode (stream)
   "Fetches an opcode from the stream as a keyword, or returns nil."
-  (let ((result (try-fetch stream "^[a-zA-Z]+")))
+  (let ((result (try-fetch stream "^[a-zA-Z]{3}")))
     (when result (intern (string-upcase result) :keyword))))
 
-(defun try-get-literal (stream)
+(defun fetch-literal (stream)
   "Fetches a literal value from the stream and returns it as an alist
    containing the integer value and address mode, or returns nil."
-  (let ((result (try-fetch stream "^#?(\\$[a-fA-F0-9]+|%[0-1]+|[0-9]+)"))
-        value address-mode)
-    (when result
-      (when (char= (aref result 0) #\#)
-        (setf result (subseq result 1))
-        (setf address-mode :immediate))
-      (cond
-        ((char= (aref result 0) #\$)
-         (setf value (parse-integer (subseq result 1) :radix 16)))
-        ((char= (aref result 0) #\%)
-         (setf value (parse-integer (subseq result 1) :radix 2)))
-        (t
-         (setf value (parse-integer result :radix 10))))
-      (make-alist :value value :address-mode address-mode))))
-
-(defun try-get-name (stream)
-  "Fetches a name from the stream, or returns nil."
-  (let ((result (try-fetch stream "^#?[a-zA-Z][a-zA-Z0-9_]*"))
-        address-mode)
-    (when result
-      (when (char= (aref result 0) #\#)
-        (setf result (subseq result 1))
-        (setf address-mode :immediate))
-      (make-alist :value result :address-mode address-mode))))
-
-(defun try-get-literal-or-name (stream)
-  "Fetches a literal or name from the stream, or returns nil."
-  (or (try-get-literal stream) (try-get-name stream)))
-
-(defun try-get-indirect (stream)
-  "Fetches an indirect operand from the stream, or returns nil."
-  (when (try-fetch stream "^\\(")
-    (try-get-white-space stream)
-    (let ((operand (try-get-literal-or-name stream)))
-      (try-get-white-space stream)
-      (unless operand
-        (error "Failed to parse"))
-      (when (eq (cdr (assoc :address-mode operand)) :immediate)
-        (error "Cannot use indirect mode with immediate operand"))
-      (unless (try-fetch stream "^\\)")
-        (error "Expected close of parenthesis for indirect mode"))
-      (append operand (make-alist :address-mode :indirect)))))
-
-(defun try-get-indexing-mode (stream)
-  "Fetches the indexing mode from the stream, or returns nil."
-  (when (try-fetch stream "^,")
-    (try-get-white-space stream)
+  (let ((result (try-fetch stream "^((\\$|\\&)[a-fA-F0-9]+|%[0-1]+|[0-9]+)")))
     (cond
-      ((try-fetch stream "^(x|X)") :x)
-      ((try-fetch stream "^(y|Y)") :y))))
+      ((not result) nil)
+      ((find (aref result 0) "$&") (parse-integer (subseq result 1) :radix 16))
+      ((char= (aref result 0) #\%) (parse-integer (subseq result 1) :radix 2))
+      (t (parse-integer result :radix 10)))))
 
-(defun try-get-comment (stream)
-  "Fetches a comment from the stream, or returns nil."
-  (try-fetch stream "^;.*$"))
+(defun fetch-name (stream)
+  "Fetches a name from the stream, or returns nil."
+  (try-fetch stream "^[a-zA-Z][a-zA-Z0-9_]*"))
 
-(defun parse-term (stream)
-  "Parse a basic term."
-  (try-get-white-space stream)
-  (try-get-literal-or-name stream))
+(defun fetch-term (stream)
+  "Fetches a literal or name from the stream, or returns nil."
+  (or (fetch-literal stream) (fetch-name stream)))
 
-(defun parse-expression (stream)
-  "Parse an expression, which is either a term or a sum of a term and another
-   expression."
-  (let ((expr-1 (parse-term stream)))
-    (try-get-white-space stream)
-    (if (try-fetch stream "^\\+")
-        (let ((expr-2 (parse-expression stream)))
-          (list (cons :value (list '+ (cdr (assoc :value expr-1))
-                                      (cdr (assoc :value expr-2))))))
-        expr-1)))
+(defun match-operand-address-modes (stream)
+  "Matches the stream against all address-mode readers, returning those that
+   match, as well as the positions where the match occurs."
+  (let ((value-match (list nil nil)))
+    (list (loop for address-mode being the hash-keys of *address-modes*
+             when (multiple-value-bind (start end match-start match-end)
+                      (cl-ppcre:scan (reader address-mode) stream)
+                    (when start
+                      (setf value-match (list match-start match-end))))
+             collect address-mode) value-match)))
 
-(defun parse-operand (stream)
-  "Parse an operand, which is either an expression, or an indirect access to an
-   expression."
-  (if (try-fetch stream "^\\(")
-      (progn
-        (try-get-white-space stream)
-        (let ((operand (parse-expression stream)))
-          (unless operand
-            (error "Failed to parse"))
-          (when (eq (cdr (assoc :address-mode operand)) :immediate)
-            (error "Cannot use indirect mode with immediate operand"))
-          (unless (try-fetch stream "^\\)")
-            (error "Expected close of parenthesis for indirect mode"))
-          (append operand (make-alist :address-mode :indirect))))
-      (parse-expression stream)))
+(defun operand-possible-modes-and-value (stream)
+  "Returns all matching address-modes for the operand, along with positions
+   where the match occurs."
+  (destructuring-bind (address-modes (match-starts match-ends))
+      (match-operand-address-modes stream)
+    (cond
+      ((find 'implied address-modes) (list (list 'implied) 0 0))
+      ((find 'accumulator address-modes) (list (list 'accumulator) 0 1))
+      (t (list address-modes (aref match-starts 0) (aref match-ends 0))))))
+
+(defun fetch-expression (stream)
+  "Fetches an expression from the stream, either a term or a term plus another."
+  (let ((term-1 (fetch-term stream)))
+    (if (try-fetch (skip-white-space stream) "^\\+")
+        (list '+ term-1 (fetch-expression stream))
+        term-1)))
+
+(defun fetch-operand (stream)
+  "Fetches the operand, returning its numerical value and possible
+   address-modes."
+  (destructuring-bind (possible-modes value-start value-end)
+      (operand-possible-modes-and-value stream)
+    (substream-advance stream value-start value-end)
+    (list (fetch-expression stream) possible-modes)))
 
 (defun parse-line (text)
-  "Converts a line of text into an alist representing the assembly code."
-  (let* ((stream (list text))
-         label opcode operand indexing)
-    (setf label (try-get-label stream))
-    (try-get-white-space stream)
-    (setf opcode (try-get-opcode stream))
-    (try-get-white-space stream)
-    (setf operand (parse-operand stream))
-    (try-get-white-space stream)
-    (setf indexing (try-get-indexing-mode stream))
-    (try-get-white-space stream)
-    (try-get-comment stream)
-    (when (not (string= (first stream) ""))
-      (error (format nil "Garbage text in line: ~s" (first stream))))
-    (when (or label opcode operand)
-      (append operand (make-alist :label label :opcode opcode
-                                  :indexing indexing)))))
+  "Converts a line of text into an instruction representing the assembly code."
+  (let* ((stream (make-stream text))
+         (label (fetch-label (skip-white-space stream)))
+         (opcode (fetch-opcode (skip-white-space stream)))
+         (operand (fetch-operand (skip-white-space stream)))
+         (value (first operand))
+         (address-modes (second operand)))
+    (make-instruction :label label :opcode opcode :value value
+                      :address-mode address-modes)))
+
+(defun strip-comment (text)
+  "Removes comment and white space from end of string."
+  (let ((pos (position #\; text)))
+    (when pos (setf text (subseq text 0 pos))))
+  (string-right-trim " " text))
 
 (defun parse-code (text)
   "Parses the assembly source text and returns the assembled code as a list of
    alists."
   (loop for line in (cl-ppcre:split "\\n" text)
-        when (parse-line line) collect it))
+        when (parse-line (strip-comment line)) collect it))

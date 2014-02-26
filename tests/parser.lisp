@@ -4,54 +4,80 @@
 (in-suite parser)
 
 (deftest parse-just-opcode
-  (is (equalp (6502::parse-code "brk") '(((:opcode . :brk))))))
+  (let ((expect (6502::make-instruction
+                 :opcode :brk :address-mode '(6502::implied))))
+    (is (equalp (list expect) (6502::parse-code "brk")))))
 
 (deftest parse-label
-  (is (equalp (6502::parse-code "start:") '(((:label . "start"))))))
+  (let ((expect (6502::make-instruction :label "start"
+                                        :address-mode '(6502::implied))))
+    (is (equalp (list expect) (6502::parse-code "start:")))))
 
 (deftest parse-opcode-with-operand
-  (is (equalp (6502::parse-code "lda #123")
-              '(((:value . 123) (:address-mode . :immediate)
-                 (:opcode . :lda))))))
+  (let ((expect (6502::make-instruction
+                 :opcode :lda :value 123 :address-mode '(6502::immediate))))
+    (is (equalp (list expect) (6502::parse-code "lda #123")))))
 
 (deftest parse-operand-zeropage
-  (is (equalp (6502::parse-code "lda $00")
-              '(((:value . 0) (:opcode . :lda))))))
+  (let ((expect (6502::make-instruction
+                 :opcode :lda :value 0
+                 :address-mode '(6502::zero-page 6502::absolute
+                                 6502::relative))))
+    (is (equalp (list expect) (6502::parse-code "lda $00")))))
 
 (deftest parse-operand-address
-  (is (equalp (6502::parse-code "lda $2002")
-              '(((:value . 8194) (:opcode . :lda))))))
+  (let ((expect (6502::make-instruction
+                 :opcode :lda :value 8194
+                 :address-mode '(6502::zero-page 6502::absolute
+                                 6502::relative))))
+    (is (equalp (list expect) (6502::parse-code "lda $2002")))))
 
 (deftest parse-operand-accumulator
-  (is (equalp (6502::parse-code "lsr a")
-              '(((:value . "a") (:opcode . :lsr))))))
+  (let ((expect (6502::make-instruction
+                 :opcode :lsr :value "a" :address-mode '(6502::accumulator))))
+    (is (equalp (list expect) (6502::parse-code "lsr a")))))
 
 (deftest parse-operand-variable
-  (is (equalp (6502::parse-code "lda some_label")
-              '(((:value . "some_label") (:opcode . :lda))))))
+  (let ((expect (6502::make-instruction
+                 :opcode :lda :value "some_label"
+                 :address-mode '(6502::zero-page 6502::absolute
+                                 6502::relative))))
+    (is (equalp (list expect) (6502::parse-code "lda some_label")))))
 
 (deftest parse-operand-indexing
-  (is (equalp (6502::parse-code "lda $2002,x")
-              '(((:value . 8194) (:opcode . :lda) (:indexing . :x))))))
+  (let ((expect (6502::make-instruction
+                 :opcode :lda :value 8194
+                 :address-mode '(6502::zero-page-x 6502::absolute-x))))
+    (is (equalp (list expect) (6502::parse-code "lda $2002,x")))))
 
 (deftest parse-operand-add-addresses
-  (is (equalp (6502::parse-code "lda 700+2")
-              '(((:value . (+ 700 2)) (:opcode . :lda))))))
+  (let ((expect (6502::make-instruction
+                 :opcode :lda :value '(+ 700 2)
+                 :address-mode '(6502::zero-page 6502::absolute
+                                 6502::relative))))
+    (is (equalp (list expect) (6502::parse-code "lda 700+2")))))
 
 (deftest parse-operand-add-variable
-  (is (equalp (6502::parse-code "lda some_label+2")
-              '(((:value . (+ "some_label" 2)) (:opcode . :lda))))))
+  (let ((expect (6502::make-instruction
+                 :opcode :lda :value '(+ "some_label" 2)
+                 :address-mode '(6502::zero-page 6502::absolute
+                                 6502::relative))))
+    (is (equalp (list expect) (6502::parse-code "lda some_label+2")))))
 
-(deftest parse-operand-indexing
-  (is (equalp (6502::parse-code "sta some_label,x")
-              '(((:value . "some_label") (:opcode . :sta) (:indexing . :x))))))
+(deftest parse-operand-label-indexing
+  (let ((expect (6502::make-instruction
+                 :opcode :sta :value "some_label"
+                 :address-mode '(6502::zero-page-x 6502::absolute-x))))
+    (is (equalp (list expect) (6502::parse-code "sta some_label,x")))))
 
-(deftest parse-operand-indirect-ptr
-  (is (equalp (6502::parse-code "sta (memory_ptr)")
-              '(((:value . "memory_ptr") (:address-mode . :indirect)
-                 (:opcode . :sta))))))
+(deftest parse-operand-label-indirect-ptr
+  (let ((expect (6502::make-instruction
+                 :opcode :sta :value "memory_ptr"
+                 :address-mode '(6502::indirect))))
+    (is (equalp (list expect) (6502::parse-code "sta (memory_ptr)")))))
 
-(deftest parse-operand-indirect-indexing
-  (is (equalp (6502::parse-code "sta (memory_ptr),y")
-              '(((:value . "memory_ptr") (:address-mode . :indirect)
-                 (:opcode . :sta) (:indexing . :y))))))
+(deftest parse-operand-label-indirect-indexing
+  (let ((expect (6502::make-instruction
+                 :opcode :sta :value "memory_ptr"
+                 :address-mode '(6502::indirect-y))))
+    (is (equalp (list expect) (6502::parse-code "sta (memory_ptr),y")))))
