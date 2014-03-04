@@ -44,6 +44,10 @@ $(cat obj/jit.lisp.md)
 $(cat ../disassemble.md)
 $(cat obj/disassemble.lisp.md)
 
+# Parsing Assembly
+$(cat ../parser.md)
+$(cat obj/parser.lisp.md)
+
 # Creating New Code
 $(cat ../assemble.md)
 $(cat obj/assemble.lisp.md)
