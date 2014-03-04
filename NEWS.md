@@ -1,3 +1,9 @@
+## Changes for 0.9.7 (2014-03-31):
+
+* Rewrite the assembler, adding support for labels, compile-time expressions,
+  and literals in decimal and binary. Huge thanks go to @dustmop for this
+  fantastic work.
+
 ## Changes for 0.9.6 (2013-12-12):
 
 * Rewrite DEFADDRESS again and stop inlining get-byte. The new implementation

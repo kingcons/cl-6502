@@ -30,8 +30,8 @@ relative to the complex x86 assembly that is prevalent today.
 
 **cl-6502** does have some explicit technical goals:
 
-* Code size excluding tests should be < 800 loc. (**0.9.6**: 762 lines)
-* Able to run at 8 mhz or faster using a single core on an Intel Core CPU. (**0.9.6**: ~50 mhz)
+* Code size excluding tests should be < 1000 loc. (**0.9.7**: 949 lines)
+* Able to run at 8 mhz or faster using a single core on an Intel Core CPU. (**0.9.7**: ~50 mhz)
 * Cycle-accurate emulation suitable for use in a full NES emulator.
 * Readable as a 6502 introduction for someone with or without a copy of [CLHS](http://www.lispworks.com/documentation/HyperSpec/).
 
