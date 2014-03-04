@@ -6,16 +6,18 @@
 
 Since our disassembler can disassemble to either a string or sexp format, we'd
 like our assembler to be similarly versatile. Therefore, we'll define a Generic
-Function `asm` that works on lists or strings. The assembler will be as *naive*
-as possible so that we can reuse it in making higher-level tools later.
+Function `asm` that works on lists or strings. In addition it takes an optional
+environment as a hash table, and a starting address.
 
-All the assembler needs to do is loop over its input assembling each statement
-one at a time, then concatenating the results together. We can even cheat by
-having our string assembler first convert the statements to sexps and then reuse
-the other code!
+The assembler works by looping over its input, recording any labels, and
+assembling each statement one at a time, using delayed functions for any
+statements that use a label. Then finally, delayed functions are resolved, and
+all the results are concatenated together. Both lists and strings are converted
+into an intermediary format, a struct called instruction, which represents
+a single statement.
 
-Once the code is in a lispy format, its straightforward to grab the name of the
-instruction, figure out its addressing mode by using regexes on the arguments,
-and then lookup the opcode based on the name and addressing mode.
+The parser determines which possible address modes can match the given syntax,
+which may be ambiguous due to labels, and matches these modes against what the
+given opcode can use.
 
 ## Source Code

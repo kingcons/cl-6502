@@ -33,10 +33,11 @@ you can use the fastest addressing mode possible to access it.
 A functioning emulator needs to know how to parse assembly, print disassebly, get data,
 and set data for each addressing mode. **cl-6502** uses
 [methods on unique symbols](http://cl-cookbook.sourceforge.net/clos-tutorial/#section-4.5)
-for parsing and printing, and functions for getting and setting. The parser
-will be a simple regular expression to extract a number, the printer is a lisp
-format string that effectively inverts the process. Since the getter and setter
-need to work on the same address in memory, and use the same code to compute
-that address, we'll use a `defaddress` macro to factor out their shared code.
+for reading and printing, and functions for getting and setting. The reader
+is a regular expressions, with a placeholder character (underscore) from which
+a number, label or expression is extracted. The printer is a lisp format string
+that effectively inverts the process. Since the getter and setter need to work
+on the same address in memory, and use the same code to compute that address,
+we'll use a `defaddress` macro to factor out their shared code.
 
 ## Source Code

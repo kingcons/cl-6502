@@ -2,6 +2,8 @@
 
 (in-package :6502)
 
+(defparameter *address-modes* (make-hash-table :test 'equal))
+
 (defgeneric reader (mode)
   (:documentation "Return a Perl-compatible regex suitable for parsing MODE.")
   (:method (mode) (error 'invalid-mode :mode mode)))
@@ -11,12 +13,15 @@
   (:method (mode) (error 'invalid-mode :mode mode)))
 
 (defmacro defaddress (name (&key reader writer cpu-reg) &body body)
-  "Define an Addressing Mode, NAME, with READER and WRITER methods that take NAME
-as a symbol and return a regex or format expression, respectively, and a function
-and setf function to get and set the data pointed to by the given mode."
+  "Define an Addressing Mode, NAME, with READER and WRITER methods that take
+   NAME as a symbol and return a regex or format expression, respectively,
+   and a function and setf function to get and set the data pointed to by the
+   given mode."
   `(progn
-     (defmethod reader ((mode (eql ',name))) ,reader)
+     (defmethod reader ((mode (eql ',name)))
+       ,(cl-ppcre:regex-replace-all "_" reader "([^,()#&]+)"))
      (defmethod writer ((mode (eql ',name))) ,writer)
+     (setf (gethash ',name *address-modes*) t)
      (defun ,name (cpu) ,@body)
      (defun (setf ,name) (value cpu)
        ,(if cpu-reg
@@ -43,55 +48,55 @@ and whether or not it is a register shift operation."
                          :cpu-reg t)
   (cpu-ar cpu))
 
-(defaddress immediate (:reader "^#\\$[0-9a-fA-F]{2}$"
+(defaddress immediate (:reader "^#_$"
                        :writer "~{#$~2,'0x~}"
                        :cpu-reg t)
   (cpu-pc cpu))
 
-(defaddress zero-page (:reader "^\\$[0-9a-fA-F]{2}$"
+(defaddress zero-page (:reader "^_$"
                        :writer "~{$~2,'0x~}")
   (get-byte (cpu-pc cpu)))
 
-(defaddress zero-page-x (:reader "^\\$[0-9a-fA-F]{2},[xX]$"
+(defaddress zero-page-x (:reader "^_,\\s*[xX]$"
                          :writer "$~{~2,'0x~}, X")
   (wrap-byte (+ (get-byte (cpu-pc cpu)) (cpu-xr cpu))))
 
-(defaddress zero-page-y (:reader "^\\$[0-9a-fA-F]{2},[yY]$"
+(defaddress zero-page-y (:reader "^_,\\s*[yY]$"
                          :writer "$~{~2,'0x~}, Y")
   (wrap-byte (+ (get-byte (cpu-pc cpu)) (cpu-yr cpu))))
 
-(defaddress absolute (:reader "^\\$[0-9a-fA-F]{4}$"
+(defaddress absolute (:reader "^_$"
                       :writer "$~{~2,'0x~}")
   (get-word (cpu-pc cpu)))
 
-(defaddress absolute-x (:reader "^\\$[0-9a-fA-F]{4},[xX]$"
+(defaddress absolute-x (:reader "^_,\\s*[xX]$"
                         :writer "$~{~2,'0x~}, X")
   (let ((result (wrap-word (+ (get-word (cpu-pc cpu)) (cpu-xr cpu)))))
     (maybe-update-cycle-count cpu result)
     result))
 
-(defaddress absolute-y (:reader "^\\$[0-9a-fA-F]{4},[yY]$"
+(defaddress absolute-y (:reader "^_,\\s*[yY]$"
                         :writer "$~{~2,'0x~}, Y")
   (let ((result (wrap-word (+ (get-word (cpu-pc cpu)) (cpu-yr cpu)))))
     (maybe-update-cycle-count cpu result)
     result))
 
-(defaddress indirect (:reader "^\\(\\$[0-9a-fA-F]{4}\\)$"
+(defaddress indirect (:reader "^\\(_\\)$"
                       :writer "($~{~2,'0x~})")
   (get-word (get-word (cpu-pc cpu)) t))
 
-(defaddress indirect-x (:reader "^\\(\\$[0-9a-fA-F]{2}\\),[xX]$"
+(defaddress indirect-x (:reader "^\\(_\\),\\s*[xX]$"
                         :writer "($~{~2,'0x~}), X")
   (get-word (wrap-byte (+ (get-byte (cpu-pc cpu)) (cpu-xr cpu))) t))
 
-(defaddress indirect-y (:reader "^\\(\\$[0-9a-fA-F]{2}\\),[yY]$"
+(defaddress indirect-y (:reader "^\\(_\\),\\s*[yY]$"
                         :writer "($~{~2,'0x~}), Y")
   (let* ((addr (get-word (get-byte (cpu-pc cpu)) t))
          (result (wrap-word (+ addr (cpu-yr cpu)))))
     (maybe-update-cycle-count cpu result addr)
     result))
 
-(defaddress relative (:reader "^&[0-9a-fA-F]{2}$"
+(defaddress relative (:reader "^(&?_)$"
                       :writer "&~{~2,'0x~}")
   (let ((offset (get-byte (cpu-pc cpu))))
     (incf (cpu-cc cpu))

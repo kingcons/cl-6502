@@ -28,9 +28,15 @@
 
 (deftest assemble-immediate
     "Immediate mode instructions should be assembled correctly."
-  (let ((expected (bvec a9 00)))
-    (is (equalp (asm "lda #$00") expected))
-    (is (equalp (asm '(:lda :#$00)) expected))))
+  (let ((expected (bvec a9 12)))
+    (is (equalp (asm "lda #$12") expected))
+    (is (equalp (asm '(:lda :#$12)) expected))))
+
+(deftest assemble-immediate-decimal
+    "Immediate mode using decimal should be assembled correctly."
+  (let ((expected (bvec a9 0c)))
+    (is (equalp (asm "lda #12") expected))
+    (is (equalp (asm '(:lda :#12)) expected))))
 
 (deftest assemble-zero-page
     "Zero-page mode instructions should be assembled correctly."
@@ -52,9 +58,9 @@
 
 (deftest assemble-absolute
     "Absolute mode instructions should be assembled correctly."
-  (let ((expected (bvec ed 1 0)))
-    (is (equalp (asm "sbc $0001") expected))
-    (is (equalp (asm '(:sbc :$0001)) expected))))
+  (let ((expected (bvec ed 11 1)))
+    (is (equalp (asm "sbc $0111") expected))
+    (is (equalp (asm '(:sbc :$0111)) expected))))
 
 (deftest assemble-absolute-x
     "Absolute-x mode instructions should be assembled correctly."
@@ -101,7 +107,7 @@
     "A basic program should assemble correctly."
   (let ((code (format nil "CLC~% LDA #$00~% LDY #$00~%
                            INY~% bne &fd~% sbc $0001~% brk")))
-    (is (equalp (asm code) #(24 169 0 160 0 200 208 253 237 1 0 0)))
+    (is (equalp (asm code) #(24 169 0 160 0 200 208 253 229 1 0)))
     (setf (get-range 0) (asm code) (cpu-pc cpu) 0)
     (cl-6502:execute cpu)
     (is (eql (cpu-ar cpu) 86))))
@@ -124,7 +130,21 @@
   (let ((code '((:ldy :#$00)
                 (:iny)
                 (:bne :&fd)
-                (:sbc :$0001))))
-    (is (equalp (asm code) #(160 0 200 208 253 237 1 0)))))
+                (:sbc :$0123))))
+    (is (equalp (asm code) #(160 0 200 208 253 237 35 1)))))
+
+(deftest assemble-back-label-absolute
+    "A program with a back reference label in an absolute jump should
+     assemble correctly."
+  (let ((code (format nil "nop~%start:~%lda $1000~%jmp start"))
+        (expected (bvec ea ad 00 10 4c 01 00)))
+    (is (equalp (asm code) expected))))
+
+(deftest assemble-back-label-relative
+    "A program with a back reference label in a relative jump should
+     assemble correctly."
+  (let ((code (format nil "nop~%start:~%lda $1000~%bne start"))
+        (expected (bvec ea ad 00 10 d0 fb)))
+    (is (equalp (asm code) expected))))
 
 ; (deftest assemble-pc "*" nil)?

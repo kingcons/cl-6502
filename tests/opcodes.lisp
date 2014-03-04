@@ -23,8 +23,10 @@
   (klaus-init)
   (klaus-test)
   (destructuring-bind (op addr) (current-instruction cpu)
-    (is (and (eql op :jmp)
-             (eql (6502::extract-num (format nil "~A" addr)) (cpu-pc cpu))))
-    ;; There are multiple traps in the code that are jump-to-self.
-    ;; Only 0x3c37 is the 'success' macro. Disasm surrounding code to verify.
-    (is (eql (cpu-pc cpu) #x3c37))))
+    (let* ((addr-text (symbol-name addr))
+           (hex-num (cl-ppcre:scan-to-strings "[0-9a-fA-F]{2,4}" addr-text))
+           (pc (parse-integer hex-num :radix 16)))
+      (is (and (eql op :jmp) (eql pc (cpu-pc cpu))))
+      ;; There are multiple traps in the code that are jump-to-self.
+      ;; Only 0x3c37 is the 'success' macro. Disasm surrounding code to verify.
+      (is (eql (cpu-pc cpu) #x3c37)))))
