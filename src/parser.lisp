@@ -2,7 +2,7 @@
 
 (defun make-stream (text)
   "Make a string displaced onto the given text."
-  (make-array (length text) :element-type 'character
+  (make-array (length text) :element-type 'character :adjustable t
               :displaced-to text :displaced-index-offset 0))
 
 (defun try-fetch (stream regex)
