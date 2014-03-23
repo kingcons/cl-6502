@@ -35,7 +35,6 @@
   (let ((token (transform-sexp-syntax operand)))
     (destructuring-bind (possible-modes value-start value-end)
         (operand-possible-modes-and-value token)
-      (declare (ignore end))
       (let ((stream (make-stream (coerce (subseq token value-start value-end)
                                          '(vector character)))))
         (make-instruction :opcode opcode :value (fetch-literal stream)
