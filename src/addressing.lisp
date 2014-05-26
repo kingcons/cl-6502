@@ -31,7 +31,7 @@
 (defun make-getter (name mode raw-p)
   "Generate an appropriate GETTER for NAME based on RAW-P
 and whether or not it is a register shift operation."
-  (let ((register-shift-op-p (cl:and (member name '(asl lsr rol ror))
+  (let ((register-shift-op-p (and (member name '(asl lsr rol ror))
                                      (eql mode 'accumulator))))
     (if (or raw-p register-shift-op-p)
         `(,mode cpu)

@@ -102,7 +102,7 @@
   (with-slots (opcode address-mode value) instruction
     (let ((modes (if (listp address-mode) address-mode (list address-mode)))
           (opcode-modes (get-opcode-address-modes opcode)))
-      (if (common-lisp:and (zero-page-address value env)
+      (if (and (zero-page-address value env)
                (intersection opcode-modes +zero-page-modes+))
           (setf modes (set-difference modes +absolute-modes+))
           (setf modes (set-difference modes +zero-page-modes+)))
@@ -116,7 +116,7 @@
 (defun match-opcode-data (data opcode &optional (address-mode :any))
   "Returns whether the asm metadata matches the given opcode, and address-mode
    if it is provided."
-  (common-lisp:and (eq (first data) (intern (symbol-name opcode) :6502))
+  (and (eq (first data) (intern (symbol-name opcode) :6502))
                    (or (eq address-mode :any) (eq address-mode (fifth data)))))
 
 (defun zero-page-address (addr env)
@@ -125,7 +125,7 @@
     ((numberp addr) (< addr +max-byte+))
     ((stringp addr)
      (let ((addr (gethash addr env)))
-       (common-lisp:and (numberp addr) (< addr +max-byte+))))
+       (and (numberp addr) (< addr +max-byte+))))
     ((listp addr) nil)
     (t (error "Invalid address" :argument addr))))
 
@@ -140,7 +140,7 @@
          (when (eq type :relative)
            (setf addr (- addr pc +relative-branch-size-byte+)))
          (make-byte addr pc type))))
-    ((common-lisp:and (listp value) (eq (first value) '+))
+    ((and (listp value) (eq (first value) '+))
      (lambda (env)
        (destructuring-bind (unused-plus operand-1 operand-2) value
          (declare (ignore unused-plus))
