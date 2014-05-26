@@ -2,7 +2,8 @@
 
 (in-package :6502)
 
-(defparameter *address-modes* (make-hash-table :test 'equal))
+(defparameter *address-modes* nil
+  "A list of all the 6502 Address Modes.")
 
 (defgeneric reader (mode)
   (:documentation "Return a Perl-compatible regex suitable for parsing MODE.")
@@ -21,7 +22,7 @@
      (defmethod reader ((mode (eql ',name)))
        ,(cl-ppcre:regex-replace-all "_" reader "([^,()#&]+)"))
      (defmethod writer ((mode (eql ',name))) ,writer)
-     (setf (gethash ',name *address-modes*) t)
+     (push ',name *address-modes*)
      (defun ,name (cpu) ,@body)
      (defun (setf ,name) (value cpu)
        ,(if cpu-reg

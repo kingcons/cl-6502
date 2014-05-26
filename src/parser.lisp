@@ -62,7 +62,7 @@
   "Matches the stream against all address-mode readers, returning those that
    match, as well as the positions where the match occurs."
   (let ((value-match (list nil nil)))
-    (list (loop for address-mode being the hash-keys of *address-modes*
+    (list (loop for address-mode in *address-modes*
              when (multiple-value-bind (start end match-start match-end)
                       (cl-ppcre:scan (reader address-mode) stream)
                     (when start
