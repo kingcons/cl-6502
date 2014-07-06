@@ -1,3 +1,7 @@
+## Changes for 0.9.8 (20xx):
+
+* Fix disassembler tests that relied on implementation dependent behavior.
+
 ## Changes for 0.9.7 (2014-03-31):
 
 * Rewrite the assembler, adding support for labels, compile-time expressions,
