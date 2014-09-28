@@ -182,19 +182,22 @@ START is provided, test that against ADDRESS. Otherwise, use the absolute addres
 
 (defmacro defasm (name (&key (docs "") raw-p (track-pc t))
                   modes &body body)
-  "Define a 6502 instruction NAME, storing its DOCS and metadata in *opcode-meta*,
-and a lambda that executes BODY in *opcode-funs*. Within BODY, the functions
-GETTER and SETTER can be used to get and set values for the current addressing
-mode, respectively. TRACK-PC can be passed nil to disable program counter updates
-for branching/jump operations. If RAW-P is true, GETTER will return the mode's
-address directly, otherwise it will return the byte at that address. MODES is a
-list of opcode metadata lists: (opcode cycles bytes mode)."
+  "Define a 6502 instruction NAME, storing its DOCS and metadata in
+ *opcode-meta*, and a lambda that executes BODY in *opcode-funs*.
+ Within BODY, the functions GETTER and SETTER can be used to get
+ and set values for the current addressing mode, respectively.
+ TRACK-PC can be passed nil to disable program counter updates
+ for branching/jump operations. If RAW-P is true, GETTER will
+ return the mode's address directly, otherwise it will return the
+ byte at that address. MODES is a list of opcode metadata lists:
+ (opcode cycles bytes mode)."
   `(progn
      ,@(loop for (op cycles bytes mode) in modes collect
             `(setf (aref *opcode-meta* ,op) ',(list name docs cycles bytes mode)))
      ,@(loop for (op cycles bytes mode) in modes collect
             `(setf (aref *opcode-funs* ,op)
-                   (named-lambda ,(intern (format nil "~A-~X" name op)) (cpu)
+                   (named-lambda ,(intern (format nil "~A-~X" name op))
+                       (cpu)
                      (incf (cpu-pc cpu))
                      (flet ((getter ()
                               ,(make-getter name mode raw-p))

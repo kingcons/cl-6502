@@ -5,11 +5,12 @@
 
 (defun get-basic-block (cpu)
   "Get the opcodes from the current PC to the next branch."
-  (flet ((op-length (x) (fourth (aref *opcode-meta* x))))
-    (loop for pc = (cpu-pc cpu) then (+ pc (op-length op))
-       for op = (get-byte pc) collect op
-       until (member op '(#x90 #xb0 #xf0 #x30 #xd0 #x10 #x50 #x70
-                          #x00 #x4c #x6c #x20 #x40 #x60)))))
+  (let ((control-flow-ops '(bcc bcs beq bmi bne bpl bvc bvs
+                            brk jmp jsr rti rts)))
+    (loop for pc = (cpu-pc cpu) then (+ pc op-length)
+       for op = (get-byte pc)
+       for (op-name nil nil op-length) = (aref *opcode-meta* op)
+       collect op until (member op-name control-flow-ops))))
 
 (defun jit-block (opcodes)
   "Given a list of opcodes, JIT compile an equivalent function."
