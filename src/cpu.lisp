@@ -89,10 +89,7 @@ e.g. If we (get-word address)."
 (defun get-range (start &optional end)
   "Get a range of bytes from RAM, starting from START and stopping at END if
 provided."
-  (make-array (- (or end (length *ram*)) start)
-              :element-type (array-element-type *ram*)
-              :displaced-to *ram*
-              :displaced-index-offset start))
+  (subseq *ram* start end))
 
 (defun (setf get-range) (bytevector start)
   "Replace the contents of RAM, starting from START with BYTEVECTOR."
