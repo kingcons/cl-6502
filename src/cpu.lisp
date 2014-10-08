@@ -67,8 +67,10 @@
 e.g. If we (get-word address)."
   (+ (logand address #xff00) (logand (1+ address) #xff)))
 
+(declaim (inline get-byte))
 (declaim (ftype (function (u16) u8) get-byte))
 (defun get-byte (address)
+  #f
   "Get a byte from RAM at the given ADDRESS."
   (aref *ram* address))
 
@@ -206,4 +208,5 @@ START is provided, test that against ADDRESS. Otherwise, use the absolute addres
                        ,@body)
                      ,@(when track-pc
                          `((incf (cpu-pc cpu) ,(1- bytes))))
-                     (incf (cpu-cc cpu) ,cycles))))))
+                     (incf (cpu-cc cpu) ,cycles)
+                     (values))))))

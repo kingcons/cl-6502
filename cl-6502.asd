@@ -11,6 +11,7 @@
   :depends-on (:alexandria :cl-ppcre)
   :serial t
   :components ((:file "packages")
+               (:file "opt")
                (:file "conditions")
                (:file "addressing")
                (:file "cpu")
