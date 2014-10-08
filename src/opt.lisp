@@ -9,9 +9,3 @@
          (error "Bad value for #f: ~a" numarg))
        `(declare (optimize (speed ,numarg)
                            (safety ,(- 3 numarg)))))))
-
-(defmacro fast-progn (&rest body)
-  `(locally #f ,@body))
-
-(defmacro safe-progn (&rest body)
-  `(locally #0f ,@body))
