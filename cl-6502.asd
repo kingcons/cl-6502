@@ -26,6 +26,9 @@
                              (intern "6502-TESTS" :6502-tests))))
 
 (defsystem #:cl-6502-tests
+  :description "A test suite for cl-6502."
+  :license "BSD"
+  :author "Brit Butler <redline6561@gmail.com>"
   :depends-on (cl-6502 fiveam)
   :pathname "tests/"
   :serial t
