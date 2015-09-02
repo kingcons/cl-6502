@@ -7,6 +7,7 @@ Write a high-level macro-assembler! (using defmacro and sexps, of course)
 Define restarts for step?
 -- Define the instruction.
 -- Hand over a lambda to funcall/form to eval.
+Cleanup the CI integration once sionescu and co improve cl-travis.
 
 PERF NOTES:
 lib6502  -> 00.1 seconds
