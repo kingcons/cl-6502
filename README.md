@@ -18,7 +18,7 @@ I gave a talk on cl-6502 called 'On Programmer Archaeology'. You can watch it [o
 
 ## Reading
 
-Inspired by Luke Gorrie's call for [Readable Programs](http://blog.lukego.com/blog/2012/10/24/readable-programs/), there is a readable [PDF book](http://redlinernotes.com/docs/cl-6502.pdf) of the source. You can also produce it from the git repo with: `cd repo/src && make book`. You'll need make, pandoc, and some latex packages (texlive-luatex, texlive-xetex, and texlive-latex-extra on debian) installed to build it yourself.
+Inspired by Luke Gorrie's call for [Readable Programs](http://lukego.github.io/blog/2012/10/24/readable-programs/), there is a readable [PDF book](http://redlinernotes.com/docs/cl-6502.pdf) of the source. You can also produce it from the git repo with: `cd repo/src && make book`. You'll need make, pandoc, and some latex packages (texlive-luatex, texlive-xetex, and texlive-latex-extra on debian) installed to build it yourself.
 
 ## Install
 You are strongly encouraged to use this library via [Quicklisp](http://quicklisp.org/). Simply start your lisp and run: ```(ql:quickload 'cl-6502)```.
