@@ -11,7 +11,6 @@
 statistical profiler to observe performance while running the test suite."
   (klaus-init)
   (sb-sprof:with-profiling (:sample-interval 0.001
-                            :alloc-interval 2
                             :max-samples 1000
                             :show-progress t
                             :report :graph
