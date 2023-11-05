@@ -17,9 +17,9 @@
                (:file "opcodes")
                (:file "jit")
                (:file "utils"))
-  :in-order-to ((test-op (test-op cl-6502-test))))
+  :in-order-to ((test-op (test-op cl-6502/test))))
 
-(defsystem #:cl-6502-test
+(defsystem #:cl-6502/test
   :description "A test suite for cl-6502."
   :license "BSD"
   :author "Brit Butler <redline6561@gmail.com>"
@@ -34,8 +34,9 @@
                (:file "opcodes")
                (:file "jit")
                #+sbcl (:file "perf"))
-  :perform (test-op :after (op c)
-                    (uiop:symbol-call :6502-tests 'run!)))
+  :perform (test-op (op c)
+                    (uiop:symbol-call 'fiveam 'run!
+                                      (uiop:find-symbol* '6502-tests '6502-tests))))
 
 (defpackage #:6502-conf (:export #:app-path))
 (defvar 6502-conf::*basedir*
